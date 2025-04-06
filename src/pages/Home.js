@@ -10,7 +10,7 @@ const Home = () => {
         <Grid item xs={12} sm={6} sx={{ p:2, width: '50%' }}>
           <Paper 
             component={Link}
-            to="/category/seeds"
+            to="/category/689"
             sx={{ 
               p: 0, 
               textDecoration: 'none',
@@ -29,11 +29,12 @@ const Home = () => {
           >
             {/* Image Container - Place your seeds image here */}
             <Box sx={{ 
-              height: 300, 
-              bgcolor: 'grey.200', 
+              height: '100%', 
+              bgcolor: '#f2e8d4', 
               backgroundImage: 'url("/assets/images/seeds.jpg")', 
-              backgroundSize: 'cover',
+              backgroundSize: 'contain',
               backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
               position: 'relative'
             }}>
               {/* Overlay text - optional */}
@@ -46,7 +47,7 @@ const Home = () => {
                 p: 2,
               }}>
                 <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
-                  Premium Samen
+                  Seeds
                 </Typography>
               </Box>
             </Box>
@@ -58,7 +59,7 @@ const Home = () => {
         <Grid item xs={12} sm={6} sx={{ p:2,width: '50%' }}>
           <Paper 
             component={Link}
-            to="/category/cutlings"
+            to="/category/706"
             sx={{ 
               p: 0, 
               textDecoration: 'none',
@@ -77,11 +78,12 @@ const Home = () => {
           >
             {/* Image Container - Place your cutlings image here */}
             <Box sx={{ 
-              height: 300, 
-              bgcolor: 'grey.200', 
+              height: '100%', 
+              bgcolor: '#f2e8d4', 
               backgroundImage: 'url("/assets/images/cutlings.jpg")', 
-              backgroundSize: 'cover',
+              backgroundSize: 'contain',
               backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
               position: 'relative'
             }}>
               {/* Overlay text - optional */}

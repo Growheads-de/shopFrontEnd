@@ -22,10 +22,7 @@ import { Link } from 'react-router-dom';
 
 const Cart = () => {
   // This would come from a cart context in a real app
-  const [cartItems, setCartItems] = React.useState([
-    { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, quantity: 2 },
-    { id: 5, name: 'Carbon Air Filter', price: 79.99, quantity: 1 }
-  ]);
+  const [cartItems, setCartItems] = React.useState([]);
 
   const handleRemoveItem = (id) => {
     setCartItems(cartItems.filter(item => item.id !== id));

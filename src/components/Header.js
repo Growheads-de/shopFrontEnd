@@ -14,8 +14,6 @@ import {
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
-import PersonIcon from '@mui/icons-material/Person';
-import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import CartDropdown from './CartDropdown.js';
 import SocketContext from '../contexts/SocketContext.js';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -205,29 +203,6 @@ class ButtonGroup extends Component {
     
     return (
       <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 } }}>
-        <Button 
-          color="inherit" 
-          startIcon={<ContactSupportIcon />}
-          sx={{ 
-            borderRadius: 2,
-            display: { xs: 'none', md: 'flex' },
-            '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
-          }}
-        >
-          Kontakt
-        </Button>
-        <Button 
-          color="inherit" 
-          startIcon={<PersonIcon />}
-          sx={{ 
-            borderRadius: 2,
-            display: { xs: 'none', sm: 'flex' },
-            '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
-          }}
-        >
-          Anmelden
-        </Button>
-        
         <CartButton 
           cartItems={cartItems}
           onQuantityChange={onCartQuantityChange}
@@ -271,11 +246,17 @@ class CategoryList extends Component {
       return;
     }
     
-    // Check if we have a valid cache in localStorage
+    // Initialize global cache object if it doesn't exist
+    if (!window.productCache) {
+      window.productCache = {};
+    }
+    
+    // Check if we have a valid cache in the global object
     try {
-      const cachedData = localStorage.getItem('categoryList');
+      const cacheKey = 'categoryList';
+      const cachedData = window.productCache[cacheKey];
       if (cachedData) {
-        const { categories, timestamp } = JSON.parse(cachedData);
+        const { categories, timestamp } = cachedData;
         const cacheAge = Date.now() - timestamp;
         const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
         
@@ -299,12 +280,13 @@ class CategoryList extends Component {
       if (response && response.categories) {
         console.log('Categories received:', response.categories.length);
         
-        // Store in localStorage with timestamp
+        // Store in global cache with timestamp
         try {
-          localStorage.setItem('categoryList', JSON.stringify({
+          const cacheKey = 'categoryList';
+          window.productCache[cacheKey] = {
             categories: response.categories,
             timestamp: Date.now()
-          }));
+          };
         } catch (err) {
           console.error('Error writing to cache:', err);
         }
@@ -346,7 +328,7 @@ class CategoryList extends Component {
           <Box 
             sx={{ 
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: categories.length <= 5 ? 'center' : 'space-between',
               alignItems: 'center',
               flexWrap: 'nowrap',
               overflowX: 'auto',
@@ -398,10 +380,7 @@ class Header extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      cartItems: [
-        { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, quantity: 2 },
-        { id: 5, name: 'Carbon Air Filter', price: 79.99, quantity: 1 }
-      ]
+      cartItems: []
     };
   }
 
@@ -425,7 +404,7 @@ class Header extends Component {
     const socket = this.context;
 
     return (
-      <AppBar position="sticky" color="primary" elevation={0}>
+      <AppBar position="sticky" color="primary" elevation={0} sx={{ zIndex: 1100 }}>
         <Toolbar sx={{ minHeight: 64 }}>
           <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
             <Logo />

@@ -48,7 +48,7 @@ class Content extends Component {
       error: null,
       activeFilters: {
         availability: {
-          inStock: false
+          inStock: true
         }
       }
     };
@@ -77,12 +77,17 @@ class Content extends Component {
       // Fetch products for specific category
       console.log('Fetching products for category:', categoryId);
       
-      // Check if we have a valid cache in localStorage
-      const cacheKey = `categoryProducts_${categoryId}`;
+      // Initialize global cache object if it doesn't exist
+      if (!window.productCache) {
+        window.productCache = {};
+      }
+      
       try {
-        const cachedData = localStorage.getItem(cacheKey);
+        const cacheKey = `categoryProducts_${categoryId}`;
+        const cachedData = window.productCache[cacheKey];
+        
         if (cachedData) {
-          const { products, timestamp } = JSON.parse(cachedData);
+          const { products, timestamp } = cachedData;
           const cacheAge = Date.now() - timestamp;
           const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
           
@@ -101,12 +106,12 @@ class Content extends Component {
               pageTitle = `Search Results for "${searchQuery}"`;
             }
             
+            // Set products, then apply filters separately (to ensure in-stock filter is applied)
             this.setState({ 
-              products: products,
-              filteredProducts,
+              products: filteredProducts,
               activeCategory: pageTitle,
               isLoading: false
-            }, this.applyFilters);
+            }, this.applyFilters); // Apply filters after setting products
             return;
           }
         }
@@ -117,34 +122,36 @@ class Content extends Component {
       socket.emit('getCategoryProducts', { categoryId: parseInt(categoryId) }, (response) => {
         console.log('getCategoryProducts response');
         if (response && response.products) {
-          // Store in localStorage with timestamp
-          try {
-            localStorage.setItem(cacheKey, JSON.stringify({
-              products: response.products,
-              timestamp: Date.now()
-            }));
-          } catch (err) {
-            console.error('Error writing category products to cache:', err);
-          }
           
           let pageTitle = this.state.categories[categoryId] || "Category";
-          let filteredProducts = response.products;
+          let products = response.products;
           
           // Filter by search query if provided
           if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            filteredProducts = filteredProducts.filter(product => 
+            products = products.filter(product => 
               product.name.toLowerCase().includes(query)
             );
             pageTitle = `Search Results for "${searchQuery}"`;
           }
           
+          // Set products, then apply filters separately (to ensure in-stock filter is applied)
           this.setState({ 
-            products: response.products,
-            filteredProducts,
+            products: products,
             activeCategory: pageTitle,
             isLoading: false
-          }, this.applyFilters);
+          }, this.applyFilters); // Apply filters after setting products
+          
+          // Store in global cache with timestamp
+          try {
+            const cacheKey = `categoryProducts_${categoryId}`;
+            window.productCache[cacheKey] = {
+              products: response.products,
+              timestamp: Date.now()
+            };
+          } catch (err) {
+            console.error('Error writing category products to cache:', err);
+          }
         } else {
           console.error('Failed to get category products:', response);
           this.setState({ 
@@ -161,9 +168,8 @@ class Content extends Component {
       this.setState({
         activeCategory: `Search Results for "${searchQuery}"`,
         isLoading: false
-      });
+      }, this.applyFilters); // Apply filters after setting search results
     }
-
   }
 
   handleFilterChange = (filter) => {
@@ -196,8 +202,8 @@ class Content extends Component {
     // Apply availability filter only
     products = products.filter(product => {
       // Availability filter - only show in-stock items if checked
-      if (product.available==0 && activeFilters.availability.inStock) {
-        return false
+      if ((product.available === 0 || product.available === false) && activeFilters.availability.inStock) {
+        return false;
       }
       
       return true;

@@ -21,6 +21,37 @@ class ProductList extends Component {
     }
   }
 
+  componentDidUpdate(prevProps) {
+    // Check if products array changed and current page is no longer valid
+    if (prevProps.products !== this.props.products && this.props.products) {
+      const { page, productsPerPage } = this.state;
+      
+      // Reset to page 1 if we navigated to a completely different product list
+      // This can be detected by comparing product counts or title changes
+      const prevProductCount = prevProps.products ? prevProps.products.length : 0;
+      const currentProductCount = this.props.products.length;
+      const titleChanged = prevProps.title !== this.props.title;
+      
+      // If title changed or product count changed significantly, this indicates
+      // navigation to a new product page via route
+      if (titleChanged || Math.abs(prevProductCount - currentProductCount) > 5) {
+        this.setState({ page: 1 });
+        return;
+      }
+      
+      // Only check for invalid page if not showing all products
+      if (productsPerPage !== 'all') {
+        const perPage = parseInt(productsPerPage);
+        const pageCount = Math.ceil(this.props.products.length / perPage);
+        
+        // If current page is greater than new page count, reset to last valid page
+        if (page > pageCount && pageCount > 0) {
+          this.setState({ page: pageCount });
+        }
+      }
+    }
+  }
+
   handlePageChange = (event, value) => {
     this.setState({ page: value });
     
@@ -41,21 +72,13 @@ class ProductList extends Component {
 
   renderPagination = (pageCount, page) => {
     return (
-      <Stack 
-        direction="row" 
-        spacing={2} 
-        sx={{ 
-          my: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
+      <Stack spacing={2} sx={{ my: 2 }}>
         <Pagination 
           count={pageCount} 
           page={page} 
           onChange={this.handlePageChange} 
           color="primary" 
+          sx={{ mx: 'auto' }}
           size="large"
           siblingCount={1}
           boundaryCount={1}
@@ -87,9 +110,6 @@ class ProductList extends Component {
       pageCount = Math.ceil(productList.length / perPage);
     }
 
-    // Determine if pagination should be shown
-    const showPagination = !isLoading && !error && productList.length > 0 && pageCount > 1 && productsPerPage !== 'all';
-
     return (
       <Box sx={{ height: '100%' }}>
         {/* Header with title */}
@@ -102,43 +122,62 @@ class ProductList extends Component {
           <Typography variant="h5" component="h1" color="text.primary">
             {title || 'All Products'}
           </Typography>
-        </Box>
-        
-        {/* Results count and dropdown */}
-        {!isLoading && productList.length > 0 && (
-          <Box sx={{ 
-            mb: 2, 
-            display: 'flex', 
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <Typography variant="body2" color="text.secondary">
-              {productsPerPage === 'all' ? 
-                `Showing all ${productList.length} products` : 
-                `Showing ${(page - 1) * parseInt(productsPerPage) + 1}-${Math.min(page * parseInt(productsPerPage), productList.length)} of ${productList.length} products`
-              }
-            </Typography>
-            
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+          
+          {/* Per Page Dropdown */}
+          {!isLoading && productList.length > 0 && (
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
               <InputLabel id="products-per-page-label">Per Page</InputLabel>
               <Select
                 labelId="products-per-page-label"
-                value={this.state.productsPerPage}
+                value={productsPerPage}
                 onChange={this.handleProductsPerPageChange}
                 label="Per Page"
+                MenuProps={{
+                  disableScrollLock: true,
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'right',
+                  },
+                  PaperProps: {
+                    sx: { 
+                      maxHeight: 200,
+                      boxShadow: 3,
+                      mt: 0.5,
+                      position: 'absolute',
+                      zIndex: 999
+                    }
+                  },
+                  container: document.getElementById('root')
+                }}
               >
                 <MenuItem value={20}>20</MenuItem>
                 <MenuItem value={50}>50</MenuItem>
                 <MenuItem value="all">All</MenuItem>
               </Select>
             </FormControl>
+          )}
+        </Box>
+        
+        {/* Results count and summary */}
+        {!isLoading && productList.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              {productsPerPage === 'all' ? 
+                `Showing all ${productList.length} products` : 
+                `Showing ${(page - 1) * parseInt(productsPerPage) + 1}-${Math.min(page * parseInt(productsPerPage), productList.length)} of ${productList.length} products`
+              }
+            </Typography>
           </Box>
         )}
         
         <Divider sx={{ mb: 3 }} />
         
         {/* Top Pagination */}
-        {showPagination && this.renderPagination(pageCount, page)}
+        {!isLoading && !error && pageCount > 1 && productsPerPage !== 'all' && this.renderPagination(pageCount, page)}
         
         {/* Loading State */}
         {isLoading && (
@@ -194,7 +233,8 @@ class ProductList extends Component {
                       id={product.id}
                       name={product.name}
                       price={product.price}
-                      available={product.available} 
+                      available={product.available}
+                      manufacturer={product.manufacturer}
                       socket={socket} 
                     />}
                   </SocketContext.Consumer>  
@@ -205,7 +245,7 @@ class ProductList extends Component {
         )}
         
         {/* Bottom Pagination */}
-        {showPagination && this.renderPagination(pageCount, page)}
+        {!isLoading && !error && pageCount > 1 && productsPerPage !== 'all' && this.renderPagination(pageCount, page)}
       </Box>
     );
   }

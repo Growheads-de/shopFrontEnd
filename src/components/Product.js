@@ -6,8 +6,7 @@ import {
   CardMedia, 
   Typography, 
   Chip,
-  CardActionArea,
-  Rating
+  CardActionArea
 } from '@mui/material';
 import AddToCartButton from './AddToCartButton.js';
 import { Link, useParams } from 'react-router-dom';
@@ -20,11 +19,11 @@ const ProductDetailPage = () => {
   // In a real app, you would fetch this from an API or context
   const getProductById = (id) => {
     const products = [
-      { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, available: true, categoryId: "1", description: "Premium OG Kush seeds with high germination rate. Perfect for beginners and experts alike." },
-      { id: 2, name: 'LED Grow Light 1000W', price: 249.99, available: true, categoryId: "2", description: "Professional full spectrum LED grow light. Energy efficient with coverage for 4x4ft grow space." },
-      { id: 3, name: 'Hydroponic System Kit', price: 189.99, available: false, categoryId: "3", description: "Complete hydroponic system for 8 plants. Includes reservoir, nutrient delivery system, and digital timer." },
-      { id: 4, name: 'Nutrient Solution Pack', price: 39.99, available: true, categoryId: "4", description: "Essential nutrient pack for all growth stages. Includes micro, grow, and bloom nutrients." },
-      { id: 5, name: 'Carbon Air Filter', price: 79.99, available: true, categoryId: "5", description: "Premium activated carbon filter to eliminate odors. Fits standard 6-inch ducting." }
+      { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, available: true, categoryId: "1", description: "Premium OG Kush seeds with high germination rate. Perfect for beginners and experts alike.", manufacturer: "Green Thumb Seeds" },
+      { id: 2, name: 'LED Grow Light 1000W', price: 249.99, available: true, categoryId: "2", description: "Professional full spectrum LED grow light. Energy efficient with coverage for 4x4ft grow space.", manufacturer: "GrowTech" },
+      { id: 3, name: 'Hydroponic System Kit', price: 189.99, available: false, categoryId: "3", description: "Complete hydroponic system for 8 plants. Includes reservoir, nutrient delivery system, and digital timer.", manufacturer: "AquaGrow" },
+      { id: 4, name: 'Nutrient Solution Pack', price: 39.99, available: true, categoryId: "4", description: "Essential nutrient pack for all growth stages. Includes micro, grow, and bloom nutrients.", manufacturer: "GrowPro" },
+      { id: 5, name: 'Carbon Air Filter', price: 79.99, available: true, categoryId: "5", description: "Premium activated carbon filter to eliminate odors. Fits standard 6-inch ducting.", manufacturer: "AirClean" }
     ];
     
     return products.find(product => product.id === parseInt(id)) || null;
@@ -75,9 +74,8 @@ const ProductDetailPage = () => {
           </Typography>
           
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Rating value={4.5} precision={0.5} readOnly />
-            <Typography variant="body2" sx={{ ml: 1 }}>
-              4.5 (24 reviews)
+            <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+              Manufacturer: {product.manufacturer || 'Unknown'}
             </Typography>
           </Box>
           
@@ -121,12 +119,16 @@ class Product extends Component {
   }
 
   componentDidMount() {
-    // Check if we have a valid cache in localStorage
+    // Initialize global cache object if it doesn't exist
+    if (!window.productCache) {
+      window.productCache = {};
+    }
+    
     const cacheKey = `productImage_${this.props.id}`;
     try {
-      const cachedData = localStorage.getItem(cacheKey);
+      const cachedData = window.productCache[cacheKey];
       if (cachedData) {
-        const { imageUrl, error, timestamp } = JSON.parse(cachedData);
+        const { imageUrl, error, timestamp } = cachedData;
         const cacheAge = Date.now() - timestamp;
         const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
         
@@ -153,12 +155,12 @@ class Product extends Component {
     socket.emit('getPreviewPic', { articleId: this.props.id }, (res) => {
       // Cache both successful and error responses
       try {
-        // Store result in cache with information about the type of response
-        localStorage.setItem(cacheKey, JSON.stringify({
+        // Store result in global cache with information about the type of response
+        window.productCache[cacheKey] = {
           imageUrl: res.success ? URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })) : null,
           error: res.success ? null : (res.error || "Unknown error"),
           timestamp: Date.now()
-        }));
+        };
         
         if (res.success) {
           console.log(`Cached successful image response for product ${this.props.id}`);
@@ -188,7 +190,7 @@ class Product extends Component {
   
 
   render() {
-    const { id, name, price, available } = this.props;
+    const { id, name, price, available, manufacturer } = this.props;
     
     return (
       <Card 
@@ -256,9 +258,8 @@ class Product extends Component {
             </Typography>
             
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <Rating value={4} precision={0.5} size="small" readOnly />
-              <Typography variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
-                (4.0)
+              <Typography variant="body2" color="text.secondary">
+                {manufacturer || 'Unknown Manufacturer'}
               </Typography>
             </Box>
             
