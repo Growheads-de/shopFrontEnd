@@ -35,7 +35,7 @@ const Logo = () => {
     >
       <LocalFloristIcon sx={{ mr: 1, fontSize: 28 }} />
       <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', display: { xs: 'none', sm: 'block' } }}>
-        Green Essentials
+        GrowBNB
       </Typography>
     </Box>
   );
@@ -62,7 +62,7 @@ const SearchBar = () => {
       sx={{ flexGrow: 1, mx: { xs: 1, sm: 2, md: 4 }, display: { xs: 'none', sm: 'block' } }}
     >
       <TextField
-        placeholder="Search products..."
+        placeholder="Produkte suchen..."
         variant="outlined"
         size="small"
         fullWidth
@@ -84,7 +84,7 @@ const SearchBar = () => {
                 type="submit"
                 sx={{ borderRadius: 1, minWidth: 'unset', p: '4px 8px' }}
               >
-                Search
+                Suchen
               </Button>
             </InputAdornment>
           )
@@ -146,7 +146,7 @@ class CartButton extends Component {
             '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
           }}
         >
-          Cart
+          Warenkorb
         </Button>
         
         <Popover
@@ -214,7 +214,7 @@ class ButtonGroup extends Component {
             '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
           }}
         >
-          Contact
+          Kontakt
         </Button>
         <Button 
           color="inherit" 
@@ -225,7 +225,7 @@ class ButtonGroup extends Component {
             '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
           }}
         >
-          Login
+          Anmelden
         </Button>
         
         <CartButton 
@@ -271,11 +271,44 @@ class CategoryList extends Component {
       return;
     }
     
+    // Check if we have a valid cache in localStorage
+    try {
+      const cachedData = localStorage.getItem('categoryList');
+      if (cachedData) {
+        const { categories, timestamp } = JSON.parse(cachedData);
+        const cacheAge = Date.now() - timestamp;
+        const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+        
+        // If cache is less than 10 minutes old, use it
+        if (cacheAge < tenMinutes && Array.isArray(categories)) {
+          console.log('Using cached categories, age:', Math.round(cacheAge/1000), 'seconds');
+          this.setState({ 
+            categories,
+            fetchedCategories: true 
+          });
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Error reading from cache:', err);
+    }
+    
     console.log('CategoryList: Fetching categories from socket');
     socket.emit('categoryList', {}, (response) => {
       console.log('CategoryList response:', response);
       if (response && response.categories) {
         console.log('Categories received:', response.categories.length);
+        
+        // Store in localStorage with timestamp
+        try {
+          localStorage.setItem('categoryList', JSON.stringify({
+            categories: response.categories,
+            timestamp: Date.now()
+          }));
+        } catch (err) {
+          console.error('Error writing to cache:', err);
+        }
+        
         this.setState({ 
           categories: response.categories,
           fetchedCategories: true 

@@ -21,46 +21,46 @@ class Footer extends Component {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <LocalFloristIcon sx={{ mr: 1 }} />
                 <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                  Green Essentials
+                  GrowBNB
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                Your one-stop shop for premium products.
+                Ihr One-Stop-Shop für Premium-Produkte.
               </Typography>
             </Box>
             <Box sx={{ width: { xs: '50%', sm: '33.33%' } }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
-                Quick Links
+                Schnelllinks
               </Typography>
               <Box component="nav">
                 <Link href="#" color="inherit" sx={{ display: 'block', mb: 1, opacity: 0.8 }}>
-                  Products
+                  Produkte
                 </Link>
                 <Link href="#" color="inherit" sx={{ display: 'block', mb: 1, opacity: 0.8 }}>
-                  About Us
+                  Über uns
                 </Link>
                 <Link href="#" color="inherit" sx={{ display: 'block', mb: 1, opacity: 0.8 }}>
-                  Contact
+                  Kontakt
                 </Link>
               </Box>
             </Box>
             <Box sx={{ width: { xs: '50%', sm: '33.33%' } }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
-                Legal
+                Rechtliches
               </Typography>
               <Box component="nav">
                 <Link href="#" color="inherit" sx={{ display: 'block', mb: 1, opacity: 0.8 }}>
-                  Terms of Service
+                  Nutzungsbedingungen
                 </Link>
                 <Link href="#" color="inherit" sx={{ display: 'block', mb: 1, opacity: 0.8 }}>
-                  Privacy Policy
+                  Datenschutzrichtlinie
                 </Link>
               </Box>
             </Box>
           </Box>
           <Box sx={{ pt: 4, textAlign: 'center', opacity: 0.7 }}>
             <Typography variant="body2">
-              © {new Date().getFullYear()} Green Essentials. All rights reserved.
+              © {new Date().getFullYear()} GrowBNB. Alle Rechte vorbehalten.
             </Typography>
           </Box>
         </Container>

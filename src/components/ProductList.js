@@ -1,15 +1,24 @@
 import React, { Component } from 'react';
 import { Box, Grid, Typography, Pagination, Stack, Divider, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import Product from './Product.js';
+import SocketContext from '../contexts/SocketContext.js';
 
 class ProductList extends Component {
   constructor(props) {
     super(props);
     this.state = {
       page: 1,
-      productsPerPage: 8,
+      productsPerPage: 20,
       viewMode: 'grid'
     };
+  }
+
+  componentDidMount() {
+    // Load saved productsPerPage preference from localStorage
+    const savedProductsPerPage = localStorage.getItem('productsPerPage');
+    if (savedProductsPerPage) {
+      this.setState({ productsPerPage: savedProductsPerPage === 'all' ? 'all' : parseInt(savedProductsPerPage) });
+    }
   }
 
   handlePageChange = (event, value) => {
@@ -19,16 +28,45 @@ class ProductList extends Component {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  handleViewModeChange = (event) => {
-    this.setState({ viewMode: event.target.value });
-  };
-
   handleProductsPerPageChange = (event) => {
+    const value = event.target.value;
     this.setState({ 
-      productsPerPage: event.target.value,
+      productsPerPage: value,
       page: 1 // Reset to first page when changing items per page
     });
+    
+    // Save preference to localStorage
+    localStorage.setItem('productsPerPage', value);
   };
+
+  renderPagination = (pageCount, page) => {
+    return (
+      <Stack 
+        direction="row" 
+        spacing={2} 
+        sx={{ 
+          my: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <Pagination 
+          count={pageCount} 
+          page={page} 
+          onChange={this.handlePageChange} 
+          color="primary" 
+          size="large"
+          siblingCount={1}
+          boundaryCount={1}
+          hideNextButton={false}
+          hidePrevButton={false}
+          showFirstButton={true}
+          showLastButton={true}
+        />
+      </Stack>
+    );
+  }
 
   render() {
     const { products, title, isLoading, error } = this.props;
@@ -38,14 +76,23 @@ class ProductList extends Component {
     const productList = products || [];
     
     // Calculate pagination
-    const indexOfLastProduct = page * productsPerPage;
-    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-    const currentProducts = productList.slice(indexOfFirstProduct, indexOfLastProduct);
-    const pageCount = Math.ceil(productList.length / productsPerPage);
+    let currentProducts = productList;
+    let pageCount = 1;
+    
+    if (productsPerPage !== 'all') {
+      const perPage = parseInt(productsPerPage);
+      const indexOfLastProduct = page * perPage;
+      const indexOfFirstProduct = indexOfLastProduct - perPage;
+      currentProducts = productList.slice(indexOfFirstProduct, indexOfLastProduct);
+      pageCount = Math.ceil(productList.length / perPage);
+    }
+
+    // Determine if pagination should be shown
+    const showPagination = !isLoading && !error && productList.length > 0 && pageCount > 1 && productsPerPage !== 'all';
 
     return (
       <Box sx={{ height: '100%' }}>
-        {/* Header with title and options */}
+        {/* Header with title */}
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -55,74 +102,43 @@ class ProductList extends Component {
           <Typography variant="h5" component="h1" color="text.primary">
             {title || 'All Products'}
           </Typography>
-          
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <FormControl variant="outlined" size="small">
-              <InputLabel id="view-mode-label">View</InputLabel>
-              <Select
-                labelId="view-mode-label"
-                id="view-mode"
-                value={viewMode}
-                onChange={this.handleViewModeChange}
-                label="View"
-                sx={{ minWidth: 100 }}
-                MenuProps={{ 
-                  disableScrollLock: true,
-                  anchorOrigin: {
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                  },
-                  transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'left',
-                  }
-                }}
-              >
-                <MenuItem value="grid">Grid</MenuItem>
-                <MenuItem value="list">List</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <FormControl variant="outlined" size="small">
-              <InputLabel id="items-per-page-label">Show</InputLabel>
-              <Select
-                labelId="items-per-page-label"
-                id="items-per-page"
-                value={productsPerPage}
-                onChange={this.handleProductsPerPageChange}
-                label="Show"
-                sx={{ minWidth: 80 }}
-                MenuProps={{ 
-                  disableScrollLock: true,
-                  anchorOrigin: {
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                  },
-                  transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'left',
-                  }
-                }}
-              >
-                <MenuItem value={8}>8</MenuItem>
-                <MenuItem value={12}>12</MenuItem>
-                <MenuItem value={16}>16</MenuItem>
-                <MenuItem value={24}>24</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
         </Box>
         
-        {/* Results count and summary */}
+        {/* Results count and dropdown */}
         {!isLoading && productList.length > 0 && (
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ 
+            mb: 2, 
+            display: 'flex', 
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
             <Typography variant="body2" color="text.secondary">
-              Showing {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, productList.length)} of {productList.length} products
+              {productsPerPage === 'all' ? 
+                `Showing all ${productList.length} products` : 
+                `Showing ${(page - 1) * parseInt(productsPerPage) + 1}-${Math.min(page * parseInt(productsPerPage), productList.length)} of ${productList.length} products`
+              }
             </Typography>
+            
+            <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+              <InputLabel id="products-per-page-label">Per Page</InputLabel>
+              <Select
+                labelId="products-per-page-label"
+                value={this.state.productsPerPage}
+                onChange={this.handleProductsPerPageChange}
+                label="Per Page"
+              >
+                <MenuItem value={20}>20</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+                <MenuItem value="all">All</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
         )}
         
         <Divider sx={{ mb: 3 }} />
+        
+        {/* Top Pagination */}
+        {showPagination && this.renderPagination(pageCount, page)}
         
         {/* Loading State */}
         {isLoading && (
@@ -173,37 +189,23 @@ class ProductList extends Component {
                     mb: 1
                   }}
                 >
-                  <Product
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    available={product.available}
-                  />
+                  <SocketContext.Consumer>
+                    {socket => <Product 
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      available={product.available} 
+                      socket={socket} 
+                    />}
+                  </SocketContext.Consumer>  
                 </Grid>
               ))}
             </Grid>
           )
         )}
         
-        {/* Pagination */}
-        {!isLoading && !error && pageCount > 1 && (
-          <Stack spacing={2} sx={{ mt: 4, mb: 2 }}>
-            <Pagination 
-              count={pageCount} 
-              page={page} 
-              onChange={this.handlePageChange} 
-              color="primary" 
-              sx={{ mx: 'auto' }}
-              size="large"
-              siblingCount={1}
-              boundaryCount={1}
-              hideNextButton={false}
-              hidePrevButton={false}
-              showFirstButton={true}
-              showLastButton={true}
-            />
-          </Stack>
-        )}
+        {/* Bottom Pagination */}
+        {showPagination && this.renderPagination(pageCount, page)}
       </Box>
     );
   }

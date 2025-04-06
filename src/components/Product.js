@@ -112,77 +112,80 @@ const ProductDetailPage = () => {
 };
 
 class Product extends Component {
-  // Generate a dummy image URL based on product name
-  getDummyImage = (name) => {
-    const category = this.getCategoryFromName(name);
-    const width = 300;
-    const height = 200;
-    // Use various green tones for the background
-    const greenTones = [
-      '2E7D32', // Forest green
-      '388E3C', // Medium green
-      '43A047', // Regular green
-      '4CAF50', // Medium light green
-      '66BB6A', // Light green
-      '81C784', // Very light green
-      '1B5E20', // Very dark green
-      '33691E', // Dark green
-    ];
-    
-    // Select a green tone based on the product name
-    const hash = this.hashString(name);
-    const bgColor = greenTones[hash % greenTones.length];
-    const textColor = 'FFFFFF'; // White text
-    return `https://dummyimage.com/${width}x${height}/${bgColor}/${textColor}&text=${category}`;
-  }
 
-  // Helper function to hash a string
-  hashString = (str) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return Math.abs(hash);
-  }
-
-  // Map product name to a generic cannabis growing category for image
-  getCategoryFromName = (name) => {
-    const nameToCategory = {
-      'Seeds': 'Seeds',
-      'Grow Light': 'Lighting',
-      'Hydroponic': 'Hydro',
-      'Nutrient': 'Nutrients',
-      'Filter': 'Filters',
-      'Tent': 'Tents',
-      'pH': 'Testing',
-      'Scissors': 'Harvest',
-      'Trellis': 'Support',
-      'Soil': 'Soil',
-      'Fan': 'Ventilation',
-      'Drying': 'Drying',
-      'Cannabis': 'Cannabis'
+  constructor(props) {
+    super(props);
+    this.state = {
+      image: null
     };
+  }
 
-    // Find a keyword match in the product name
-    for (const keyword in nameToCategory) {
-      if (name.includes(keyword)) {
-        return nameToCategory[keyword];
+  componentDidMount() {
+    // Check if we have a valid cache in localStorage
+    const cacheKey = `productImage_${this.props.id}`;
+    try {
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        const { imageUrl, error, timestamp } = JSON.parse(cachedData);
+        const cacheAge = Date.now() - timestamp;
+        const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+        
+        // If cache is less than 10 minutes old, use it
+        if (cacheAge < tenMinutes) {
+          if (error) {
+            // This is a cached error response, no need to call socket again
+            console.log(`Using cached error response for product ${this.props.id}, error: ${error}, age:`, Math.round(cacheAge/1000), 'seconds');
+            return;
+          } else if (imageUrl !== undefined) {
+            // This is a cached successful response
+            console.log(`Using cached image for product ${this.props.id}, age:`, Math.round(cacheAge/1000), 'seconds');
+            this.setState({ image: imageUrl });
+            return;
+          }
+        }
       }
+    } catch (err) {
+      console.error('Error reading image from cache:', err);
     }
     
-    // Default if no category is matched
-    return 'GrowEquip';
+    // If no valid cache, fetch from socket
+    const socket = this.props.socket;
+    socket.emit('getPreviewPic', { articleId: this.props.id }, (res) => {
+      // Cache both successful and error responses
+      try {
+        // Store result in cache with information about the type of response
+        localStorage.setItem(cacheKey, JSON.stringify({
+          imageUrl: res.success ? URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })) : null,
+          error: res.success ? null : (res.error || "Unknown error"),
+          timestamp: Date.now()
+        }));
+        
+        if (res.success) {
+          console.log(`Cached successful image response for product ${this.props.id}`);
+          this.setState({ 
+            image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
+          });
+        } else {
+          console.log(`Cached error response for product ${this.props.id}: ${res.error || "Unknown error"}`);
+        }
+      } catch (err) {
+        console.error('Error writing to cache:', err);
+        
+        // Still update state if successful, even if caching failed
+        if (res.success) {
+          this.setState({ 
+            image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
+          });
+        }
+      }
+    });
   }
-  
+
   handleQuantityChange = (quantity) => {
     console.log(`Product: ${this.props.name}, Quantity: ${quantity}`);
     // In a real app, this would update a cart state in a parent component or Redux store
   }
   
-  // Get a placeholder image for the product
-  getProductImage = () => {
-    return `https://source.unsplash.com/300x300/?cannabis,plant,grow,${this.props.id || Math.floor(Math.random() * 100)}`;
-  };
 
   render() {
     const { id, name, price, available } = this.props;
@@ -190,7 +193,7 @@ class Product extends Component {
     return (
       <Card 
         sx={{ 
-          width: '100%',
+          width: '250px',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
@@ -215,13 +218,9 @@ class Product extends Component {
             <CardMedia
               component="img"
               height="180"
-              image={this.props.id ? this.getProductImage() : this.getDummyImage(name)}
+              image={this.state.image}
               alt={name}
               sx={{ objectFit: 'cover' }}
-              onError={(e) => {
-                e.target.onerror = null; 
-                e.target.src = this.getDummyImage(name);
-              }}
             />
             {!available && (
               <Chip

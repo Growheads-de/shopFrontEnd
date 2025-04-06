@@ -1,55 +1,31 @@
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { Box, CircularProgress } from '@mui/material';
-import React, { Component } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import React, { Component, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header.js';
-import Content from './components/Content.js';
-import Footer from './components/Footer.js';
-import SocketProvider from './providers/SocketProvider.js';
-import { ProductDetailPage } from './components/Product.js';
+import CssBaseline from '@mui/material/CssBaseline';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
-// Import pages
-import Home from './pages/Home.js';
-import Cart from './pages/Cart.js';
-import Checkout from './pages/Checkout.js';
+// Lazy load components and custom components
+const Header = lazy(() => import('./components/Header.js'));
+const Content = lazy(() => import('./components/Content.js'));
+const Footer = lazy(() => import('./components/Footer.js'));
+const ProductDetailPage = lazy(() => import('./components/Product.js').then(module => ({ 
+  default: module.ProductDetailPage 
+})));
+const Home = lazy(() => import('./pages/Home.js'));
+const Cart = lazy(() => import('./pages/Cart.js'));
+const Checkout = lazy(() => import('./pages/Checkout.js'));
+const SocketProvider = lazy(() => import('./providers/SocketProvider.js'));
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#2E7D32', // Forest green
-      light: '#4CAF50', // Regular green
-      dark: '#1B5E20', // Dark green
-    },
-    secondary: {
-      main: '#81C784', // Light green
-      light: '#A5D6A7', // Very light green
-      dark: '#66BB6A', // Mid green
-    },
-    background: {
-      default: '#F1F8E9', // Very light green background
-      paper: '#FFFFFF',
-    },
-    text: {
-      primary: '#33691E', // Dark green text
-      secondary: '#558B2F', // Mid green text
-    },
-    success: {
-      main: '#43A047', // Green success
-    },
-    error: {
-      main: '#D32F2F', // Keep red for errors/out of stock
-    },
-  },
-  typography: {
-    fontFamily: "'Poppins', 'Roboto', 'Helvetica', 'Arial', sans-serif",
-    h4: {
-      fontWeight: 600,
-      color: '#33691E',
-    },
-  },
-});
+// Import theme from separate file to reduce main bundle size
+import theme from './theme.js';
+
+// Loading component for suspense fallback
+const Loading = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+    <CircularProgress color="primary" />
+  </Box>
+);
 
 // Main App Content
 const AppContent = () => (
@@ -61,33 +37,35 @@ const AppContent = () => (
       bgcolor: 'background.default',
     }}
   >
-    <Header />
-    <Routes>
-      {/* Home page with text only */}
-      <Route path="/" element={<Home />} />
+    <Suspense fallback={<Loading />}>
+      <Header />
+      <Routes>
+        {/* Home page with text only */}
+        <Route path="/" element={<Home />} />
 
-      {/* Products page */}
-      <Route path="/products" element={<Content />} />
+        {/* Products page */}
+        <Route path="/products" element={<Content />} />
 
-      {/* Search results page */}
-      <Route path="/search" element={<Content />} />
+        {/* Search results page */}
+        <Route path="/search" element={<Content />} />
 
-      {/* Category page */}
-      <Route path="/category/:categoryId" element={<Content />} />
+        {/* Category page */}
+        <Route path="/category/:categoryId" element={<Content />} />
 
-      {/* Single product page */}
-      <Route path="/product/:productId" element={<ProductDetailPage />} />
+        {/* Single product page */}
+        <Route path="/product/:productId" element={<ProductDetailPage />} />
 
-      {/* Cart page */}
-      <Route path="/cart" element={<Cart />} />
+        {/* Cart page */}
+        <Route path="/cart" element={<Cart />} />
 
-      {/* Checkout page */}
-      <Route path="/checkout" element={<Checkout />} />
+        {/* Checkout page */}
+        <Route path="/checkout" element={<Checkout />} />
 
-      {/* Fallback for undefined routes */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-    <Footer />
+        {/* Fallback for undefined routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Footer />
+    </Suspense>
   </Box>
 );
 
@@ -96,18 +74,20 @@ class App extends Component {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <SocketProvider 
-          url="http://192.168.178.58:9303"
-          fallback={
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-              <CircularProgress color="primary" />
-            </Box>
-          }
-        >
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </SocketProvider>
+        <Suspense fallback={<Loading />}>
+          <SocketProvider 
+            url="http://localhost:9303"
+            fallback={
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <CircularProgress color="primary" />
+              </Box>
+            }
+          >
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </SocketProvider>
+        </Suspense>
       </ThemeProvider>
     );
   }

@@ -47,12 +47,9 @@ class Content extends Component {
       isLoading: true,
       error: null,
       activeFilters: {
-        priceRange: [0, 300],
         availability: {
-          inStock: true,
-          outOfStock: true
-        },
-        categories: {}
+          inStock: false
+        }
       }
     };
   }
@@ -78,10 +75,58 @@ class Content extends Component {
     
     if (categoryId && socket) {
       // Fetch products for specific category
-      console.log('Fetching products for category');
+      console.log('Fetching products for category:', categoryId);
+      
+      // Check if we have a valid cache in localStorage
+      const cacheKey = `categoryProducts_${categoryId}`;
+      try {
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          const { products, timestamp } = JSON.parse(cachedData);
+          const cacheAge = Date.now() - timestamp;
+          const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+          
+          // If cache is less than 10 minutes old, use it
+          if (cacheAge < tenMinutes && Array.isArray(products)) {
+            console.log(`Using cached products for category ${categoryId}, age:`, Math.round(cacheAge/1000), 'seconds');
+            let pageTitle = this.state.categories[categoryId] || "Category";
+            let filteredProducts = products;
+            
+            // Filter by search query if provided
+            if (searchQuery) {
+              const query = searchQuery.toLowerCase();
+              filteredProducts = filteredProducts.filter(product => 
+                product.name.toLowerCase().includes(query)
+              );
+              pageTitle = `Search Results for "${searchQuery}"`;
+            }
+            
+            this.setState({ 
+              products: products,
+              filteredProducts,
+              activeCategory: pageTitle,
+              isLoading: false
+            }, this.applyFilters);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error reading category products from cache:', err);
+      }
+      
       socket.emit('getCategoryProducts', { categoryId: parseInt(categoryId) }, (response) => {
         console.log('getCategoryProducts response');
         if (response && response.products) {
+          // Store in localStorage with timestamp
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+              products: response.products,
+              timestamp: Date.now()
+            }));
+          } catch (err) {
+            console.error('Error writing category products to cache:', err);
+          }
+          
           let pageTitle = this.state.categories[categoryId] || "Category";
           let filteredProducts = response.products;
           
@@ -117,32 +162,8 @@ class Content extends Component {
         activeCategory: `Search Results for "${searchQuery}"`,
         isLoading: false
       });
-    } else {
-      // Show all products or handle appropriately
-      if (socket) {
-        console.log('Fetching all products');
-        socket.emit('getAllProducts', {}, (response) => {
-          console.log('getAllProducts response:', response);
-          if (response && response.products) {
-            this.setState({ 
-              products: response.products,
-              filteredProducts: response.products,
-              activeCategory: "All Products",
-              isLoading: false
-            }, this.applyFilters);
-          } else {
-            console.error('Failed to get all products:', response);
-            this.setState({ 
-              error: "Failed to load products", 
-              isLoading: false 
-            });
-          }
-        });
-      } else {
-        console.error('No socket available for product fetching');
-        this.setState({ isLoading: false });
-      }
     }
+
   }
 
   handleFilterChange = (filter) => {
@@ -150,20 +171,15 @@ class Content extends Component {
       const newFilters = { ...prevState.activeFilters };
       
       switch (filter.type) {
-        case 'price':
-          newFilters.priceRange = filter.value;
-          break;
         case 'availability':
           newFilters.availability = {
             ...newFilters.availability,
             [filter.name]: filter.value
           };
           break;
-        case 'category':
-          newFilters.categories = {
-            ...newFilters.categories,
-            [filter.name]: filter.value
-          };
+        case 'sortBy':
+          // Handle sort type
+          console.log('Sort by:', filter.value);
           break;
         default:
           break;
@@ -173,39 +189,15 @@ class Content extends Component {
     }, this.applyFilters);
   };
 
-  handleFilterReset = () => {
-    this.setState({
-      activeFilters: {
-        priceRange: [0, 300],
-        availability: {
-          inStock: true,
-          outOfStock: true
-        },
-        categories: {}
-      }
-    }, this.applyFilters);
-  };
-
   applyFilters = () => {
     const { activeFilters } = this.state;
     let products = [...this.state.products];
     
-    // Apply additional filters
+    // Apply availability filter only
     products = products.filter(product => {
-      // Price filter
-      if (
-        product.price < activeFilters.priceRange[0] ||
-        product.price > activeFilters.priceRange[1]
-      ) {
-        return false;
-      }
-      
-      // Availability filter
-      if (
-        (product.available && !activeFilters.availability.inStock) ||
-        (!product.available && !activeFilters.availability.outOfStock)
-      ) {
-        return false;
+      // Availability filter - only show in-stock items if checked
+      if (product.available==0 && activeFilters.availability.inStock) {
+        return false
       }
       
       return true;

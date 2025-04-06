@@ -14,11 +14,31 @@ export default {
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: isDevelopment ? 'js/[name].bundle.js' : 'js/[name].[contenthash].js',
+    chunkFilename: isDevelopment ? 'js/[name].chunk.js' : 'js/[name].[contenthash].chunk.js',
     clean: true,
     publicPath: '/'
   },
   devtool: isDevelopment ? 'eval-source-map' : 'source-map',
+  optimization: {
+    runtimeChunk: 'single',
+    splitChunks: {
+      chunks: 'all',
+      maxInitialRequests: Infinity,
+      minSize: 20000,
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name(module) {
+            // Get the name of the npm package
+            const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+            // Return a name that won't conflict with other chunks
+            return `vendor.${packageName.replace('@', '')}`;
+          },
+        },
+      },
+    },
+  },
   module: {
     rules: [
       {
@@ -52,7 +72,8 @@ export default {
     }),
     isDevelopment && new ReactRefreshWebpackPlugin(),
     !isDevelopment && new MiniCssExtractPlugin({
-      filename: '[name].[contenthash].css',
+      filename: 'css/[name].[contenthash].css',
+      chunkFilename: 'css/[id].[contenthash].css',
     }),
     new ESLintPlugin({
       extensions: ['js', 'jsx'],
@@ -65,7 +86,15 @@ export default {
     }),
   ].filter(Boolean),
   devServer: {
-    static: path.resolve(__dirname, 'dist'),
+    static: [
+      {
+        directory: path.resolve(__dirname, 'dist'),
+      },
+      {
+        directory: path.resolve(__dirname, 'public'),
+        publicPath: '/',
+      }
+    ],
     hot: true,
     port: 9500,
     open: true,
