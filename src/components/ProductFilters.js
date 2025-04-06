@@ -3,12 +3,9 @@ import {
   Box, 
   Paper, 
   Typography, 
-  FormControl, 
   FormGroup, 
   FormControlLabel, 
-  Checkbox, 
-  Radio, 
-  RadioGroup
+  Checkbox
 } from '@mui/material';
 
 class ProductFilters extends Component {
@@ -17,8 +14,7 @@ class ProductFilters extends Component {
     this.state = {
       availability: {
         inStock: true
-      },
-      sortBy: 'priceAsc'
+      }
     };
   }
 
@@ -39,20 +35,8 @@ class ProductFilters extends Component {
     }
   };
 
-  handleSortByChange = (event) => {
-    this.setState({ sortBy: event.target.value });
-    
-    if (this.props.onFilterChange) {
-      this.props.onFilterChange({ 
-        type: 'sortBy', 
-        value: event.target.value 
-      });
-    }
-  };
-
-
   render() {
-    const { availability, sortBy } = this.state;
+    const { availability } = this.state;
 
     return (
       <Paper 
@@ -83,35 +67,6 @@ class ProductFilters extends Component {
               label="In Stock" 
             />
           </FormGroup>
-        </Box>
-        
-        {/* Sort By Filter */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-            Sort By
-          </Typography>
-          <FormControl component="fieldset">
-            <RadioGroup 
-              value={sortBy} 
-              onChange={this.handleSortByChange}
-            >
-              <FormControlLabel 
-                value="priceAsc" 
-                control={<Radio size="small" color="primary" />} 
-                label="Price: Low to High" 
-              />
-              <FormControlLabel 
-                value="priceDesc" 
-                control={<Radio size="small" color="primary" />} 
-                label="Price: High to Low" 
-              />
-              <FormControlLabel 
-                value="name" 
-                control={<Radio size="small" color="primary" />} 
-                label="Name" 
-              />
-            </RadioGroup>
-          </FormControl>
         </Box>
       </Paper>
     );

@@ -1,4 +1,6 @@
-import React, { Component } from 'react';
+/* eslint-env browser */
+/* global Intl */
+import React, { Component, useState, useEffect } from 'react';
 import { 
   Box, 
   Card, 
@@ -6,30 +8,126 @@ import {
   CardMedia, 
   Typography, 
   Chip,
-  CardActionArea
 } from '@mui/material';
 import AddToCartButton from './AddToCartButton.js';
 import { Link, useParams } from 'react-router-dom';
+import SocketContext from '../contexts/SocketContext.js';
 
-// Wrapper component for individual product detail page
-const ProductDetailPage = () => {
+// Wrapper component for individual product detail page with socket
+const ProductDetailWithSocket = () => {
   const { productId } = useParams();
   
-  // Mock function to get product data by ID
-  // In a real app, you would fetch this from an API or context
-  const getProductById = (id) => {
-    const products = [
-      { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, available: true, categoryId: "1", description: "Premium OG Kush seeds with high germination rate. Perfect for beginners and experts alike.", manufacturer: "Green Thumb Seeds" },
-      { id: 2, name: 'LED Grow Light 1000W', price: 249.99, available: true, categoryId: "2", description: "Professional full spectrum LED grow light. Energy efficient with coverage for 4x4ft grow space.", manufacturer: "GrowTech" },
-      { id: 3, name: 'Hydroponic System Kit', price: 189.99, available: false, categoryId: "3", description: "Complete hydroponic system for 8 plants. Includes reservoir, nutrient delivery system, and digital timer.", manufacturer: "AquaGrow" },
-      { id: 4, name: 'Nutrient Solution Pack', price: 39.99, available: true, categoryId: "4", description: "Essential nutrient pack for all growth stages. Includes micro, grow, and bloom nutrients.", manufacturer: "GrowPro" },
-      { id: 5, name: 'Carbon Air Filter', price: 79.99, available: true, categoryId: "5", description: "Premium activated carbon filter to eliminate odors. Fits standard 6-inch ducting.", manufacturer: "AirClean" }
-    ];
-    
-    return products.find(product => product.id === parseInt(id)) || null;
-  };
+  return (
+    <SocketContext.Consumer>
+      {socket => <ProductDetailPage productId={productId} socket={socket} />}
+    </SocketContext.Consumer>
+  );
+};
+
+// Product detail page with image loading
+const ProductDetailPage = ({ productId, socket }) => {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [productImage, setProductImage] = useState(null);
+  const [imageError, setImageError] = useState(false);
   
-  const product = getProductById(productId);
+  // Load product data
+  useEffect(() => {
+    // Mock function to get product data by ID
+    // In a real app, you would fetch this from an API or context
+    const getProductById = (id) => {
+      const products = [
+        { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, available: true, categoryId: "1", description: "Premium OG Kush seeds with high germination rate. Perfect for beginners and experts alike.", manufacturer: "Green Thumb Seeds" },
+        { id: 2, name: 'LED Grow Light 1000W', price: 249.99, available: true, categoryId: "2", description: "Professional full spectrum LED grow light. Energy efficient with coverage for 4x4ft grow space.", manufacturer: "GrowTech" },
+        { id: 3, name: 'Hydroponic System Kit', price: 189.99, available: false, categoryId: "3", description: "Complete hydroponic system for 8 plants. Includes reservoir, nutrient delivery system, and digital timer.", manufacturer: "AquaGrow" },
+        { id: 4, name: 'Nutrient Solution Pack', price: 39.99, available: true, categoryId: "4", description: "Essential nutrient pack for all growth stages. Includes micro, grow, and bloom nutrients.", manufacturer: "GrowPro" },
+        { id: 5, name: 'Carbon Air Filter', price: 79.99, available: true, categoryId: "5", description: "Premium activated carbon filter to eliminate odors. Fits standard 6-inch ducting.", manufacturer: "AirClean" }
+      ];
+      
+      return products.find(product => product.id === parseInt(id)) || null;
+    };
+    
+    const fetchedProduct = getProductById(productId);
+    setProduct(fetchedProduct);
+    setLoading(false);
+  }, [productId]);
+  
+  // Load product image using socket
+  useEffect(() => {
+    if (!product || !socket) return;
+    
+    // Initialize global cache object if it doesn't exist
+    if (!window.productCache) {
+      window.productCache = {};
+    }
+    
+    const cacheKey = `productImage_${product.id}`;
+    try {
+      const cachedData = window.productCache[cacheKey];
+      if (cachedData) {
+        const { imageUrl, error, timestamp } = cachedData;
+        const cacheAge = Date.now() - timestamp;
+        const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+        
+        // If cache is less than 10 minutes old, use it
+        if (cacheAge < tenMinutes) {
+          if (error) {
+            // This is a cached error response, no need to call socket again
+            console.log(`Using cached error response for product ${product.id}, error: ${error}, age:`, Math.round(cacheAge/1000), 'seconds');
+            setImageError(true);
+            return;
+          } else if (imageUrl !== undefined) {
+            // This is a cached successful response
+            console.log(`Using cached image for product ${product.id}, age:`, Math.round(cacheAge/1000), 'seconds');
+            setProductImage(imageUrl);
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error reading image from cache:', err);
+    }
+    
+    // If no valid cache, fetch from socket
+    socket.emit('getPreviewPic', { articleId: product.id }, (res) => {
+      // Cache both successful and error responses
+      try {
+        // Store result in global cache with information about the type of response
+        window.productCache[cacheKey] = {
+          imageUrl: res.success ? URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })) : null,
+          error: res.success ? null : (res.error || "Unknown error"),
+          timestamp: Date.now()
+        };
+        
+        if (res.success) {
+          console.log(`Cached successful image response for product ${product.id}`);
+          setProductImage(URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })));
+        } else {
+          console.log(`Cached error response for product ${product.id}: ${res.error || "Unknown error"}`);
+          setImageError(true);
+        }
+      } catch (err) {
+        console.error('Error writing to cache:', err);
+        
+        // Still update state if successful, even if caching failed
+        if (res.success) {
+          setProductImage(URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })));
+        } else {
+          setImageError(true);
+        }
+      }
+    });
+  }, [product, socket]);
+  
+  if (loading) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h5" gutterBottom>
+          Loading Product...
+        </Typography>
+      </Box>
+    );
+  }
   
   if (!product) {
     return (
@@ -49,6 +147,9 @@ const ProductDetailPage = () => {
     );
   }
   
+  // Determine image source - use fallback if no image or error
+  const imageSrc = (!productImage || imageError) ? '/assets/nopicture.jpg' : productImage;
+  
   return (
     <Box sx={{ p: 4 }}>
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
@@ -56,7 +157,7 @@ const ProductDetailPage = () => {
         <Box sx={{ flex: '0 0 40%' }}>
           <CardMedia
             component="img"
-            image={`https://source.unsplash.com/600x600/?cannabis,plant,grow,${product.id}`}
+            image={imageSrc}
             alt={product.name}
             sx={{ 
               borderRadius: 2, 
@@ -114,7 +215,8 @@ class Product extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      image: null
+      image: null,
+      imageError: false
     };
   }
 
@@ -137,6 +239,7 @@ class Product extends Component {
           if (error) {
             // This is a cached error response, no need to call socket again
             console.log(`Using cached error response for product ${this.props.id}, error: ${error}, age:`, Math.round(cacheAge/1000), 'seconds');
+            this.setState({ imageError: true });
             return;
           } else if (imageUrl !== undefined) {
             // This is a cached successful response
@@ -169,6 +272,7 @@ class Product extends Component {
           });
         } else {
           console.log(`Cached error response for product ${this.props.id}: ${res.error || "Unknown error"}`);
+          this.setState({ imageError: true });
         }
       } catch (err) {
         console.error('Error writing to cache:', err);
@@ -178,6 +282,8 @@ class Product extends Component {
           this.setState({ 
             image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
           });
+        } else {
+          this.setState({ imageError: true });
         }
       }
     });
@@ -190,8 +296,14 @@ class Product extends Component {
   
 
   render() {
-    const { id, name, price, available, manufacturer } = this.props;
+    const { id, name, price, available, manufacturer, currency } = this.props;
+    const { image, imageError } = this.state;
     
+    // Determine image source - use fallback if no image or error
+    const imageSrc = (!image || imageError) ? '/assets/images/nopicture.jpg' : image;
+    
+    console.log(imageSrc);
+
     return (
       <Card 
         sx={{ 
@@ -206,21 +318,23 @@ class Product extends Component {
           }
         }}
       >
-        <CardActionArea 
-          component={Link} 
+        <Box
+          component={Link}
           to={`/product/${id}`}
           sx={{ 
             flexGrow: 1, 
             display: 'flex', 
             flexDirection: 'column', 
-            alignItems: 'stretch' 
+            alignItems: 'stretch',
+            textDecoration: 'none',
+            color: 'inherit'
           }}
         >
           <Box sx={{ position: 'relative' }}>
             <CardMedia
               component="img"
               height="180"
-              image={this.state.image}
+              image={imageSrc}
               alt={name}
               sx={{ objectFit: 'cover' }}
             />
@@ -268,10 +382,10 @@ class Product extends Component {
               color="primary"
               sx={{ mt: 'auto', fontWeight: 'bold' }}
             >
-              ${parseFloat(price).toFixed(2)}
+              {new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price)}
             </Typography>
           </CardContent>
-        </CardActionArea>
+        </Box>
         
         <Box sx={{ p: 2, pt: 0 }}>
           <AddToCartButton 
@@ -284,4 +398,4 @@ class Product extends Component {
   }
 }
 
-export { Product as default, ProductDetailPage }; 
+export { Product as default, ProductDetailWithSocket as ProductDetailPage }; 

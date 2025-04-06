@@ -42,8 +42,10 @@ class Content extends Component {
     this.state = {
       activeCategory: "All Products",
       categories: {},
+      categoryName: "",
       products: [],
       filteredProducts: [],
+      totalProductCount: 0,
       isLoading: true,
       error: null,
       activeFilters: {
@@ -87,14 +89,14 @@ class Content extends Component {
         const cachedData = window.productCache[cacheKey];
         
         if (cachedData) {
-          const { products, timestamp } = cachedData;
+          const { products, categoryName, timestamp } = cachedData;
           const cacheAge = Date.now() - timestamp;
           const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
           
           // If cache is less than 10 minutes old, use it
           if (cacheAge < tenMinutes && Array.isArray(products)) {
             console.log(`Using cached products for category ${categoryId}, age:`, Math.round(cacheAge/1000), 'seconds');
-            let pageTitle = this.state.categories[categoryId] || "Category";
+            let pageTitle = categoryName || "Category";
             let filteredProducts = products;
             
             // Filter by search query if provided
@@ -109,7 +111,9 @@ class Content extends Component {
             // Set products, then apply filters separately (to ensure in-stock filter is applied)
             this.setState({ 
               products: filteredProducts,
+              totalProductCount: filteredProducts.length,
               activeCategory: pageTitle,
+              categoryName: categoryName,
               isLoading: false
             }, this.applyFilters); // Apply filters after setting products
             return;
@@ -123,7 +127,7 @@ class Content extends Component {
         console.log('getCategoryProducts response');
         if (response && response.products) {
           
-          let pageTitle = this.state.categories[categoryId] || "Category";
+          let pageTitle = response.categoryName || "Category";
           let products = response.products;
           
           // Filter by search query if provided
@@ -138,7 +142,9 @@ class Content extends Component {
           // Set products, then apply filters separately (to ensure in-stock filter is applied)
           this.setState({ 
             products: products,
+            totalProductCount: products.length,
             activeCategory: pageTitle,
+            categoryName: response.categoryName,
             isLoading: false
           }, this.applyFilters); // Apply filters after setting products
           
@@ -147,6 +153,7 @@ class Content extends Component {
             const cacheKey = `categoryProducts_${categoryId}`;
             window.productCache[cacheKey] = {
               products: response.products,
+              categoryName: response.categoryName,
               timestamp: Date.now()
             };
           } catch (err) {
@@ -183,10 +190,6 @@ class Content extends Component {
             [filter.name]: filter.value
           };
           break;
-        case 'sortBy':
-          // Handle sort type
-          console.log('Sort by:', filter.value);
-          break;
         default:
           break;
       }
@@ -214,7 +217,7 @@ class Content extends Component {
 
   generateBreadcrumbs = () => {
     const { searchQuery, categoryId } = this.props;
-    const { categories } = this.state;
+    const { categoryName } = this.state;
     
     if (searchQuery) {
       return (
@@ -242,8 +245,6 @@ class Content extends Component {
     }
     
     if (categoryId) {
-      const categoryName = categories[categoryId] || "Category";
-      
       return (
         <Breadcrumbs 
           separator={<NavigateNextIcon fontSize="small" />} 
@@ -263,15 +264,7 @@ class Content extends Component {
             <HomeIcon sx={{ mr: 0.5, fontSize: 18 }} />
             Home
           </Link>
-          <Link
-            component={RouterLink}
-            to="/products"
-            color="inherit"
-            sx={{ '&:hover': { color: 'primary.main' } }}
-          >
-            Products
-          </Link>
-          <Typography color="text.primary">{categoryName}</Typography>
+          <Typography color="text.primary">{categoryName || "Category"}</Typography>
         </Breadcrumbs>
       );
     }
@@ -295,13 +288,13 @@ class Content extends Component {
           <HomeIcon sx={{ mr: 0.5, fontSize: 18 }} />
           Home
         </Link>
-        <Typography color="text.primary">Products</Typography>
+        <Typography color="text.primary">All Products</Typography>
       </Breadcrumbs>
     );
   }
 
   render() {
-    const { activeCategory, filteredProducts, isLoading, error } = this.state;
+    const { activeCategory, filteredProducts, totalProductCount, isLoading, error } = this.state;
 
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -322,6 +315,7 @@ class Content extends Component {
           <Box sx={{ width: { xs: '100%', md: '75%', lg: '75%' } }}>
             <ProductList 
               products={filteredProducts}
+              totalProductCount={totalProductCount}
               title={activeCategory}
               isLoading={isLoading}
               error={error}

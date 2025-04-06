@@ -9,7 +9,8 @@ class ProductList extends Component {
     this.state = {
       page: 1,
       productsPerPage: 20,
-      viewMode: 'grid'
+      viewMode: 'grid',
+      sortBy: 'name'
     };
   }
 
@@ -18,6 +19,12 @@ class ProductList extends Component {
     const savedProductsPerPage = localStorage.getItem('productsPerPage');
     if (savedProductsPerPage) {
       this.setState({ productsPerPage: savedProductsPerPage === 'all' ? 'all' : parseInt(savedProductsPerPage) });
+    }
+    
+    // Load saved sort preference from localStorage
+    const savedSortBy = localStorage.getItem('sortBy');
+    if (savedSortBy) {
+      this.setState({ sortBy: savedSortBy });
     }
   }
 
@@ -70,6 +77,14 @@ class ProductList extends Component {
     localStorage.setItem('productsPerPage', value);
   };
 
+  handleSortChange = (event) => {
+    const value = event.target.value;
+    this.setState({ sortBy: value });
+    
+    // Save preference to localStorage
+    localStorage.setItem('sortBy', value);
+  };
+
   renderPagination = (pageCount, page) => {
     return (
       <Stack spacing={2} sx={{ my: 2 }}>
@@ -92,87 +107,130 @@ class ProductList extends Component {
   }
 
   render() {
-    const { products, title, isLoading, error } = this.props;
-    const { page, productsPerPage, viewMode } = this.state;
+    const { products, isLoading, error } = this.props;
+    const { page, productsPerPage, viewMode, sortBy } = this.state;
     
     // If no products provided, use empty array
     const productList = products || [];
     
+    // Sort products if needed
+    let sortedProducts = [...productList];
+    if (sortBy === 'price-low-high') {
+      sortedProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+    } else if (sortBy === 'price-high-low') {
+      sortedProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+    }
+    // For 'name' we keep the default API order as it should be sorted by name already
+    
     // Calculate pagination
-    let currentProducts = productList;
+    let currentProducts = sortedProducts;
     let pageCount = 1;
     
     if (productsPerPage !== 'all') {
       const perPage = parseInt(productsPerPage);
       const indexOfLastProduct = page * perPage;
       const indexOfFirstProduct = indexOfLastProduct - perPage;
-      currentProducts = productList.slice(indexOfFirstProduct, indexOfLastProduct);
-      pageCount = Math.ceil(productList.length / perPage);
+      currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+      pageCount = Math.ceil(sortedProducts.length / perPage);
     }
 
+    // Check if filters are active - we can determine this by comparing 
+    // the original products count from the API to what we have after filtering
+    const filtersActive = this.props.totalProductCount && 
+                          this.props.totalProductCount !== productList.length;
+    
     return (
       <Box sx={{ height: '100%' }}>
-        {/* Header with title */}
+        {/* Header with title and product count */}
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
           mb: 2
         }}>
-          <Typography variant="h5" component="h1" color="text.primary">
-            {title || 'All Products'}
-          </Typography>
-          
-          {/* Per Page Dropdown */}
+          {/* Results count and summary */}
           {!isLoading && productList.length > 0 && (
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
-              <InputLabel id="products-per-page-label">Per Page</InputLabel>
-              <Select
-                labelId="products-per-page-label"
-                value={productsPerPage}
-                onChange={this.handleProductsPerPageChange}
-                label="Per Page"
-                MenuProps={{
-                  disableScrollLock: true,
-                  anchorOrigin: {
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  },
-                  transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right',
-                  },
-                  PaperProps: {
-                    sx: { 
-                      maxHeight: 200,
-                      boxShadow: 3,
-                      mt: 0.5,
-                      position: 'absolute',
-                      zIndex: 999
+            <Typography variant="body2" color="text.secondary">
+              {filtersActive 
+                ? `Showing ${productList.length} filtered products` 
+                : `Showing all ${productList.length} products`}
+            </Typography>
+          )}
+          
+          {/* Control dropdowns (Sort and Per Page) */}
+          {!isLoading && productList.length > 0 && (
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              {/* Sort Dropdown */}
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 140 }}>
+                <InputLabel id="sort-by-label">Sort By</InputLabel>
+                <Select
+                  labelId="sort-by-label"
+                  value={sortBy}
+                  onChange={this.handleSortChange}
+                  label="Sort By"
+                  MenuProps={{
+                    disableScrollLock: true,
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'right',
+                    },
+                    PaperProps: {
+                      sx: { 
+                        maxHeight: 200,
+                        boxShadow: 3,
+                        mt: 0.5
+                      }
                     }
-                  },
-                  container: document.getElementById('root')
-                }}
-              >
-                <MenuItem value={20}>20</MenuItem>
-                <MenuItem value={50}>50</MenuItem>
-                <MenuItem value="all">All</MenuItem>
-              </Select>
-            </FormControl>
+                  }}
+                >
+                  <MenuItem value="name">Name</MenuItem>
+                  <MenuItem value="price-low-high">Price: Low to High</MenuItem>
+                  <MenuItem value="price-high-low">Price: High to Low</MenuItem>
+                </Select>
+              </FormControl>
+              
+              {/* Per Page Dropdown */}
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+                <InputLabel id="products-per-page-label">Per Page</InputLabel>
+                <Select
+                  labelId="products-per-page-label"
+                  value={productsPerPage}
+                  onChange={this.handleProductsPerPageChange}
+                  label="Per Page"
+                  MenuProps={{
+                    disableScrollLock: true,
+                    anchorOrigin: {
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    },
+                    transformOrigin: {
+                      vertical: 'top',
+                      horizontal: 'right',
+                    },
+                    PaperProps: {
+                      sx: { 
+                        maxHeight: 200,
+                        boxShadow: 3,
+                        mt: 0.5,
+                        position: 'absolute',
+                        zIndex: 999
+                      }
+                    },
+                    container: document.getElementById('root')
+                  }}
+                >
+                  <MenuItem value={20}>20</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                  <MenuItem value="all">All</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           )}
         </Box>
-        
-        {/* Results count and summary */}
-        {!isLoading && productList.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              {productsPerPage === 'all' ? 
-                `Showing all ${productList.length} products` : 
-                `Showing ${(page - 1) * parseInt(productsPerPage) + 1}-${Math.min(page * parseInt(productsPerPage), productList.length)} of ${productList.length} products`
-              }
-            </Typography>
-          </Box>
-        )}
         
         <Divider sx={{ mb: 3 }} />
         
@@ -233,6 +291,7 @@ class ProductList extends Component {
                       id={product.id}
                       name={product.name}
                       price={product.price}
+                      currency={product.currency}
                       available={product.available}
                       manufacturer={product.manufacturer}
                       socket={socket} 
