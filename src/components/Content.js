@@ -148,12 +148,19 @@ class Content extends Component {
             isLoading: false
           }, this.applyFilters); // Apply filters after setting products
           
+          const manufacturers = products.map(product => product.manufacturer);
+          const manufacturerProductCount = manufacturers.reduce((acc, manufacturer) => {
+            acc[manufacturer] = (acc[manufacturer] || 0) + 1;
+            return acc;
+          }, {});
+
           // Store in global cache with timestamp
           try {
             const cacheKey = `categoryProducts_${categoryId}`;
             window.productCache[cacheKey] = {
               products: response.products,
               categoryName: response.categoryName,
+              manufacturerProductCount: manufacturerProductCount,
               timestamp: Date.now()
             };
           } catch (err) {
@@ -190,6 +197,15 @@ class Content extends Component {
             [filter.name]: filter.value
           };
           break;
+        case 'manufacturer':
+          if (!newFilters.manufacturers) {
+            newFilters.manufacturers = {};
+          }
+          newFilters.manufacturers = {
+            ...newFilters.manufacturers,
+            [filter.name]: filter.value
+          };
+          break;
         default:
           break;
       }
@@ -202,11 +218,23 @@ class Content extends Component {
     const { activeFilters } = this.state;
     let products = [...this.state.products];
     
-    // Apply availability filter only
+    // Apply filters
     products = products.filter(product => {
       // Availability filter - only show in-stock items if checked
-      if ((product.available === 0 || product.available === false) && activeFilters.availability.inStock) {
+      if ((product.available === 0 || product.available === false) && activeFilters.availability['in Stock']) {
         return false;
+      }
+      
+      // Manufacturer filter
+      if (activeFilters.manufacturers) {
+        const activeManufacturers = Object.entries(activeFilters.manufacturers)
+          .filter(([_, isActive]) => isActive)
+          .map(([manufacturer]) => manufacturer);
+        
+        // If any manufacturer is selected, filter by those manufacturers
+        if (activeManufacturers.length > 0 && !activeManufacturers.includes(product.manufacturer)) {
+          return false;
+        }
       }
       
       return true;
@@ -295,6 +323,18 @@ class Content extends Component {
 
   render() {
     const { activeCategory, filteredProducts, totalProductCount, isLoading, error } = this.state;
+    
+    // Extract unique manufacturers from products and count products per manufacturer
+    const manufacturers = this.state.products.map(product => product.manufacturer);
+    const uniqueManufacturers = [...new Set(manufacturers)].filter(Boolean);
+    
+    // Calculate product count per manufacturer
+    const manufacturerProductCount = manufacturers.reduce((acc, manufacturer) => {
+      if (manufacturer) {
+        acc[manufacturer] = (acc[manufacturer] || 0) + 1;
+      }
+      return acc;
+    }, {});
 
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -308,6 +348,8 @@ class Content extends Component {
             <ProductFilters 
               onFilterChange={this.handleFilterChange}
               onFilterReset={this.handleFilterReset}
+              manufacturers={uniqueManufacturers}
+              manufacturerProductCount={manufacturerProductCount}
             />
           </Box>
           
