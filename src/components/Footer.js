@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Box, Typography, Container, Link, Grid } from '@mui/material';
+import { Box, Typography, Container, Link } from '@mui/material';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 
 class Footer extends Component {
@@ -16,8 +16,8 @@ class Footer extends Component {
         }}
       >
         <Container maxWidth="lg">
-          <Grid container spacing={3} justifyContent="space-between">
-            <Grid item xs={12} sm={4}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+            <Box sx={{ width: { xs: '100%', sm: '33.33%' }, mb: { xs: 3, sm: 0 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <LocalFloristIcon sx={{ mr: 1 }} />
                 <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
@@ -27,8 +27,8 @@ class Footer extends Component {
               <Typography variant="body2" sx={{ opacity: 0.8 }}>
                 Your one-stop shop for premium products.
               </Typography>
-            </Grid>
-            <Grid item xs={6} sm={4}>
+            </Box>
+            <Box sx={{ width: { xs: '50%', sm: '33.33%' } }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
                 Quick Links
               </Typography>
@@ -43,8 +43,8 @@ class Footer extends Component {
                   Contact
                 </Link>
               </Box>
-            </Grid>
-            <Grid item xs={6} sm={4}>
+            </Box>
+            <Box sx={{ width: { xs: '50%', sm: '33.33%' } }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
                 Legal
               </Typography>
@@ -56,8 +56,8 @@ class Footer extends Component {
                   Privacy Policy
                 </Link>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
           <Box sx={{ pt: 4, textAlign: 'center', opacity: 0.7 }}>
             <Typography variant="body2">
               © {new Date().getFullYear()} Green Essentials. All rights reserved.

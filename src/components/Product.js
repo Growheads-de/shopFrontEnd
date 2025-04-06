@@ -4,11 +4,12 @@ import {
   CardActions, 
   CardContent, 
   CardMedia, 
-  Button, 
   Typography, 
   Chip,
   Box 
 } from '@mui/material';
+import AddToCartButton from './AddToCartButton.js';
+import StarIcon from '@mui/icons-material/Star';
 
 class Product extends Component {
   // Generate a dummy image URL based on product name
@@ -72,8 +73,11 @@ class Product extends Component {
     // Default if no category is matched
     return 'GrowEquip';
   }
-
-  // Green toned getColorFromName is no longer needed
+  
+  handleQuantityChange = (quantity) => {
+    console.log(`Product: ${this.props.name}, Quantity: ${quantity}`);
+    // In a real app, this would update a cart state in a parent component or Redux store
+  }
   
   render() {
     const { name, price, image, available } = this.props;
@@ -98,20 +102,55 @@ class Product extends Component {
               position: 'absolute',
               top: -10,
               right: -10,
-              backgroundColor: 'success.main',
               color: 'white',
-              borderRadius: '50%',
-              width: 40,
-              height: 40,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              fontWeight: 'bold',
               zIndex: 1,
-              boxShadow: 2,
+              filter: 'drop-shadow(0px 2px 3px rgba(0,0,0,0.3))',
             }}
           >
-            NEW
+            <Box
+              sx={{
+                position: 'relative',
+                width: 50,
+                height: 50,
+              }}
+            >
+              <StarIcon 
+                sx={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  fontSize: 50,
+                  color: 'success.main',
+                  transform: 'rotate(0deg)',
+                }}
+              />
+              <StarIcon 
+                sx={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  fontSize: 50,
+                  color: 'secondary.main',
+                  transform: 'rotate(22.5deg)',
+                  opacity: 0.85,
+                }}
+              />
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  fontWeight: 'bold',
+                  fontSize: '0.7rem',
+                  color: 'white',
+                  textShadow: '0px 1px 2px rgba(0,0,0,0.5)',
+                }}
+              >
+                NEW
+              </Typography>
+            </Box>
           </Box>
         )}
         <CardMedia
@@ -136,23 +175,12 @@ class Product extends Component {
           />
         </CardContent>
         <CardActions sx={{ bgcolor: 'background.paper', pb: 2, px: 2 }}>
-          <Button 
-            size="medium" 
-            variant="contained" 
-            color="primary" 
-            disabled={!available}
-            onClick={() => alert(`Added ${name} to cart!`)}
-            fullWidth
-            sx={{ 
-              borderRadius: 2,
-              fontWeight: 'bold',
-              '&:hover': {
-                backgroundColor: 'primary.dark',
-              }
-            }}
-          >
-            Add to Cart
-          </Button>
+          <AddToCartButton 
+            available={available}
+            productName={name}
+            onQuantityChange={this.handleQuantityChange}
+            initialQuantity={0}
+          />
         </CardActions>
       </Card>
     );
