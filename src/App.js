@@ -97,7 +97,7 @@ class App extends Component {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <SocketProvider 
-          url="http://localhost:9303"
+          url="http://192.168.178.58:9303"
           fallback={
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
               <CircularProgress color="primary" />

@@ -78,9 +78,9 @@ class Content extends Component {
     
     if (categoryId && socket) {
       // Fetch products for specific category
-      console.log('Fetching products for category:', categoryId);
+      console.log('Fetching products for category');
       socket.emit('getCategoryProducts', { categoryId: parseInt(categoryId) }, (response) => {
-        console.log('getCategoryProducts response:', response);
+        console.log('getCategoryProducts response');
         if (response && response.products) {
           let pageTitle = this.state.categories[categoryId] || "Category";
           let filteredProducts = response.products;
