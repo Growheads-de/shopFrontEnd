@@ -9,7 +9,6 @@ import {
   InputAdornment, 
   Badge, 
   Popover,
-  Divider,
   Container
 } from '@mui/material';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
@@ -18,43 +17,81 @@ import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import CartDropdown from './CartDropdown.js';
+import SocketContext from '../contexts/SocketContext.js';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 // Logo Subcomponent
-class Logo extends Component {
-  render() {
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <LocalFloristIcon sx={{ mr: 1, fontSize: 28 }} />
-        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', display: { xs: 'none', sm: 'block' } }}>
-          Green Essentials
-        </Typography>
-      </Box>
-    );
-  }
+const Logo = () => {
+  return (
+    <Box 
+      component={Link} 
+      to="/"
+      sx={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        textDecoration: 'none',
+        color: 'inherit'
+      }}
+    >
+      <LocalFloristIcon sx={{ mr: 1, fontSize: 28 }} />
+      <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', display: { xs: 'none', sm: 'block' } }}>
+        Green Essentials
+      </Typography>
+    </Box>
+  );
 }
 
-// SearchBar Subcomponent
-class SearchBar extends Component {
-  render() {
-    return (
-      <Box sx={{ flexGrow: 1, mx: { xs: 1, sm: 2, md: 4 }, display: { xs: 'none', sm: 'block' } }}>
-        <TextField
-          placeholder="Search products..."
-          variant="outlined"
-          size="small"
-          fullWidth
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-            sx: { borderRadius: 2, bgcolor: 'background.paper' }
-          }}
-        />
-      </Box>
-    );
-  }
+// SearchBar Subcomponent with hooks
+const SearchBar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const [searchQuery, setSearchQuery] = React.useState(searchParams.get('q') || '');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  return (
+    <Box 
+      component="form" 
+      onSubmit={handleSearch}
+      sx={{ flexGrow: 1, mx: { xs: 1, sm: 2, md: 4 }, display: { xs: 'none', sm: 'block' } }}
+    >
+      <TextField
+        placeholder="Search products..."
+        variant="outlined"
+        size="small"
+        fullWidth
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+          sx: { borderRadius: 2, bgcolor: 'background.paper' },
+          endAdornment: (
+            <InputAdornment position="end">
+              <Button 
+                variant="contained" 
+                color="primary" 
+                size="small" 
+                type="submit"
+                sx={{ borderRadius: 1, minWidth: 'unset', p: '4px 8px' }}
+              >
+                Search
+              </Button>
+            </InputAdornment>
+          )
+        }}
+      />
+    </Box>
+  );
 }
 
 // CartButton Subcomponent
@@ -72,6 +109,11 @@ class CartButton extends Component {
 
   handleCartClose = () => {
     this.setState({ anchorEl: null });
+  };
+  
+  handleGoToCart = () => {
+    this.setState({ anchorEl: null });
+    // Navigation will be handled by Link component
   };
 
   render() {
@@ -128,6 +170,18 @@ class CartButton extends Component {
               overflow: 'hidden'
             }
           }}
+          disableScrollLock={true}
+          keepMounted
+          slotProps={{
+            backdrop: {
+              invisible: false,
+              sx: { 
+                bgcolor: 'rgba(0, 0, 0, 0.4)', 
+                backdropFilter: 'blur(2px)'
+              }
+            }
+          }}
+          transitionDuration={{ enter: 225, exit: 0 }}
         >
           {open && (
             <CartDropdown 
@@ -135,6 +189,7 @@ class CartButton extends Component {
               onClose={this.handleCartClose}
               onQuantityChange={onQuantityChange}
               onRemoveItem={onRemoveItem}
+              onGoToCart={this.handleGoToCart}
             />
           )}
         </Popover>
@@ -188,23 +243,61 @@ class CategoryList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      categories: [
-        "Seeds",
-        "Growing Equipment",
-        "Lighting",
-        "Hydroponic Systems",
-        "Nutrients",
-        "Ventilation",
-        "Plant Care",
-        "Harvesting Tools",
-        "Accessories",
-        "Deals"
-      ]
+      categories: [],
+      fetchedCategories: false
     };
+  }
+
+  componentDidMount() {
+    this.fetchCategories();
+  }
+  
+  componentDidUpdate(prevProps) {
+    // If socket becomes available or changes
+    if (!prevProps.socket && this.props.socket) {
+      this.fetchCategories();
+    }
+  }
+  
+  fetchCategories = () => {
+    const { socket } = this.props;
+    if (!socket) {
+      console.error('No socket available for CategoryList');
+      return;
+    }
+    
+    if (this.state.fetchedCategories) {
+      console.log('Categories already fetched, skipping');
+      return;
+    }
+    
+    console.log('CategoryList: Fetching categories from socket');
+    socket.emit('categoryList', {}, (response) => {
+      console.log('CategoryList response:', response);
+      if (response && response.categories) {
+        console.log('Categories received:', response.categories.length);
+        this.setState({ 
+          categories: response.categories,
+          fetchedCategories: true 
+        }, () => {
+          console.log('Categories in state:', this.state.categories);
+        });
+      } else {
+        console.error('No categories in response:', response);
+      }
+    });
   }
   
   render() {
     const { categories } = this.state;
+    console.log('CategoryList render - categories:', categories);
+    
+    // Debug output to help diagnose the issue
+    if (categories && categories.length > 0) {
+      console.log('Categories should be visible, first category:', categories[0]);
+    } else {
+      console.log('Categories not visible, categories array:', categories);
+    }
     
     return (
       <Box 
@@ -231,27 +324,33 @@ class CategoryList extends Component {
               msOverflowStyle: 'none'
             }}
           >
-            {categories.map((category, index) => (
-              <Button
-                key={index}
-                color="inherit"
-                size="small"
-                sx={{
-                  fontSize: '0.75rem',
-                  fontWeight: 'normal',
-                  textTransform: 'none',
-                  whiteSpace: 'nowrap',
-                  opacity: 0.9,
-                  mx: 0.5,
-                  '&:hover': {
-                    opacity: 1,
-                    bgcolor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                {category}
-              </Button>
-            ))}
+            {Array.isArray(categories) && categories.length > 0 ? (
+              categories.map((category) => (
+                <Button
+                  key={category.id}
+                  component={Link}
+                  to={`/category/${category.id}`}
+                  color="inherit"
+                  size="small"
+                  sx={{
+                    fontSize: '0.75rem',
+                    fontWeight: 'normal',
+                    textTransform: 'none',
+                    whiteSpace: 'nowrap',
+                    opacity: 0.9,
+                    mx: 0.5,
+                    '&:hover': {
+                      opacity: 1,
+                      bgcolor: 'rgba(255,255,255,0.1)'
+                    }
+                  }}
+                >
+                  {category.name}
+                </Button>
+              ))
+            ) : (
+              <Typography variant="caption" color="inherit">Loading categories...</Typography>
+            )}
           </Box>
         </Container>
       </Box>
@@ -261,31 +360,21 @@ class CategoryList extends Component {
 
 // Main Header Component
 class Header extends Component {
+  static contextType = SocketContext;
+
   constructor(props) {
     super(props);
     this.state = {
-      cartItems: []
+      cartItems: [
+        { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, quantity: 2 },
+        { id: 5, name: 'Carbon Air Filter', price: 79.99, quantity: 1 }
+      ]
     };
-  }
-
-  // This method would normally be connected to a global state
-  // For now we'll just simulate cart functionality in the header
-  componentDidMount() {
-    // Mock cart data for testing
-    setTimeout(() => {
-      this.setState({
-        cartItems: [
-          { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, quantity: 2 },
-          { id: 2, name: 'LED Grow Light 1000W', price: 249.99, quantity: 1 }
-        ]
-      });
-      console.log('Header: mock cart data loaded');
-    }, 100);
   }
 
   handleCartQuantityChange = (productId, quantity) => {
     this.setState(prevState => ({
-      cartItems: prevState.cartItems.map(item => 
+      cartItems: prevState.cartItems.map(item =>
         item.id === productId ? { ...item, quantity } : item
       )
     }));
@@ -299,26 +388,36 @@ class Header extends Component {
 
   render() {
     const { cartItems } = this.state;
-    
-    // Debug cart items in header
-    console.log('Header render:', { cartItems });
-    
+    // Get socket directly from context in render method
+    const socket = this.context;
+
     return (
-      <AppBar position="static" color="primary" elevation={3}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Logo />
-          <SearchBar />
-          <ButtonGroup 
-            cartItems={cartItems}
-            onCartQuantityChange={this.handleCartQuantityChange}
-            onCartRemoveItem={this.handleCartRemoveItem}
-          />
+      <AppBar position="sticky" color="primary" elevation={0}>
+        <Toolbar sx={{ minHeight: 64 }}>
+          <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
+            <Logo />
+            <SearchBarWithRouter />
+            <ButtonGroup 
+              cartItems={cartItems}
+              onCartQuantityChange={this.handleCartQuantityChange}
+              onCartRemoveItem={this.handleCartRemoveItem}
+            />
+          </Container>
         </Toolbar>
-        <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
-        <CategoryList />
+        <CategoryList socket={socket} />
       </AppBar>
     );
   }
 }
 
-export default Header; 
+// Wrapper components for router hooks
+const SearchBarWithRouter = () => <SearchBar />;
+
+// Use a wrapper function to provide context
+const HeaderWithContext = (props) => (
+  <SocketContext.Consumer>
+    {socket => <Header {...props} socket={socket} />}
+  </SocketContext.Consumer>
+);
+
+export default HeaderWithContext; 

@@ -1,15 +1,115 @@
 import React, { Component } from 'react';
 import { 
+  Box, 
   Card, 
-  CardActions, 
   CardContent, 
   CardMedia, 
   Typography, 
   Chip,
-  Box 
+  CardActionArea,
+  Rating
 } from '@mui/material';
 import AddToCartButton from './AddToCartButton.js';
-import StarIcon from '@mui/icons-material/Star';
+import { Link, useParams } from 'react-router-dom';
+
+// Wrapper component for individual product detail page
+const ProductDetailPage = () => {
+  const { productId } = useParams();
+  
+  // Mock function to get product data by ID
+  // In a real app, you would fetch this from an API or context
+  const getProductById = (id) => {
+    const products = [
+      { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, available: true, categoryId: "1", description: "Premium OG Kush seeds with high germination rate. Perfect for beginners and experts alike." },
+      { id: 2, name: 'LED Grow Light 1000W', price: 249.99, available: true, categoryId: "2", description: "Professional full spectrum LED grow light. Energy efficient with coverage for 4x4ft grow space." },
+      { id: 3, name: 'Hydroponic System Kit', price: 189.99, available: false, categoryId: "3", description: "Complete hydroponic system for 8 plants. Includes reservoir, nutrient delivery system, and digital timer." },
+      { id: 4, name: 'Nutrient Solution Pack', price: 39.99, available: true, categoryId: "4", description: "Essential nutrient pack for all growth stages. Includes micro, grow, and bloom nutrients." },
+      { id: 5, name: 'Carbon Air Filter', price: 79.99, available: true, categoryId: "5", description: "Premium activated carbon filter to eliminate odors. Fits standard 6-inch ducting." }
+    ];
+    
+    return products.find(product => product.id === parseInt(id)) || null;
+  };
+  
+  const product = getProductById(productId);
+  
+  if (!product) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h5" gutterBottom>
+          Product Not Found
+        </Typography>
+        <Typography>
+          The product you are looking for does not exist or has been removed.
+        </Typography>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <Typography color="primary" sx={{ mt: 2 }}>
+            Return to Home
+          </Typography>
+        </Link>
+      </Box>
+    );
+  }
+  
+  return (
+    <Box sx={{ p: 4 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+        {/* Product Image */}
+        <Box sx={{ flex: '0 0 40%' }}>
+          <CardMedia
+            component="img"
+            image={`https://source.unsplash.com/600x600/?cannabis,plant,grow,${product.id}`}
+            alt={product.name}
+            sx={{ 
+              borderRadius: 2, 
+              height: '400px',
+              objectFit: 'cover',
+              width: '100%'
+            }}
+          />
+        </Box>
+        
+        {/* Product Details */}
+        <Box sx={{ flex: '1 1 60%' }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            {product.name}
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Rating value={4.5} precision={0.5} readOnly />
+            <Typography variant="body2" sx={{ ml: 1 }}>
+              4.5 (24 reviews)
+            </Typography>
+          </Box>
+          
+          <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
+            ${product.price.toFixed(2)}
+          </Typography>
+          
+          {!product.available && (
+            <Chip 
+              label="Out of Stock" 
+              color="error" 
+              sx={{ mb: 2 }}
+            />
+          )}
+          
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            {product.description}
+          </Typography>
+          
+          <Box sx={{ maxWidth: '200px', mt: 3 }}>
+            <AddToCartButton 
+              product={product} 
+              disabled={!product.available}
+              fullWidth
+              size="large"
+            />
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
 
 class Product extends Component {
   // Generate a dummy image URL based on product name
@@ -79,112 +179,109 @@ class Product extends Component {
     // In a real app, this would update a cart state in a parent component or Redux store
   }
   
+  // Get a placeholder image for the product
+  getProductImage = () => {
+    return `https://source.unsplash.com/300x300/?cannabis,plant,grow,${this.props.id || Math.floor(Math.random() * 100)}`;
+  };
+
   render() {
-    const { name, price, image, available } = this.props;
-    const productImage = image || this.getDummyImage(name);
+    const { id, name, price, available } = this.props;
     
     return (
-      <Card sx={{ 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column',
-        width: '100%',
-        maxWidth: 300,
-        mx: 'auto',
-        borderRadius: 2,
-        boxShadow: 3,
-        position: 'relative',
-        overflow: 'visible'
-      }}>
-        {available && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: -10,
-              right: -10,
-              color: 'white',
-              zIndex: 1,
-              filter: 'drop-shadow(0px 2px 3px rgba(0,0,0,0.3))',
-            }}
-          >
-            <Box
+      <Card 
+        sx={{ 
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-5px)',
+            boxShadow: '0px 10px 20px rgba(0,0,0,0.1)'
+          }
+        }}
+      >
+        <CardActionArea 
+          component={Link} 
+          to={`/product/${id}`}
+          sx={{ 
+            flexGrow: 1, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'stretch' 
+          }}
+        >
+          <Box sx={{ position: 'relative' }}>
+            <CardMedia
+              component="img"
+              height="180"
+              image={this.props.id ? this.getProductImage() : this.getDummyImage(name)}
+              alt={name}
+              sx={{ objectFit: 'cover' }}
+              onError={(e) => {
+                e.target.onerror = null; 
+                e.target.src = this.getDummyImage(name);
+              }}
+            />
+            {!available && (
+              <Chip
+                label="Out of Stock"
+                color="error"
+                size="small"
+                sx={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 10,
+                  fontWeight: 'bold'
+                }}
+              />
+            )}
+          </Box>
+          
+          <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+            <Typography
+              gutterBottom
+              variant="h6"
+              component="h2"
               sx={{
-                position: 'relative',
-                width: 50,
-                height: 50,
+                fontWeight: 600,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                minHeight: '3.6em'
               }}
             >
-              <StarIcon 
-                sx={{ 
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  fontSize: 50,
-                  color: 'success.main',
-                  transform: 'rotate(0deg)',
-                }}
-              />
-              <StarIcon 
-                sx={{ 
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  fontSize: 50,
-                  color: 'secondary.main',
-                  transform: 'rotate(22.5deg)',
-                  opacity: 0.85,
-                }}
-              />
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  fontWeight: 'bold',
-                  fontSize: '0.7rem',
-                  color: 'white',
-                  textShadow: '0px 1px 2px rgba(0,0,0,0.5)',
-                }}
-              >
-                NEW
+              {name}
+            </Typography>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <Rating value={4} precision={0.5} size="small" readOnly />
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
+                (4.0)
               </Typography>
             </Box>
-          </Box>
-        )}
-        <CardMedia
-          component="img"
-          height="200"
-          image={productImage}
-          alt={name}
-          sx={{ objectFit: 'cover' }}
-        />
-        <CardContent sx={{ flexGrow: 1, bgcolor: 'background.paper' }}>
-          <Typography gutterBottom variant="h5" component="h2" sx={{ color: 'text.primary' }}>
-            {name}
-          </Typography>
-          <Typography variant="h6" color="primary.dark" fontWeight="bold">
-            ${price.toFixed(2)}
-          </Typography>
-          <Chip 
-            label={available ? "In Stock" : "Out of Stock"} 
-            color={available ? "success" : "error"} 
-            size="small" 
-            sx={{ mt: 1 }}
-          />
-        </CardContent>
-        <CardActions sx={{ bgcolor: 'background.paper', pb: 2, px: 2 }}>
+            
+            <Typography
+              variant="h6"
+              color="primary"
+              sx={{ mt: 'auto', fontWeight: 'bold' }}
+            >
+              ${parseFloat(price).toFixed(2)}
+            </Typography>
+          </CardContent>
+        </CardActionArea>
+        
+        <Box sx={{ p: 2, pt: 0 }}>
           <AddToCartButton 
-            available={available}
-            productName={name}
-            onQuantityChange={this.handleQuantityChange}
-            initialQuantity={0}
+            product={{ id, name, price, available }} 
+            disabled={!available}
           />
-        </CardActions>
+        </Box>
       </Card>
     );
   }
 }
 
-export default Product; 
+export { Product as default, ProductDetailPage }; 

@@ -16,6 +16,7 @@ export default {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
     clean: true,
+    publicPath: '/'
   },
   devtool: isDevelopment ? 'eval-source-map' : 'source-map',
   module: {
@@ -66,7 +67,7 @@ export default {
   devServer: {
     static: path.resolve(__dirname, 'dist'),
     hot: true,
-    port: 3000,
+    port: 9500,
     open: true,
     historyApiFallback: true,
     client: {

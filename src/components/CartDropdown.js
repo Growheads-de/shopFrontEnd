@@ -8,6 +8,7 @@ import {
   Button
 } from '@mui/material';
 import CartItem from './CartItem.js';
+import { Link } from 'react-router-dom';
 
 class CartDropdown extends Component {
   calculateTotal = () => {
@@ -101,14 +102,27 @@ class CartDropdown extends Component {
                   Continue Shopping
                 </Button>
                 <Button 
+                  component={Link}
+                  to="/cart"
                   variant="contained" 
                   color="primary" 
                   fullWidth
-                  onClick={() => alert('Checkout functionality would go here')}
+                  onClick={onClose}
                 >
-                  Checkout
+                  View Cart
                 </Button>
               </Box>
+              <Button
+                component={Link}
+                to="/checkout"
+                variant="contained"
+                color="secondary"
+                fullWidth
+                sx={{ mt: 1 }}
+                onClick={onClose}
+              >
+                Checkout
+              </Button>
             </Box>
           </>
         )}

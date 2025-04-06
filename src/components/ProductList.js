@@ -31,7 +31,7 @@ class ProductList extends Component {
   };
 
   render() {
-    const { products, title } = this.props;
+    const { products, title, isLoading, error } = this.props;
     const { page, productsPerPage, viewMode } = this.state;
     
     // If no products provided, use empty array
@@ -66,6 +66,17 @@ class ProductList extends Component {
                 onChange={this.handleViewModeChange}
                 label="View"
                 sx={{ minWidth: 100 }}
+                MenuProps={{ 
+                  disableScrollLock: true,
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'left',
+                  }
+                }}
               >
                 <MenuItem value="grid">Grid</MenuItem>
                 <MenuItem value="list">List</MenuItem>
@@ -81,6 +92,17 @@ class ProductList extends Component {
                 onChange={this.handleProductsPerPageChange}
                 label="Show"
                 sx={{ minWidth: 80 }}
+                MenuProps={{ 
+                  disableScrollLock: true,
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'left',
+                  }
+                }}
               >
                 <MenuItem value={8}>8</MenuItem>
                 <MenuItem value={12}>12</MenuItem>
@@ -92,16 +114,39 @@ class ProductList extends Component {
         </Box>
         
         {/* Results count and summary */}
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="body2" color="text.secondary">
-            Showing {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, productList.length)} of {productList.length} products
-          </Typography>
-        </Box>
+        {!isLoading && productList.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Showing {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, productList.length)} of {productList.length} products
+            </Typography>
+          </Box>
+        )}
         
         <Divider sx={{ mb: 3 }} />
         
-        {/* Product grid */}
-        {productList.length === 0 ? (
+        {/* Loading State */}
+        {isLoading && (
+          <Box sx={{ py: 8, textAlign: 'center' }}>
+            <Typography variant="h6" color="text.secondary">
+              Loading products...
+            </Typography>
+          </Box>
+        )}
+        
+        {/* Error State */}
+        {!isLoading && error && (
+          <Box sx={{ py: 8, textAlign: 'center' }}>
+            <Typography variant="h6" color="error">
+              {error}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Please try again later
+            </Typography>
+          </Box>
+        )}
+        
+        {/* Empty State */}
+        {!isLoading && !error && productList.length === 0 ? (
           <Box sx={{ py: 8, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary">
               No products found
@@ -111,33 +156,37 @@ class ProductList extends Component {
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            {currentProducts.map((product) => (
-              <Grid 
-                item 
-                key={product.id} 
-                xs={6} 
-                sm={viewMode === 'list' ? 12 : 6} 
-                md={viewMode === 'list' ? 12 : 3}
-                lg={viewMode === 'list' ? 12 : 3}
-                sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'center',
-                  mb: 1
-                }}
-              >
-                <Product
-                  name={product.name}
-                  price={product.price}
-                  available={product.available}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          /* Product grid */
+          !isLoading && !error && (
+            <Grid container spacing={2} sx={{ mb: 4 }}>
+              {currentProducts.map((product) => (
+                <Grid 
+                  item 
+                  key={product.id} 
+                  xs={6} 
+                  sm={viewMode === 'list' ? 12 : 6} 
+                  md={viewMode === 'list' ? 12 : 3}
+                  lg={viewMode === 'list' ? 12 : 3}
+                  sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'center',
+                    mb: 1
+                  }}
+                >
+                  <Product
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    available={product.available}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          )
         )}
         
         {/* Pagination */}
-        {pageCount > 1 && (
+        {!isLoading && !error && pageCount > 1 && (
           <Stack spacing={2} sx={{ mt: 4, mb: 2 }}>
             <Pagination 
               count={pageCount} 
@@ -146,6 +195,12 @@ class ProductList extends Component {
               color="primary" 
               sx={{ mx: 'auto' }}
               size="large"
+              siblingCount={1}
+              boundaryCount={1}
+              hideNextButton={false}
+              hidePrevButton={false}
+              showFirstButton={true}
+              showLastButton={true}
             />
           </Stack>
         )}

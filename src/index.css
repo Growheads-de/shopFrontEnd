@@ -5,6 +5,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-y: scroll;
+}
+
+/* Prevent Material-UI from changing scrollbar when modals open */
+body.MuiModal-open {
+  overflow-y: scroll !important;
+  padding-right: 0 !important;
 }
 
 code {
