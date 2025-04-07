@@ -3,31 +3,80 @@ import {
   Paper
 } from '@mui/material';
 import Filter from './Filter.js';
+import { withRouter } from './withRouter.js'; // Import withRouter HOC
 
 class ProductFilters extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      availabilityValues: this.getAvailabilityFromStorage(),
+      availabilityValues: this.getAvailabilityFromRouteOrStorage(),
       attributeFilters: {}
     };
   }
 
-  getAvailabilityFromStorage = () => {
+  getAvailabilityFromRouteOrStorage = () => {
+    // First check URL query parameters
+    const searchParams = new URLSearchParams(this.props.location?.search || '');
+    const inStockParam = searchParams.get('inStock');
+    
+    if (inStockParam !== null) {
+      // Convert string 'true'/'false' to boolean
+      return { 'in Stock': inStockParam === 'true' };
+    }
+    
+    // Next check props for initialFilters
+    const { initialFilters } = this.props;
+    if (initialFilters && initialFilters.availability && initialFilters.availability.inStock !== undefined) {
+      return { 'in Stock': initialFilters.availability.inStock };
+    }
+    
+    // Fall back to localStorage if not in URL or props
     try {
       const storedValue = localStorage.getItem('availabilityFilter');
       if (storedValue) {
-        return JSON.parse(storedValue);
+        const parsed = JSON.parse(storedValue);
+        // Convert old format if necessary
+        if (parsed.inStock !== undefined) {
+          return { 'in Stock': parsed.inStock };
+        }
+        return parsed;
       }
       // Default value if nothing in storage
-      return { inStock: true };
+      return { 'in Stock': true };
     } catch (error) {
       console.error('Error accessing localStorage:', error);
-      return { inStock: true };
+      return { 'in Stock': true };
     }
   };
 
   componentDidUpdate(prevProps) {
+    // Update filters when URL changes
+    if (prevProps.location?.search !== this.props.location?.search) {
+      const newAvailability = this.getAvailabilityFromRouteOrStorage();
+      
+      // Only update if the value has actually changed
+      if (this.state.availabilityValues['in Stock'] !== newAvailability['in Stock']) {
+        this.setState({ 
+          availabilityValues: newAvailability
+        });
+      }
+    }
+    
+    // If initialFilters changed (from parent component)
+    if (this.props.initialFilters !== prevProps.initialFilters) {
+      const { initialFilters } = this.props;
+      if (initialFilters?.availability?.inStock !== undefined) {
+        const newAvailability = { 'in Stock': initialFilters.availability.inStock };
+        
+        // Only update if the value has actually changed
+        if (this.state.availabilityValues['in Stock'] !== newAvailability['in Stock']) {
+          this.setState({
+            availabilityValues: newAvailability
+          });
+        }
+      }
+    }
+    
     // Reset attribute filters when category changes
     if (prevProps.categoryId !== this.props.categoryId) {
       this.setState({ attributeFilters: {} });
@@ -49,6 +98,8 @@ class ProductFilters extends Component {
         } catch (error) {
           console.error('Error saving to localStorage:', error);
         }
+        
+        // Route update is now handled by the parent Content component
         
         return { availabilityValues: newAvailabilityValues };
       });
@@ -109,6 +160,9 @@ class ProductFilters extends Component {
   render() {
     const { manufacturers = [], manufacturerProductCount = {} } = this.props;
     const { availabilityValues } = this.state;
+
+    // Debug log 
+    console.log('ProductFilters render, availabilityValues:', availabilityValues);
     
     // Generate dynamic attribute filters
     const attributeFilters = this.generateAttributeFilters();
@@ -130,6 +184,7 @@ class ProductFilters extends Component {
           initialValues={availabilityValues}
           filterType="availability"
           onFilterChange={this.handleFilterChange}
+          key={`avail-${availabilityValues['in Stock']}`} // Force re-render on value change
         />
 
         {/* Dynamic Attribute Filters */}
@@ -148,4 +203,5 @@ class ProductFilters extends Component {
   }
 }
 
-export default ProductFilters; 
+// Export with Router props
+export default withRouter(ProductFilters); 

@@ -30,8 +30,23 @@ class Filter extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    // Update state if initialValues change
-    if (JSON.stringify(prevProps.initialValues) !== JSON.stringify(this.props.initialValues)) {
+    // Check if initialValues actually changed (deep comparison)
+    const prevInitialValues = JSON.stringify(prevProps.initialValues || {});
+    const currentInitialValues = JSON.stringify(this.props.initialValues || {});
+    
+    // Check if options list changed
+    const prevOptions = JSON.stringify(prevProps.options || []);
+    const currentOptions = JSON.stringify(this.props.options || []);
+    
+    if (prevInitialValues !== currentInitialValues || prevOptions !== currentOptions) {
+      // Debug what's happening
+      console.log('Filter updating state from props:', 
+                 { 
+                   title: this.props.title,
+                   prevValues: prevProps.initialValues, 
+                   newValues: this.props.initialValues 
+                 });
+      
       this.setState({ 
         options: this.initializeOptions(this.props) 
       });
@@ -39,18 +54,24 @@ class Filter extends Component {
   }
 
   handleOptionChange = (event) => {
-    this.setState({
+    const { name, checked } = event.target;
+    
+    console.log(`Checkbox change: ${name} = ${checked}`);
+    
+    // Update local state first to ensure immediate UI feedback
+    this.setState(prevState => ({
       options: {
-        ...this.state.options,
-        [event.target.name]: event.target.checked
+        ...prevState.options,
+        [name]: checked
       }
-    });
-
+    }));
+    
+    // Then notify the parent component
     if (this.props.onFilterChange) {
       this.props.onFilterChange({ 
         type: this.props.filterType || 'default', 
-        name: event.target.name, 
-        value: event.target.checked 
+        name: name, 
+        value: checked 
       });
     }
   };
@@ -58,6 +79,9 @@ class Filter extends Component {
   render() {
     const { options } = this.state;
     const { title, options: optionsList = [], counts = {} } = this.props;
+
+    // Debug render
+    console.log(`Filter render: ${title}`, options);
 
     const tableStyle = { 
       width: '100%', 

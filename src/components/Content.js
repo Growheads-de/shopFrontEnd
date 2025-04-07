@@ -4,40 +4,35 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import HomeIcon from '@mui/icons-material/Home';
 import ProductFilters from './ProductFilters.js';
 import ProductList from './ProductList.js';
-import { useLocation, useParams, Link as RouterLink } from 'react-router-dom';
-import SocketContext from '../contexts/SocketContext.js';
+import { Link as RouterLink } from 'react-router-dom';
 
-// Helper function to get query parameters
-const useQuery = () => {
-  return new URLSearchParams(useLocation().search);
-};
-
-// Wrapper component to convert class component to function component with hooks
-const ContentWithRouter = () => {
-  const location = useLocation();
-  const params = useParams();
-  const query = useQuery();
-  
-  const searchQuery = query.get('q');
-  const categoryId = params.categoryId;
-  
-  return (
-    <SocketContext.Consumer>
-      {socket => (
-        <Content 
-          location={location} 
-          searchQuery={searchQuery} 
-          categoryId={categoryId}
-          socket={socket}
-        />
-      )}
-    </SocketContext.Consumer>
-  );
-};
 
 class Content extends Component {
   constructor(props) {
     super(props);
+    
+    // Get initial availability filter value from localStorage
+    let initialAvailability = { inStock: true, 'in Stock': true };
+    try {
+      const storedValue = localStorage.getItem('availabilityFilter');
+      if (storedValue) {
+        const parsedValue = JSON.parse(storedValue);
+        
+        // Handle both formats: old (inStock) and new ('in Stock')
+        const inStockValue = parsedValue.inStock !== undefined ? 
+                            parsedValue.inStock : 
+                            parsedValue['in Stock'];
+        
+        if (inStockValue !== undefined) {
+          initialAvailability = {
+            inStock: inStockValue,
+            'in Stock': inStockValue
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+    }
     
     this.state = {
       activeCategory: "All Products",
@@ -51,18 +46,25 @@ class Content extends Component {
       attributeGroups: {},
       attributeCounts: {},
       activeFilters: {
-        availability: {
-          inStock: true
-        }
+        availability: initialAvailability
       }
     };
+    
+    console.log('Initial state set with availability filter:', initialAvailability);
   }
 
   componentDidMount() {
+    // URL parameters take precedence over localStorage
+    this.initializeFiltersFromURL();
     this.initializeProducts();
   }
   
   componentDidUpdate(prevProps) {
+    // If location changed, update filters from URL
+    if (prevProps.location?.search !== this.props.location?.search) {
+      this.initializeFiltersFromURL();
+    }
+    
     // If search query or category changed, update products
     if (prevProps.searchQuery !== this.props.searchQuery || 
         prevProps.categoryId !== this.props.categoryId) {
@@ -76,6 +78,32 @@ class Content extends Component {
     }
   }
   
+  initializeFiltersFromURL = () => {
+    const { location } = this.props;
+    if (!location) return;
+    
+    const searchParams = new URLSearchParams(location.search);
+    const inStockParam = searchParams.get('inStock');
+    
+    console.log('URL inStock parameter:', inStockParam);
+    
+    if (inStockParam !== null) {
+      const inStockValue = inStockParam === 'true';
+      console.log('Setting inStock filter to:', inStockValue);
+      
+      // Update activeFilters based on URL parameters
+      this.setState(prevState => ({
+        activeFilters: {
+          ...prevState.activeFilters,
+          availability: {
+            ...prevState.activeFilters.availability,
+            inStock: inStockValue,
+            'in Stock': inStockValue  // Also set with the key that's used in the UI
+          }
+        }
+      }), this.applyFilters); // Make sure to apply filters after changing
+    }
+  };
   
   initializeProducts = () => {
     const { searchQuery, categoryId, socket } = this.props;
@@ -247,15 +275,37 @@ class Content extends Component {
   }
 
   handleFilterChange = (filter) => {
+    console.log('Filter change:', filter);
+    
     this.setState(prevState => {
       const newFilters = { ...prevState.activeFilters };
       
       switch (filter.type) {
         case 'availability':
-          newFilters.availability = {
-            ...newFilters.availability,
-            [filter.name]: filter.value
-          };
+          if (filter.name === 'in Stock') {
+            newFilters.availability = {
+              ...newFilters.availability,
+              inStock: filter.value,     // Used internally for filtering
+              'in Stock': filter.value   // Used by the UI component
+            };
+            
+            const { navigate, location } = this.props;
+            if (navigate) {
+              const searchParams = new URLSearchParams(location?.search || '');
+              searchParams.set('inStock', filter.value.toString());
+              
+              navigate({
+                search: searchParams.toString()
+              }, { replace: true });
+              
+              console.log('Updated URL with inStock:', filter.value);
+            }
+          } else {
+            newFilters.availability = {
+              ...newFilters.availability,
+              [filter.name]: filter.value
+            };
+          }
           break;
         case 'manufacturer':
           if (!newFilters.manufacturers) {
@@ -290,11 +340,17 @@ class Content extends Component {
     const { activeFilters } = this.state;
     let products = [...this.state.products];
     
+    console.log('Applying filters with activeFilters:', activeFilters);
+    console.log('Initial products count:', products.length);
+    
     // Apply filters
     products = products.filter(product => {
       // Availability filter - only show in-stock items if checked
-      if ((product.available === 0 || product.available === false) && activeFilters.availability['in Stock']) {
-        return false;
+      if (activeFilters.availability && activeFilters.availability['in Stock'] === true) {
+        // If the filter is ON (true), filter out products that are not available
+        if (product.available === 0 || product.available === false) {
+          return false;
+        }
       }
       
       // Manufacturer filter
@@ -348,6 +404,7 @@ class Content extends Component {
       return true;
     });
     
+    console.log('Filtered products count:', products.length);
     this.setState({ filteredProducts: products });
   };
 
@@ -461,6 +518,7 @@ class Content extends Component {
               attributeGroups={this.state.attributeGroups || {}}
               attributeCounts={this.state.attributeCounts || {}}
               categoryId={this.props.categoryId}
+              initialFilters={this.state.activeFilters}
             />
           </Box>
           
@@ -480,4 +538,4 @@ class Content extends Component {
   }
 }
 
-export default ContentWithRouter; 
+export default Content; 

@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 // Lazy load components and custom components
 const Header = lazy(() => import('./components/Header.js'));
-const Content = lazy(() => import('./components/Content.js'));
+const Content = lazy(() => import('./components/ContentWithRouter.js'));
 const Footer = lazy(() => import('./components/Footer.js'));
 const ProductDetailPage = lazy(() => import('./components/Product.js').then(module => ({ 
   default: module.ProductDetailPage 
