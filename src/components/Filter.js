@@ -76,6 +76,24 @@ class Filter extends Component {
     }
   };
 
+  resetFilters = () => {
+    // Reset current filter's state
+    const emptyOptions = {};
+    Object.keys(this.state.options).forEach(option => {
+      emptyOptions[option] = false;
+    });
+    
+    this.setState({ options: emptyOptions });
+    
+    // Notify parent component to reset ALL filters (including other filter components)
+    if (this.props.onFilterChange) {
+      this.props.onFilterChange({ 
+        type: 'RESET_ALL_FILTERS',
+        resetAll: true
+      });
+    }
+  };
+
   render() {
     const { options } = this.state;
     const { title, options: optionsList = [], counts = {} } = this.props;
@@ -115,10 +133,41 @@ class Filter extends Component {
       verticalAlign: 'middle'
     };
 
+    const countBoxStyle = {
+      display: 'inline-block',
+      backgroundColor: '#f0f0f0',
+      borderRadius: '4px',
+      padding: '2px 6px',
+      fontSize: '0.7rem',
+      minWidth: '16px',
+      textAlign: 'center',
+      color: 'rgba(0, 0, 0, 0.7)'
+    };
+
+    const resetButtonStyle = {
+      padding: '2px 8px',
+      fontSize: '0.7rem',
+      backgroundColor: '#f0f0f0',
+      border: '1px solid #ddd',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      color: 'rgba(0, 0, 0, 0.7)',
+      float: 'right'
+    };
+
     return (
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
           {title}
+          {/* Only show reset button on Availability filter */}
+          {title === "Availability" && (
+            <button 
+              style={resetButtonStyle} 
+              onClick={this.resetFilters}
+            >
+              Reset All
+            </button>
+          )}
         </Typography>
         <Box sx={{ width: '100%' }}>
           <table style={tableStyle}>
@@ -145,7 +194,11 @@ class Filter extends Component {
                     {option}
                   </td>
                   <td style={countCellStyle}>
-                    {counts[option] !== undefined && `(${counts[option]})`}
+                    {counts[option] !== undefined && (
+                      <span style={countBoxStyle}>
+                        {counts[option]}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

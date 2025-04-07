@@ -310,6 +310,35 @@ class ProductFilters extends Component {
   };
 
   handleFilterChange = (filterData) => {
+    // Handle reset all filters action
+    if (filterData.type === 'RESET_ALL_FILTERS') {
+      // Reset all filter states
+      this.setState({
+        availabilityValues: { 'in Stock': false },
+        attributeFilters: {},
+        manufacturerFilters: {}
+      }, () => {
+        // Reprocess attributes after resetting filters
+        this.processAttributes(this.props.attributes, this.props.products);
+        
+        // Notify parent component about complete reset
+        if (this.props.onFilterChange) {
+          this.props.onFilterChange({
+            type: 'RESET_ALL_FILTERS',
+            resetAll: true
+          });
+        }
+        
+        // Clear localStorage
+        try {
+          localStorage.removeItem('availabilityFilter');
+        } catch (error) {
+          console.error('Error clearing localStorage:', error);
+        }
+      });
+      return;
+    }
+    
     if (filterData.type === 'availability') {
       // Update local state
       this.setState(prevState => {

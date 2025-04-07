@@ -75,7 +75,7 @@ class App extends Component {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Suspense fallback={<Loading />}>
-          <SocketProvider 
+          <SocketProvider
             url="http://10.10.10.43:9303"
             fallback={
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -93,4 +93,4 @@ class App extends Component {
   }
 }
 
-export default App; 
+export default App;

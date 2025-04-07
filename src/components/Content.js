@@ -236,6 +236,31 @@ class Content extends Component {
       const newFilters = { ...prevState.activeFilters };
       
       switch (filter.type) {
+        case 'RESET_ALL_FILTERS': {
+          // Reset all filters to empty/default state
+          console.log('Resetting all filters');
+          
+          const { navigate, location } = this.props;
+          if (navigate) {
+            const searchParams = new URLSearchParams(location?.search || '');
+            // Remove inStock parameter from URL
+            searchParams.delete('inStock');
+            
+            navigate({
+              search: searchParams.toString()
+            }, { replace: true });
+            
+            console.log('Updated URL: removed all filter parameters');
+          }
+          
+          // Return completely empty filters object to reset everything
+          return { activeFilters: { 
+            availability: { inStock: false, 'in Stock': false },
+            manufacturers: {},
+            attributes: {}
+          }};
+        }
+        
         case 'availability':
           if (filter.name === 'in Stock') {
             newFilters.availability = {
