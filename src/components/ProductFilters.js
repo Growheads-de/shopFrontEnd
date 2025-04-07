@@ -10,7 +10,9 @@ class ProductFilters extends Component {
     super(props);
     this.state = {
       availabilityValues: this.getAvailabilityFromRouteOrStorage(),
-      attributeFilters: {}
+      attributeFilters: {},
+      attributeGroups: {},
+      attributeCounts: {}
     };
   }
 
@@ -49,6 +51,10 @@ class ProductFilters extends Component {
     }
   };
 
+  componentDidMount() {
+    this.processAttributes(this.props.attributes, this.props.products);
+  }
+
   componentDidUpdate(prevProps) {
     // Update filters when URL changes
     if (prevProps.location?.search !== this.props.location?.search) {
@@ -77,11 +83,78 @@ class ProductFilters extends Component {
       }
     }
     
+    // If attributes or products changed, reprocess them
+    if (this.props.attributes !== prevProps.attributes || 
+        this.props.products !== prevProps.products) {
+      this.processAttributes(this.props.attributes, this.props.products);
+    }
+    
     // Reset attribute filters when category changes
     if (prevProps.categoryId !== this.props.categoryId) {
       this.setState({ attributeFilters: {} });
     }
   }
+
+  processAttributes = (attributes ) => {
+    if (!attributes || !attributes.length) {
+      this.setState({ attributeGroups: {}, attributeCounts: {} });
+      return;
+    }
+
+    // Check if we already processed these exact attributes
+    if (this._lastProcessedAttributes === attributes) {
+      console.log('Using memoized attribute groups and counts');
+      return;
+    }
+
+    console.log('Processing attributes, count:', attributes.length);
+    
+    const attributeGroups = {};
+    const attributeCounts = {};
+    
+    // Group attributes by their name and count occurrences
+    if (attributes.length > 0) {
+      // First, map attributes to products to handle duplicates
+      const productAttributeMap = new Map();
+      
+      attributes.forEach(attr => {
+        const productId = parseInt(attr.kArtikel, 10);
+        if (!productAttributeMap.has(productId)) {
+          productAttributeMap.set(productId, {});
+        }
+        
+        const productAttrs = productAttributeMap.get(productId);
+        if (!productAttrs[attr.cName]) {
+          productAttrs[attr.cName] = new Set();
+        }
+        
+        productAttrs[attr.cName].add(attr.cWert);
+      });
+      
+      // Initialize attribute groups and counts
+      attributes.forEach(attr => {
+        if (!attributeGroups[attr.cName]) {
+          attributeGroups[attr.cName] = new Set();
+          attributeCounts[attr.cName] = {};
+        }
+        attributeGroups[attr.cName].add(attr.cWert);
+      });
+      
+      // Count unique attribute values per product
+      for (const [, productAttrs] of productAttributeMap.entries()) {
+        for (const [attrName, attrValues] of Object.entries(productAttrs)) {
+          for (const value of attrValues) {
+            attributeCounts[attrName][value] = (attributeCounts[attrName][value] || 0) + 1;
+          }
+        }
+      }
+    }
+    
+    // Store reference to the processed attributes for memoization
+    this._lastProcessedAttributes = attributes;
+    
+    this.setState({ attributeGroups, attributeCounts });
+  };
 
   handleFilterChange = (filterData) => {
     if (filterData.type === 'availability') {
@@ -126,7 +199,7 @@ class ProductFilters extends Component {
   };
 
   generateAttributeFilters = () => {
-    const { attributeGroups = {}, attributeCounts = {} } = this.props;
+    const { attributeGroups = {}, attributeCounts = {} } = this.state;
     const { attributeFilters } = this.state;
     
     // Convert each attribute Set to array
