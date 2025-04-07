@@ -1,6 +1,6 @@
 /* eslint-env browser */
 /* global Intl */
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component } from 'react';
 import { 
   Box, 
   Card, 
@@ -8,10 +8,21 @@ import {
   CardMedia, 
   Typography, 
   Chip,
+  IconButton,
+  Dialog,
+  DialogContent,
+  Slide
 } from '@mui/material';
 import AddToCartButton from './AddToCartButton.js';
 import { Link, useParams } from 'react-router-dom';
 import SocketContext from '../contexts/SocketContext.js';
+import CircleIcon from '@mui/icons-material/Circle';
+import CloseIcon from '@mui/icons-material/Close';
+
+// Transition component for dialog
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 // Wrapper component for individual product detail page with socket
 const ProductDetailWithSocket = () => {
@@ -25,190 +36,656 @@ const ProductDetailWithSocket = () => {
 };
 
 // Product detail page with image loading
-const ProductDetailPage = ({ productId, socket }) => {
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [productImage, setProductImage] = useState(null);
-  const [imageError, setImageError] = useState(false);
-  
-  // Load product data
-  useEffect(() => {
-    // Mock function to get product data by ID
-    // In a real app, you would fetch this from an API or context
-    const getProductById = (id) => {
-      const products = [
-        { id: 1, name: 'Cannabis Seeds (OG Kush)', price: 49.99, available: true, categoryId: "1", description: "Premium OG Kush seeds with high germination rate. Perfect for beginners and experts alike.", manufacturer: "Green Thumb Seeds" },
-        { id: 2, name: 'LED Grow Light 1000W', price: 249.99, available: true, categoryId: "2", description: "Professional full spectrum LED grow light. Energy efficient with coverage for 4x4ft grow space.", manufacturer: "GrowTech" },
-        { id: 3, name: 'Hydroponic System Kit', price: 189.99, available: false, categoryId: "3", description: "Complete hydroponic system for 8 plants. Includes reservoir, nutrient delivery system, and digital timer.", manufacturer: "AquaGrow" },
-        { id: 4, name: 'Nutrient Solution Pack', price: 39.99, available: true, categoryId: "4", description: "Essential nutrient pack for all growth stages. Includes micro, grow, and bloom nutrients.", manufacturer: "GrowPro" },
-        { id: 5, name: 'Carbon Air Filter', price: 79.99, available: true, categoryId: "5", description: "Premium activated carbon filter to eliminate odors. Fits standard 6-inch ducting.", manufacturer: "AirClean" }
-      ];
-      
-      return products.find(product => product.id === parseInt(id)) || null;
+class ProductDetailPage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      product: null,
+      loading: true,
+      error: null,
+      images: [],
+      currentImageIndex: 0,
+      dialogOpen: false
     };
-    
-    const fetchedProduct = getProductById(productId);
-    setProduct(fetchedProduct);
-    setLoading(false);
-  }, [productId]);
-  
-  // Load product image using socket
-  useEffect(() => {
-    if (!product || !socket) return;
-    
-    // Initialize global cache object if it doesn't exist
-    if (!window.productCache) {
-      window.productCache = {};
+  }
+
+  componentDidMount() {
+    this.loadProductData();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.productId !== this.props.productId) {
+      this.loadProductData();
     }
+  }
+
+  loadProductData = () => {
+    const { socket, productId } = this.props;
     
-    const cacheKey = `productImage_${product.id}`;
-    try {
-      const cachedData = window.productCache[cacheKey];
-      if (cachedData) {
-        const { imageUrl, error, timestamp } = cachedData;
-        const cacheAge = Date.now() - timestamp;
-        const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
-        
-        // If cache is less than 10 minutes old, use it
-        if (cacheAge < tenMinutes) {
-          if (error) {
-            // This is a cached error response, no need to call socket again
-            console.log(`Using cached error response for product ${product.id}, error: ${error}, age:`, Math.round(cacheAge/1000), 'seconds');
-            setImageError(true);
-            return;
-          } else if (imageUrl !== undefined) {
-            // This is a cached successful response
-            console.log(`Using cached image for product ${product.id}, age:`, Math.round(cacheAge/1000), 'seconds');
-            setProductImage(imageUrl);
-            return;
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error reading image from cache:', err);
+    if (!socket) {
+      this.setState({ 
+        loading: false,
+        error: "Socket connection not available" 
+      });
+      return;
     }
-    
-    // If no valid cache, fetch from socket
-    socket.emit('getPreviewPic', { articleId: product.id }, (res) => {
-      // Cache both successful and error responses
-      try {
-        // Store result in global cache with information about the type of response
-        window.productCache[cacheKey] = {
-          imageUrl: res.success ? URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })) : null,
-          error: res.success ? null : (res.error || "Unknown error"),
-          timestamp: Date.now()
-        };
+
+    // Get product data from socket
+    socket.emit('getProductView', { articleId: parseInt(productId) }, (res) => {
+      if (res.success) {
+        console.log('Product data received:', res);
         
-        if (res.success) {
-          console.log(`Cached successful image response for product ${product.id}`);
-          setProductImage(URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })));
+        let productImages = [];
+        if (res.images && Array.isArray(res.images)) {
+          console.log('Images data:', res.images);
+          
+          // Process images with error handling
+          productImages = res.images.map((image, index) => {
+            try {
+              if (image && image.imageBuffer) {
+                // Handle different image buffer formats
+                let blobData;
+                
+                if (typeof image.imageBuffer === 'object' && image.imageBuffer !== null) {
+
+                  if (image.imageBuffer.data) {
+                    blobData = new Uint8Array(image.imageBuffer.data);
+                  } 
+
+                  // If we have processable data, create a blob URL
+                  if (blobData) {
+                    return URL.createObjectURL(new Blob([blobData], { type: "image/jpeg" }));
+                  }
+                }
+              }
+              console.warn(`Image at index ${index} could not be processed:`, image);
+              return null;
+            } catch (err) {
+              console.error(`Error processing image at index ${index}:`, err);
+              return null;
+            }
+          }).filter(img => img !== null); // Remove null entries
         } else {
-          console.log(`Cached error response for product ${product.id}: ${res.error || "Unknown error"}`);
-          setImageError(true);
+          console.warn('No images array in response or invalid format');
         }
-      } catch (err) {
-        console.error('Error writing to cache:', err);
         
-        // Still update state if successful, even if caching failed
-        if (res.success) {
-          setProductImage(URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })));
-        } else {
-          setImageError(true);
-        }
+        console.log('Processed images:', productImages.length);
+        
+        res.product.attributes = res.attributes;
+
+        this.setState({ 
+          product: res.product,
+          images: productImages,
+          loading: false
+        });
+      } else {
+        console.error('Error loading product:', res.error || 'Unknown error');
+        this.setState({ 
+          loading: false, 
+          error: res.error || 'Unknown error loading product' 
+        });
       }
     });
-  }, [product, socket]);
-  
-  if (loading) {
-    return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h5" gutterBottom>
-          Loading Product...
-        </Typography>
-      </Box>
-    );
   }
-  
-  if (!product) {
-    return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <Typography variant="h5" gutterBottom>
-          Product Not Found
-        </Typography>
-        <Typography>
-          The product you are looking for does not exist or has been removed.
-        </Typography>
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <Typography color="primary" sx={{ mt: 2 }}>
-            Return to Home
+
+  // Safely render HTML content
+  createMarkup = (htmlContent) => {
+    return { __html: htmlContent || "" };
+  }
+
+ 
+
+  // Determine availability status and message
+  getAvailabilityInfo = (fVerfuegbar, fZulauf, dLieferdatum) => {
+    if (fVerfuegbar > 0) {
+      return {
+        status: "in-stock",
+        message: `Auf Lager (${fVerfuegbar} Stück)`,
+        color: "success"
+      };
+    } else if (fZulauf > 0 && dLieferdatum) {
+      const deliveryDate = new Date(dLieferdatum).toLocaleDateString('de-DE');
+      return {
+        status: "restock",
+        message: `Lieferbar ab ${deliveryDate} (${fZulauf} Stück)`,
+        color: "warning"
+      };
+    } else {
+      return {
+        status: "unavailable",
+        message: "Nicht verfügbar",
+        color: "error"
+      };
+    }
+  }
+
+  handlePrevImage = () => {
+    this.setState(prevState => ({
+      currentImageIndex: prevState.currentImageIndex === 0 
+        ? prevState.images.length - 1 
+        : prevState.currentImageIndex - 1
+    }));
+  }
+
+  handleNextImage = () => {
+    this.setState(prevState => ({
+      currentImageIndex: prevState.currentImageIndex === prevState.images.length - 1 
+        ? 0 
+        : prevState.currentImageIndex + 1
+    }));
+  }
+
+  handleSelectImage = (index) => {
+    this.setState({
+      currentImageIndex: index
+    });
+  }
+
+  handleOpenDialog = () => {
+    this.setState({ dialogOpen: true });
+  }
+
+  handleCloseDialog = () => {
+    this.setState({ dialogOpen: false });
+  }
+
+  render() {
+    const { product, loading, error, images, currentImageIndex, dialogOpen } = this.state;
+    
+    if (loading) {
+      return (
+        <Box sx={{ 
+          p: 4, 
+          textAlign: 'center',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '60vh'
+        }}>
+          <Typography variant="h5" gutterBottom>
+            Produkt wird geladen...
           </Typography>
-        </Link>
-      </Box>
+        </Box>
+      );
+    }
+    
+    if (error) {
+      return (
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h5" gutterBottom color="error">
+            Fehler
+          </Typography>
+          <Typography>
+            {error}
+          </Typography>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Typography color="primary" sx={{ mt: 2 }}>
+              Zurück zur Startseite
+            </Typography>
+          </Link>
+        </Box>
+      );
+    }
+    
+    if (!product) {
+      return (
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h5" gutterBottom>
+            Produkt nicht gefunden
+          </Typography>
+          <Typography>
+            Das gesuchte Produkt existiert nicht oder wurde entfernt.
+          </Typography>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Typography color="primary" sx={{ mt: 2 }}>
+              Zurück zur Startseite
+            </Typography>
+          </Link>
+        </Box>
+      );
+    }
+    
+    // Get availability information
+    const availability = this.getAvailabilityInfo(
+      product.fVerfuegbar, 
+      product.fZulauf, 
+      product.dLieferdatum
     );
-  }
-  
-  // Determine image source - use fallback if no image or error
-  const imageSrc = (!productImage || imageError) ? '/assets/nopicture.jpg' : productImage;
-  
-  return (
-    <Box sx={{ p: 4 }}>
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
-        {/* Product Image */}
-        <Box sx={{ flex: '0 0 40%' }}>
-          <CardMedia
-            component="img"
-            image={imageSrc}
-            alt={product.name}
-            sx={{ 
-              borderRadius: 2, 
-              height: '400px',
-              objectFit: 'cover',
-              width: '100%'
+    
+
+    
+    // Format price with tax
+    const priceWithTax = new Intl.NumberFormat("de-DE", {style: "currency", currency: "EUR",}).format(product.fPreis);
+    const isAvailable = product.fVerfuegbar > 0;
+    
+    // Determine if we have images or need to use default
+    const hasImages = images && images.length > 0;
+    const defaultImageSrc = '/assets/images/nopicture.jpg';
+    const currentImageSrc = hasImages ? images[currentImageIndex] : defaultImageSrc;
+    
+    return (
+      <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: '1400px', mx: 'auto' }}>
+        {/* Image Viewer Dialog */}
+        <Dialog
+          fullScreen
+          open={dialogOpen}
+          onClose={this.handleCloseDialog}
+          TransitionComponent={Transition}
+          sx={{
+            '& .MuiDialog-paper': {
+              background: 'rgba(0, 0, 0, 0.2)'
+            }
+          }}
+        >
+          <IconButton
+            onClick={this.handleCloseDialog}
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              color: 'white',
+              zIndex: 1,
+              bgcolor: 'rgba(0,0,0,0.5)',
+              '&:hover': {
+                bgcolor: 'rgba(0,0,0,0.7)',
+              }
             }}
-          />
+          >
+            <CloseIcon />
+          </IconButton>
+          
+          <DialogContent sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            position: 'relative',
+            p: 0
+          }}
+          onClick={this.handleCloseDialog}
+          >
+            <Box sx={{ 
+              position: 'relative', 
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              height: '100%'
+            }}>
+              <CardMedia
+                component="img"
+                image={currentImageSrc}
+                alt={product ? product.cName : ''}
+                sx={{
+                  maxWidth: '90%',
+                  maxHeight: '90%',
+                  objectFit: 'contain'
+                }}
+              />
+              
+              {/* Navigation arrows removed as requested */}
+            </Box>
+          </DialogContent>
+          
+          {/* Thumbnails in dialog */}
+          {hasImages && images.length > 1 && (
+            <Box sx={{
+              position: 'absolute',
+              bottom: 0,
+              width: '100%',
+              bgcolor: 'rgba(0,0,0,0.7)',
+              display: 'flex',
+              justifyContent: 'center',
+              padding: 2,
+              overflowX: 'auto',
+              zIndex: 1
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent dialog from closing when clicking thumbnails
+            >
+              <Box sx={{ 
+                display: 'flex',
+                gap: 1,
+                maxWidth: '100%'
+              }}>
+                {images.map((img, index) => (
+                  <Box 
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent dialog from closing
+                      this.handleSelectImage(index);
+                    }}
+                    sx={{ 
+                      width: 80,
+                      height: 80,
+                      flexShrink: 0,
+                      border: index === currentImageIndex ? '2px solid white' : '2px solid transparent',
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      opacity: index === currentImageIndex ? 1 : 0.7,
+                      '&:hover': {
+                        opacity: 1
+                      }
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      image={img}
+                      alt={`Thumbnail ${index + 1}`}
+                      sx={{ 
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+        </Dialog>
+
+        {/* Breadcrumbs */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+              Home
+            </Link> 
+            {' > '} 
+            {product.cName}
+          </Typography>
+        </Box>
+      
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          gap: 4,
+          background: '#fff',
+          borderRadius: 2,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          overflow: 'hidden'
+        }}>
+          {/* Product Image Carousel */}
+          <Box sx={{ 
+            flex: '0 0 40%', 
+            minHeight: '400px',
+            position: 'relative',
+            background: '#f8f8f8',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            {/* Main Image */}
+            <Box sx={{ 
+              position: 'relative', 
+              width: '100%', 
+              height: '400px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'zoom-in'
+            }}
+            onClick={this.handleOpenDialog}
+            >
+              <CardMedia
+                component="img"
+                image={currentImageSrc}
+                alt={product.cName}
+                sx={{ 
+                  objectFit: 'contain',
+                  maxHeight: '400px',
+                  maxWidth: '100%'
+                }}
+              />
+              
+              {/* Navigation arrows removed as requested */}
+            </Box>
+            
+            {/* Thumbnail navigation */}
+            {hasImages && images.length > 1 && (
+              <Box sx={{ 
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 1,
+                mt: 2,
+                flexWrap: 'wrap'
+              }}>
+                {images.map((img, index) => (
+                  <Box 
+                    key={index}
+                    onClick={() => this.handleSelectImage(index)}
+                    sx={{ 
+                      width: 60,
+                      height: 60,
+                      border: index === currentImageIndex ? '2px solid #1976d2' : '2px solid transparent',
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        opacity: 0.8
+                      }
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      image={img}
+                      alt={`Thumbnail ${index + 1}`}
+                      sx={{ 
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            )}
+            
+            {/* Dot indicators for mobile */}
+            {hasImages && images.length > 1 && (
+              <Box sx={{ 
+                display: { xs: 'flex', sm: 'none' },
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 1,
+                mt: 2
+              }}>
+                {images.map((_, index) => (
+                  <CircleIcon 
+                    key={index}
+                    fontSize="small"
+                    onClick={() => this.handleSelectImage(index)}
+                    sx={{ 
+                      fontSize: index === currentImageIndex ? 12 : 8,
+                      color: index === currentImageIndex ? 'primary.main' : 'grey.400',
+                      cursor: 'pointer'
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
+          </Box>
+          
+          {/* Product Details */}
+          <Box sx={{ 
+            flex: '1 1 60%',
+            p: { xs: 2, md: 4 },
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Product identifiers */}
+            <Box sx={{ mb: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Artikelnummer: {product.cArtNr}
+              </Typography>
+            </Box>
+            
+            {/* Product title */}
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              gutterBottom
+              sx={{ fontWeight: 600, color: '#333' }}
+            >
+              {product.cName}
+            </Typography>
+            
+            {/* Manufacturer if available */}
+            {product.HerstellerName && (
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                  Hersteller: {product.HerstellerName}
+                </Typography>
+              </Box>
+            )}
+            
+            {/* Product short description - HTML rendered */}
+            {product.cKurzBeschreibung && (
+              <Box 
+                sx={{ 
+                  my: 2,
+                  '& p': { mt: 0 }
+                }}
+                dangerouslySetInnerHTML={this.createMarkup(product.cKurzBeschreibung)}
+              />
+            )}
+            
+            {/* Price and availability section */}
+            <Box 
+              sx={{ 
+                mt: 'auto',
+                p: 3, 
+                background: '#f9f9f9', 
+                borderRadius: 2,
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: 2
+              }}
+            >
+              <Box>
+                <Typography variant="h4" color="primary" sx={{ fontWeight: 'bold' }}>
+                  {priceWithTax}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  inkl. {product.fSteuersatz}% MwSt.
+                </Typography>
+              </Box>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Chip 
+                  label={availability.message} 
+                  color={availability.color}
+                  sx={{ fontWeight: 'medium', mb: 1 }}
+                />
+                
+                <AddToCartButton 
+                  product={{ 
+                    id: product.kArtikel, 
+                    name: product.cName, 
+                    price: product.fPreis, 
+                    available: isAvailable 
+                  }} 
+                  disabled={!isAvailable}
+                  size="large"
+                  sx={{ minWidth: '180px' }}
+                />
+              </Box>
+            </Box>
+          </Box>
         </Box>
         
-        {/* Product Details */}
-        <Box sx={{ flex: '1 1 60%' }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            {product.name}
-          </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
-              Manufacturer: {product.manufacturer || 'Unknown'}
-            </Typography>
+        {/* Product full description */}
+        {product.cBeschreibung && (
+          <Box sx={{ 
+            mt: 4, 
+            p: 4, 
+            background: '#fff',
+            borderRadius: 2,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          }}>      
+            <Box 
+              sx={{ 
+                mt: 2,
+                lineHeight: 1.7,
+                '& p': { mt: 0, mb: 2 },
+                '& strong': { fontWeight: 600 }
+              }}
+              dangerouslySetInnerHTML={this.createMarkup(product.cBeschreibung)} 
+            />
           </Box>
-          
-          <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-            ${product.price.toFixed(2)}
-          </Typography>
-          
-          {!product.available && (
-            <Chip 
-              label="Out of Stock" 
-              color="error" 
-              sx={{ mb: 2 }}
-            />
-          )}
-          
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            {product.description}
-          </Typography>
-          
-          <Box sx={{ maxWidth: '200px', mt: 3 }}>
-            <AddToCartButton 
-              product={product} 
-              disabled={!product.available}
-              fullWidth
-              size="large"
-            />
+        )}
+
+        {/* Product attributes table */}
+        <Box sx={{ 
+          mt: 4, 
+          p: 4, 
+          background: '#fff',
+          borderRadius: 2,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        }}>
+          <Box sx={{
+            display: 'table',
+            width: '100%',
+            borderCollapse: 'collapse',
+          }}>
+            {/* Weight row */}
+            <Box sx={{
+              display: 'table-row',
+              '&:nth-of-type(odd)': {
+                backgroundColor: '#f9f9f9',
+              },
+            }}>
+              <Box sx={{
+                display: 'table-cell',
+                padding: '12px 16px',
+                borderBottom: '1px solid #eee',
+                fontWeight: 600,
+                width: '40%'
+              }}>
+                Gewicht
+              </Box>
+              <Box sx={{
+                display: 'table-cell',
+                padding: '12px 16px',
+                borderBottom: '1px solid #eee'
+              }}>
+                {product.fGewicht > 0 ? `${product.fGewicht} g` : 'Keine Angabe'}
+              </Box>
+            </Box>
+            
+            {/* Attribute rows */}
+            {product.attributes && Array.isArray(product.attributes) &&  product.attributes.map((attr, index) => (
+              <Box key={index} sx={{
+                display: 'table-row',
+                '&:nth-of-type(odd)': {
+                  backgroundColor: '#f9f9f9',
+                },
+              }}>
+                <Box sx={{
+                  display: 'table-cell',
+                  padding: '12px 16px',
+                  borderBottom: '1px solid #eee',
+                  fontWeight: 600
+                }}>
+                  {attr.cName}
+                </Box>
+                <Box sx={{
+                  display: 'table-cell',
+                  padding: '12px 16px',
+                  borderBottom: '1px solid #eee'
+                }}>
+                  {attr.cWert}
+                </Box>
+              </Box>
+            ))}
           </Box>
         </Box>
       </Box>
-    </Box>
-  );
-};
+    );
+  }
+}
 
 class Product extends Component {
 

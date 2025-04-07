@@ -11,8 +11,10 @@ class ProductFilters extends Component {
     this.state = {
       availabilityValues: this.getAvailabilityFromRouteOrStorage(),
       attributeFilters: {},
+      manufacturerFilters: {},
       attributeGroups: {},
-      attributeCounts: {}
+      attributeCounts: {},
+      filteredManufacturerCounts: {}
     };
   }
 
@@ -55,7 +57,7 @@ class ProductFilters extends Component {
     this.processAttributes(this.props.attributes, this.props.products);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     // Update filters when URL changes
     if (prevProps.location?.search !== this.props.location?.search) {
       const newAvailability = this.getAvailabilityFromRouteOrStorage();
@@ -64,6 +66,9 @@ class ProductFilters extends Component {
       if (this.state.availabilityValues['in Stock'] !== newAvailability['in Stock']) {
         this.setState({ 
           availabilityValues: newAvailability
+        }, () => {
+          // Reprocess attributes when "in Stock" filter changes
+          this.processAttributes(this.props.attributes, this.props.products);
         });
       }
     }
@@ -81,6 +86,11 @@ class ProductFilters extends Component {
           });
         }
       }
+      
+      // Reprocess attributes when initialFilters change
+      if (prevState.availabilityValues['in Stock'] !== initialFilters?.availability?.inStock) {
+        this.processAttributes(this.props.attributes, this.props.products);
+      }
     }
     
     // If attributes or products changed, reprocess them
@@ -89,60 +99,197 @@ class ProductFilters extends Component {
       this.processAttributes(this.props.attributes, this.props.products);
     }
     
+    // If attribute filters changed, reprocess attributes to update counts
+    if (JSON.stringify(prevState.attributeFilters) !== JSON.stringify(this.state.attributeFilters) ||
+        JSON.stringify(prevState.manufacturerFilters) !== JSON.stringify(this.state.manufacturerFilters)) {
+      this.processAttributes(this.props.attributes, this.props.products);
+    }
+    
     // Reset attribute filters when category changes
     if (prevProps.categoryId !== this.props.categoryId) {
-      this.setState({ attributeFilters: {} });
+      this.setState({ 
+        attributeFilters: {},
+        manufacturerFilters: {}
+      });
     }
   }
 
-  processAttributes = (attributes ) => {
+  processAttributes = (attributes, products) => {
     if (!attributes || !attributes.length) {
-      this.setState({ attributeGroups: {}, attributeCounts: {} });
+      this.setState({ attributeGroups: {}, attributeCounts: {}, filteredManufacturerCounts: {} });
       return;
     }
 
-    // Check if we already processed these exact attributes
-    if (this._lastProcessedAttributes === attributes) {
-      console.log('Using memoized attribute groups and counts');
-      return;
+    // Apply "in Stock" filter if enabled - this affects ALL counts
+    let stockFilteredProducts = [...products];
+    const applyInStockFilter = this.state.availabilityValues['in Stock'];
+    
+    if (applyInStockFilter) {
+      stockFilteredProducts = stockFilteredProducts.filter(product => product.available);
     }
+
+    // Check groups where at least one item is selected
+    const { attributeFilters, manufacturerFilters } = this.state;
+    const groupsWithSelection = new Set();
+    
+    // Find which attribute groups have at least one selection
+    for (const attrName in attributeFilters) {
+      const activeValues = Object.entries(attributeFilters[attrName] || {})
+        .filter(([_, isActive]) => isActive)
+        .map(([value]) => value);
+      
+      if (activeValues.length > 0) {
+        groupsWithSelection.add(attrName);
+      }
+    }
+    
+    // Check if any manufacturer is selected
+    const manufacturerHasSelection = Object.values(manufacturerFilters).some(v => v);
 
     console.log('Processing attributes, count:', attributes.length);
+    console.log('Groups with selection:', Array.from(groupsWithSelection));
+    console.log('Manufacturer has selection:', manufacturerHasSelection);
+    console.log('In Stock filter active:', applyInStockFilter);
     
     const attributeGroups = {};
     const attributeCounts = {};
     
-    // Group attributes by their name and count occurrences
-    if (attributes.length > 0) {
-      // First, map attributes to products to handle duplicates
-      const productAttributeMap = new Map();
+    // Initialize attribute groups and counts from all attributes
+    attributes.forEach(attr => {
+      if (!attributeGroups[attr.cName]) {
+        attributeGroups[attr.cName] = new Set();
+        attributeCounts[attr.cName] = {};
+      }
+      attributeGroups[attr.cName].add(attr.cWert);
+    });
+    
+    // Create map of all attributes by product
+    const productToAttributes = new Map();
+    attributes.forEach(attr => {
+      const productId = parseInt(attr.kArtikel, 10);
+      if (!productToAttributes.has(productId)) {
+        productToAttributes.set(productId, []);
+      }
+      productToAttributes.get(productId).push(attr);
+    });
+    
+    // Calculate manufacturer counts with only stock filter applied
+    const stockFilteredManufacturerCounts = {};
+    stockFilteredProducts.forEach(product => {
+      const manufacturer = product.manufacturer;
+      if (manufacturer) {
+        stockFilteredManufacturerCounts[manufacturer] = 
+          (stockFilteredManufacturerCounts[manufacturer] || 0) + 1;
+      }
+    });
+    
+    // First, calculate stock-filtered counts, applying only the "in Stock" filter
+    const stockFilteredCounts = {};
+    
+    // Count products that pass the stock filter for each attribute
+    for (const product of stockFilteredProducts) {
+      const productId = parseInt(product.id, 10);
+      const productAttrs = productToAttributes.get(productId) || [];
       
-      attributes.forEach(attr => {
-        const productId = parseInt(attr.kArtikel, 10);
-        if (!productAttributeMap.has(productId)) {
-          productAttributeMap.set(productId, {});
+      // Group attributes by name
+      const attrByName = {};
+      for (const attr of productAttrs) {
+        if (!attrByName[attr.cName]) {
+          attrByName[attr.cName] = new Set();
+        }
+        attrByName[attr.cName].add(attr.cWert);
+      }
+      
+      // Count each attribute value in stock-filtered products
+      for (const [attrName, values] of Object.entries(attrByName)) {
+        if (!stockFilteredCounts[attrName]) {
+          stockFilteredCounts[attrName] = {};
         }
         
-        const productAttrs = productAttributeMap.get(productId);
-        if (!productAttrs[attr.cName]) {
-          productAttrs[attr.cName] = new Set();
+        for (const value of values) {
+          stockFilteredCounts[attrName][value] = (stockFilteredCounts[attrName][value] || 0) + 1;
         }
+      }
+    }
+    
+    // Now apply additional filtering for attribute and manufacturer filters
+    const fullyFilteredProductIds = new Set();
+    
+    // Filter products based on selected attribute groups and manufacturers
+    for (const product of stockFilteredProducts) {
+      const productId = parseInt(product.id, 10);
+      const productAttrs = productToAttributes.get(productId) || [];
+      let includeProduct = true;
+      
+      // Check all attribute groups that have selection
+      for (const attrName of groupsWithSelection) {
+        const activeValues = Object.entries(attributeFilters[attrName] || {})
+          .filter(([_, isActive]) => isActive)
+          .map(([value]) => value);
         
-        productAttrs[attr.cName].add(attr.cWert);
-      });
-      
-      // Initialize attribute groups and counts
-      attributes.forEach(attr => {
-        if (!attributeGroups[attr.cName]) {
-          attributeGroups[attr.cName] = new Set();
-          attributeCounts[attr.cName] = {};
+        // Skip if no values selected
+        if (activeValues.length === 0) continue;
+        
+        // Get all values of this attribute for this product
+        const productValues = productAttrs
+          .filter(attr => attr.cName === attrName)
+          .map(attr => attr.cWert);
+        
+        // Check if product has any of the selected values
+        if (!productValues.some(val => activeValues.includes(val))) {
+          includeProduct = false;
+          break;
         }
-        attributeGroups[attr.cName].add(attr.cWert);
-      });
+      }
       
-      // Count unique attribute values per product
-      for (const [, productAttrs] of productAttributeMap.entries()) {
-        for (const [attrName, attrValues] of Object.entries(productAttrs)) {
+      // Check manufacturer filter if any manufacturer is selected
+      if (includeProduct && Object.keys(manufacturerFilters).length > 0) {
+        const activeManufacturers = Object.entries(manufacturerFilters)
+          .filter(([_, isActive]) => isActive)
+          .map(([name]) => name);
+        
+        if (activeManufacturers.length > 0 && !activeManufacturers.includes(product.manufacturer)) {
+          includeProduct = false;
+        }
+      }
+      
+      if (includeProduct) {
+        fullyFilteredProductIds.add(productId);
+      }
+    }
+    
+    // Calculate fully filtered manufacturer counts
+    const fullyFilteredManufacturerCounts = {};
+    for (const product of stockFilteredProducts) {
+      // Skip products that don't match attribute filters
+      if (!fullyFilteredProductIds.has(parseInt(product.id, 10))) continue;
+      
+      const manufacturer = product.manufacturer;
+      if (manufacturer) {
+        fullyFilteredManufacturerCounts[manufacturer] = 
+          (fullyFilteredManufacturerCounts[manufacturer] || 0) + 1;
+      }
+    }
+    
+    // Calculate final counts
+    for (const [attrName] of Object.entries(attributeCounts)) {
+      // For groups with selection, use stock-filtered counts
+      if (groupsWithSelection.has(attrName)) {
+        // Use stock-filtered counts for groups with selection
+        Object.assign(attributeCounts[attrName], stockFilteredCounts[attrName] || {});
+      } else {
+        // For groups without selection, apply full filtering
+        for (const product of stockFilteredProducts) {
+          const productId = parseInt(product.id, 10);
+          
+          // Skip products that don't match attribute filters
+          if (!fullyFilteredProductIds.has(productId)) continue;
+          
+          const productAttrs = productToAttributes.get(productId) || [];
+          const attrValues = productAttrs
+            .filter(attr => attr.cName === attrName)
+            .map(attr => attr.cWert);
+          
           for (const value of attrValues) {
             attributeCounts[attrName][value] = (attributeCounts[attrName][value] || 0) + 1;
           }
@@ -150,10 +297,16 @@ class ProductFilters extends Component {
       }
     }
     
-    // Store reference to the processed attributes for memoization
-    this._lastProcessedAttributes = attributes;
+    // Choose which manufacturer counts to use based on selection
+    const filteredManufacturerCounts = manufacturerHasSelection 
+      ? stockFilteredManufacturerCounts 
+      : fullyFilteredManufacturerCounts;
     
-    this.setState({ attributeGroups, attributeCounts });
+    this.setState({ 
+      attributeGroups, 
+      attributeCounts,
+      filteredManufacturerCounts
+    });
   };
 
   handleFilterChange = (filterData) => {
@@ -172,14 +325,18 @@ class ProductFilters extends Component {
           console.error('Error saving to localStorage:', error);
         }
         
-        // Route update is now handled by the parent Content component
-        
         return { availabilityValues: newAvailabilityValues };
+      }, () => {
+        // Reprocess attributes when "in Stock" filter changes
+        this.processAttributes(this.props.attributes, this.props.products);
+        
+        // Then notify parent
+        if (this.props.onFilterChange) {
+          this.props.onFilterChange(filterData);
+        }
       });
-    }
-    
-    // Track attribute filter selections in component state
-    if (filterData.type === 'attribute') {
+    } else if (filterData.type === 'attribute') {
+      // Track attribute filter selections in component state
       this.setState(prevState => {
         const newAttributeFilters = {...prevState.attributeFilters};
         
@@ -190,11 +347,36 @@ class ProductFilters extends Component {
         newAttributeFilters[filterData.attribute][filterData.name] = filterData.value;
         
         return { attributeFilters: newAttributeFilters };
+      }, () => {
+        // Reprocess attributes when attribute filters change to update counts
+        this.processAttributes(this.props.attributes, this.props.products);
+        
+        // Notify parent component
+        if (this.props.onFilterChange) {
+          this.props.onFilterChange(filterData);
+        }
       });
-    }
-
-    if (this.props.onFilterChange) {
-      this.props.onFilterChange(filterData);
+    } else if (filterData.type === 'manufacturer') {
+      // Track manufacturer filter selections in component state
+      this.setState(prevState => {
+        const newManufacturerFilters = {...prevState.manufacturerFilters};
+        newManufacturerFilters[filterData.name] = filterData.value;
+        
+        return { manufacturerFilters: newManufacturerFilters };
+      }, () => {
+        // Reprocess attributes when manufacturer filters change
+        this.processAttributes(this.props.attributes, this.props.products);
+        
+        // Notify parent component
+        if (this.props.onFilterChange) {
+          this.props.onFilterChange(filterData);
+        }
+      });
+    } else {
+      // For other filter types
+      if (this.props.onFilterChange) {
+        this.props.onFilterChange(filterData);
+      }
     }
   };
 
@@ -231,11 +413,8 @@ class ProductFilters extends Component {
   };
 
   render() {
-    const { manufacturers = [], manufacturerProductCount = {} } = this.props;
-    const { availabilityValues } = this.state;
-
-    // Debug log 
-    console.log('ProductFilters render, availabilityValues:', availabilityValues);
+    const { manufacturers = [] } = this.props;
+    const { availabilityValues, filteredManufacturerCounts, manufacturerFilters } = this.state;
     
     // Generate dynamic attribute filters
     const attributeFilters = this.generateAttributeFilters();
@@ -267,7 +446,8 @@ class ProductFilters extends Component {
         <Filter 
           title="Manufacturer"
           options={manufacturers}
-          counts={manufacturerProductCount}
+          counts={filteredManufacturerCounts}
+          initialValues={manufacturerFilters}
           filterType="manufacturer"
           onFilterChange={this.handleFilterChange}
         />
