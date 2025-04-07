@@ -9,8 +9,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 const Header = lazy(() => import('./components/Header.js'));
 const Content = lazy(() => import('./components/ContentWithRouter.js'));
 const Footer = lazy(() => import('./components/Footer.js'));
-const ProductDetailPage = lazy(() => import('./components/Product.js').then(module => ({ 
-  default: module.ProductDetailPage 
+const ProductDetailPage = lazy(() => import('./components/ProductDetailPage.js').then(module => ({
+  default: module.ProductDetailWithSocket
 })));
 const Home = lazy(() => import('./pages/Home.js'));
 const Cart = lazy(() => import('./pages/Cart.js'));
@@ -76,7 +76,7 @@ class App extends Component {
         <CssBaseline />
         <Suspense fallback={<Loading />}>
           <SocketProvider 
-            url="http://localhost:9303"
+            url="http://10.10.10.43:9303"
             fallback={
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <CircularProgress color="primary" />

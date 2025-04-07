@@ -13,7 +13,7 @@ class SocketProvider extends Component {
 
   componentDidMount() {
     // Use http/https protocol for the URL, not ws
-    const serverUrl = this.props.url || 'http://localhost:9303';
+    const serverUrl = this.props.url;
     console.log('SocketProvider: Connecting to socket server...', serverUrl);
     
     // Connect to the Socket.IO server
