@@ -48,7 +48,7 @@ class Filter extends Component {
 
     if (this.props.onFilterChange) {
       this.props.onFilterChange({ 
-        type: this.props.filterType, 
+        type: this.props.filterType || 'default', 
         name: event.target.name, 
         value: event.target.checked 
       });

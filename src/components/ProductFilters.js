@@ -8,7 +8,8 @@ class ProductFilters extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      availabilityValues: this.getAvailabilityFromStorage()
+      availabilityValues: this.getAvailabilityFromStorage(),
+      attributeFilters: {}
     };
   }
 
@@ -25,6 +26,13 @@ class ProductFilters extends Component {
       return { inStock: true };
     }
   };
+
+  componentDidUpdate(prevProps) {
+    // Reset attribute filters when category changes
+    if (prevProps.categoryId !== this.props.categoryId) {
+      this.setState({ attributeFilters: {} });
+    }
+  }
 
   handleFilterChange = (filterData) => {
     if (filterData.type === 'availability') {
@@ -45,15 +53,65 @@ class ProductFilters extends Component {
         return { availabilityValues: newAvailabilityValues };
       });
     }
+    
+    // Track attribute filter selections in component state
+    if (filterData.type === 'attribute') {
+      this.setState(prevState => {
+        const newAttributeFilters = {...prevState.attributeFilters};
+        
+        if (!newAttributeFilters[filterData.attribute]) {
+          newAttributeFilters[filterData.attribute] = {};
+        }
+        
+        newAttributeFilters[filterData.attribute][filterData.name] = filterData.value;
+        
+        return { attributeFilters: newAttributeFilters };
+      });
+    }
 
     if (this.props.onFilterChange) {
       this.props.onFilterChange(filterData);
     }
   };
 
+  generateAttributeFilters = () => {
+    const { attributeGroups = {}, attributeCounts = {} } = this.props;
+    const { attributeFilters } = this.state;
+    
+    // Convert each attribute Set to array
+    return Object.entries(attributeGroups).map(([attributeName, valuesSet]) => {
+      const values = Array.from(valuesSet);
+      if (values.length <= 1) return null; // Skip if only one value or empty
+      
+      // Get current filter values for this attribute
+      const initialValues = attributeFilters[attributeName] || {};
+      
+      // Get counts for this attribute
+      const counts = attributeCounts[attributeName] || {};
+      
+      return (
+        <Filter
+          key={attributeName}
+          title={attributeName}
+          options={values}
+          counts={counts}
+          initialValues={initialValues}
+          filterType="attribute"
+          onFilterChange={(filterData) => this.handleFilterChange({
+            ...filterData,
+            attribute: attributeName
+          })}
+        />
+      );
+    }).filter(Boolean); // Remove null entries
+  };
+
   render() {
     const { manufacturers = [], manufacturerProductCount = {} } = this.props;
     const { availabilityValues } = this.state;
+    
+    // Generate dynamic attribute filters
+    const attributeFilters = this.generateAttributeFilters();
 
     return (
       <Paper 
@@ -73,6 +131,9 @@ class ProductFilters extends Component {
           filterType="availability"
           onFilterChange={this.handleFilterChange}
         />
+
+        {/* Dynamic Attribute Filters */}
+        {attributeFilters}
 
         {/* Manufacturer Filter */}
         <Filter 
