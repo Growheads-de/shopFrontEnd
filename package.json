@@ -4,8 +4,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "webpack serve --progress --mode development",
-    "prod": "webpack serve --progress --mode production --no-client-overlay --no-web-socket-server",
+    "start": "webpack serve --progress --mode development --no-open",
+    "prod": "webpack serve --progress --mode production --no-client-overlay --no-client --no-web-socket-server --no-open --no-live-reload --no-hot --compress --no-devtool",
     "build": "cross-env NODE_ENV=production webpack --progress --mode production",
     "lint": "eslint src/**/*.{js,jsx}"
   },

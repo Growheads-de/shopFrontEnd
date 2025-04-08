@@ -14,19 +14,41 @@ export default {
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: isDevelopment ? 'js/[name].bundle.js' : 'js/[name].[contenthash].js',
-    chunkFilename: isDevelopment ? 'js/[name].chunk.js' : 'js/[name].[contenthash].chunk.js',
+    filename: isDevelopment ? 'js/[name].[contenthash].bundle.js' : 'js/[name].[contenthash].js',
+    chunkFilename: isDevelopment ? 'js/[name].[contenthash].chunk.js' : 'js/[name].[contenthash].chunk.js',
     clean: true,
     publicPath: '/'
   },
-  devtool: isDevelopment ? 'eval-source-map' : 'source-map',
+  devtool: isDevelopment ? 'eval-source-map' : false,
   optimization: {
     runtimeChunk: 'single',
     splitChunks: {
       chunks: 'all',
       maxInitialRequests: Infinity,
+      maxSize: 20000,
       minSize: 20000,
       cacheGroups: {
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
+          reuseExistingChunk: true,
+          name(module) {
+            const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+            return `vendor.${packageName.replace('@', '')}`;
+          }
+        },
+        mui: {
+          test: /[\\/]node_modules[\\/]@mui[\\/]/,
+          name(module) {
+            const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+            return `muivendor.${packageName.replace('@', '')}`;
+          },
+          priority: 10,
+          enforce: true,
+          maxSize: 200000,
+        },
+      },
+      /*cacheGroups: {
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name(module) {
@@ -36,7 +58,7 @@ export default {
             return `vendor.${packageName.replace('@', '')}`;
           },
         },
-      },
+      },*/
     },
   },
   module: {
@@ -86,6 +108,9 @@ export default {
     }),
   ].filter(Boolean),
   devServer: {
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
+    },
     static: [
       {
         directory: path.resolve(__dirname, 'dist'),
@@ -95,9 +120,22 @@ export default {
         publicPath: '/',
       }
     ],
+    setupMiddlewares: (middlewares, devServer) => {
+      if (!devServer) throw new Error('webpack-dev-server is not defined');
+      devServer.app.use((req, res, next) => {
+        if (req.url === '/' || req.url.startsWith('/index.html')) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        }
+        next();
+      });
+
+      return middlewares;
+    },
     hot: true,
     port: 9500,
-    open: true,
+    open: false,
     historyApiFallback: true,
     client: {
       overlay: {
@@ -106,4 +144,4 @@ export default {
       },
     },
   },
-}; 
+};

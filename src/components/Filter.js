@@ -11,17 +11,35 @@ class Filter extends Component {
     this.state = {
       options: this.initializeOptions(props)
     };
+    console.log('WSXFilter',props);
   }
 
   initializeOptions = (props) => {
+    console.log('initializeOptions',props);
     const { options = [], initialValues = {} } = props;
-    const optionsState = {};
+    let optionsState = {};
     
     options.forEach(option => {
       // If there's an initial value provided, use it, otherwise default to false
-      optionsState[option] = initialValues[option] !== undefined ? initialValues[option] : false;
+      optionsState[option.id] = initialValues[option.id] !== undefined ? initialValues[option.id] : false;
     });
-    
+
+    if(props.filterType === 'attribute'){
+      const attributeCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_attribute_'));;
+      const attributeFilters = attributeCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
+      optionsState = attributeFilters.reduce((acc, filter) => {
+        acc[filter] = true;
+        return acc;
+      }, {});
+    }
+    if(props.filterType === 'manufacturer'){
+      const manufacturerCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_manufacturer_'));
+      const manufacturerFilters = manufacturerCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
+      optionsState = manufacturerFilters.reduce((acc, filter) => {
+        acc[filter] = true;
+        return acc;
+      }, {});
+    }
     return optionsState;
   }
 
@@ -30,6 +48,7 @@ class Filter extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    console.log('WSXFilter componentDidUpdate',prevProps,this.props);
     // Check if initialValues actually changed (deep comparison)
     const prevInitialValues = JSON.stringify(prevProps.initialValues || {});
     const currentInitialValues = JSON.stringify(this.props.initialValues || {});
@@ -173,12 +192,12 @@ class Filter extends Component {
           <table style={tableStyle}>
             <tbody>
               {optionsList.map((option) => (
-                <tr key={option} style={{ height: '24px' }}>
+                <tr key={option.id} style={{ height: '24px' }}>
                   <td style={checkboxCellStyle}>
                     <Checkbox 
-                      checked={options[option] || false} 
+                      checked={options[option.id] || false} 
                       onChange={this.handleOptionChange} 
-                      name={option} 
+                      name={option.id} 
                       color="primary"
                       size="small"
                       sx={{ 
@@ -188,15 +207,15 @@ class Filter extends Component {
                     />
                   </td>
                   <td style={labelCellStyle} onClick={() => {
-                    const event = { target: { name: option, checked: !options[option] } };
+                    const event = { target: { name: option.id, checked: !options[option.id] } };
                     this.handleOptionChange(event);
                   }}>
-                    {option}
+                    {option.name}
                   </td>
                   <td style={countCellStyle}>
-                    {counts[option] !== undefined && (
+                    {counts[option.id] !== undefined && (
                       <span style={countBoxStyle}>
-                        {counts[option]}
+                        {counts[option.id]}
                       </span>
                     )}
                   </td>

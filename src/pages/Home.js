@@ -8,11 +8,11 @@ const Home = () => {
       <Grid container sx={{ display: 'flex', flexDirection: 'row' }}>
         {/* Seeds Category Box */}
         <Grid item xs={12} sm={6} sx={{ p:2, width: '50%' }}>
-          <Paper 
+          <Paper
             component={Link}
             to="/category/689"
-            sx={{ 
-              p: 0, 
+            sx={{
+              p: 0,
               textDecoration: 'none',
               color: 'text.primary',
               borderRadius: 2,
@@ -28,10 +28,10 @@ const Home = () => {
             }}
           >
             {/* Image Container - Place your seeds image here */}
-            <Box sx={{ 
-              height: '100%', 
-              bgcolor: '#f2e8d4', 
-              backgroundImage: 'url("/assets/images/seeds.jpg")', 
+            <Box sx={{
+              height: '100%',
+              bgcolor: '#f2e8d4',
+              backgroundImage: 'url("/assets/images/seeds.jpg")',
               backgroundSize: 'contain',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
@@ -57,11 +57,11 @@ const Home = () => {
 
         {/* Cutlings Category Box */}
         <Grid item xs={12} sm={6} sx={{ p:2,width: '50%' }}>
-          <Paper 
+          <Paper
             component={Link}
             to="/category/706"
-            sx={{ 
-              p: 0, 
+            sx={{
+              p: 0,
               textDecoration: 'none',
               color: 'text.primary',
               borderRadius: 2,
@@ -77,10 +77,10 @@ const Home = () => {
             }}
           >
             {/* Image Container - Place your cutlings image here */}
-            <Box sx={{ 
-              height: '100%', 
-              bgcolor: '#f2e8d4', 
-              backgroundImage: 'url("/assets/images/cutlings.jpg")', 
+            <Box sx={{
+              height: '100%',
+              bgcolor: '#f2e8d4',
+              backgroundImage: 'url("/assets/images/cutlings.jpg")',
               backgroundSize: 'contain',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
@@ -107,4 +107,4 @@ const Home = () => {
   );
 };
 
-export default Home; 
+export default Home;

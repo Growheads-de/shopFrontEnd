@@ -6,8 +6,8 @@ import {
   Card, 
   CardContent, 
   CardMedia, 
-  Typography, 
-  Chip
+  Typography,
+  CircularProgress
 } from '@mui/material';
 import AddToCartButton from './AddToCartButton.js';
 import { Link } from 'react-router-dom';
@@ -29,7 +29,7 @@ class Product extends Component {
     
     const cacheKey = `productImage_${this.props.id}`;
     try {
-      const cachedData = window.productCache[cacheKey];
+      const cachedData = 0;//= window.productCache[cacheKey];
       if (cachedData) {
         const { imageUrl, error, timestamp } = cachedData;
         const cacheAge = Date.now() - timestamp;
@@ -99,11 +99,6 @@ class Product extends Component {
     const { id, name, price, available, manufacturer, currency } = this.props;
     const { image, imageError } = this.state;
     
-    // Determine image source - use fallback if no image or error
-    const imageSrc = (!image || imageError) ? '/assets/images/nopicture.jpg' : image;
-    
-    console.log(imageSrc);
-
     return (
       <Card 
         sx={{ 
@@ -130,25 +125,31 @@ class Product extends Component {
             color: 'inherit'
           }}
         >
-          <Box sx={{ position: 'relative' }}>
-            <CardMedia
-              component="img"
-              height="180"
-              image={imageSrc}
-              alt={name}
-              sx={{ objectFit: 'cover' }}
-            />
-            {!available && (
-              <Chip
-                label="Out of Stock"
-                color="error"
-                size="small"
-                sx={{
-                  position: 'absolute',
-                  top: 10,
-                  right: 10,
-                  fontWeight: 'bold'
-                }}
+          <Box sx={{ 
+            position: 'relative', 
+            height: '180px',
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            backgroundColor: '#ffffff'
+          }}>
+            {imageError ? (
+              <CardMedia
+                component="img"
+                height="180"
+                image="/assets/images/nopicture.jpg"
+                alt={name}
+                sx={{ objectFit: 'cover' }}
+              />
+            ) : image === null ? (
+              <CircularProgress sx={{ color: '#90ffc0' }} />
+            ) : (
+              <CardMedia
+                component="img"
+                height="180"
+                image={image}
+                alt={name}
+                sx={{ objectFit: 'cover' }}
               />
             )}
           </Box>

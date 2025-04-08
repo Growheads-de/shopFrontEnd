@@ -131,7 +131,7 @@ class ProductDetailPage extends Component {
     if (fVerfuegbar > 0) {
       return {
         status: "in-stock",
-        message: `Auf Lager (${fVerfuegbar} Stück)`,
+        message: "Auf Lager",
         color: "success"
       };
     } else if (fZulauf > 0 && dLieferdatum) {
