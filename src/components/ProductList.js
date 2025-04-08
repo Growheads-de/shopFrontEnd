@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Box, Typography, Grid, Stack, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Product from './Product.js';
 
-class ProductList2 extends Component {
+class ProductList extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -74,7 +74,7 @@ class ProductList2 extends Component {
       }
     });
 
-    console.log('render ProductList2',this.props.totalProductCount);
+    console.log('render ProductList',this.props.totalProductCount);
     return (
       <Box sx={{ height: '100%' }}>
         <Box sx={{ 
@@ -195,4 +195,4 @@ class ProductList2 extends Component {
   }
 }
 
-export default ProductList2; 
+export default ProductList; 

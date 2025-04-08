@@ -4,7 +4,7 @@ import {
 } from '@mui/material';
 import Filter from './Filter.js';
 
-class ProductFilters2 extends Component {
+class ProductFilters extends Component {
   constructor(props) {
     super(props);
 
@@ -162,4 +162,4 @@ class ProductFilters2 extends Component {
   }
 }
 
-export default ProductFilters2; 
+export default ProductFilters; 

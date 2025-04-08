@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Container, Box } from '@mui/material';
-import ProductFilters2 from './ProductFilters2.js';
-import ProductList2 from './ProductList2.js';
+import ProductFilters from './ProductFilters.js';
+import ProductList from './ProductList.js';
 
 import { useParams } from 'react-router-dom';
 const withRouter = (ClassComponent) => {
@@ -76,7 +76,7 @@ function setCachedCategoryData(categoryId, data) {
   }
 }
 
-class Content2 extends Component {
+class Content extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -126,11 +126,11 @@ class Content2 extends Component {
 
     this.props.socket.emit('getCategoryProducts', { categoryId: parseInt(categoryId) }, (response) => {
       setCachedCategoryData(categoryId, response);
-      console.log('fetchCategoryData in Content2', response);
+      console.log('fetchCategoryData in Content', response);
       if (response && response.products) {
         this.processCategoryData(response);
       } else {
-        console.log('fetchCategoryData in Content2 failed', response);
+        console.log('fetchCategoryData in Content failed', response);
       }
     });
   }
@@ -144,7 +144,7 @@ class Content2 extends Component {
     if (!this.state.isMounted) {
       return <div></div>;
     }
-    console.log('shouldComponentUpdate render content2');
+    console.log('shouldComponentUpdate render content');
     return (
       <Container maxWidth="lg" sx={{ py: 4, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
 
@@ -159,7 +159,7 @@ class Content2 extends Component {
             flexDirection: 'column', 
             minHeight: '100%'
           }}>
-            <ProductFilters2 
+            <ProductFilters 
               products={this.state.unfilteredProducts}
               attributes={this.state.attributes}
               onFilterChange={()=>{this.filterProducts()}}
@@ -167,7 +167,7 @@ class Content2 extends Component {
           </Box>
 
           <Box>
-            <ProductList2
+            <ProductList
               socket={this.props.socket}
               totalProductCount={this.state.unfilteredProducts.length}
               products={this.state.filteredProducts}
@@ -179,4 +179,4 @@ class Content2 extends Component {
   }
 }
 
-export default withRouter(Content2); 
+export default withRouter(Content);

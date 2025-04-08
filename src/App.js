@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import Content2 from './components/Content2.js';
+import Content from './components/Content.js';
 import SocketProvider from './providers/SocketProvider.js';
 import SocketContext from './contexts/SocketContext.js';
 
@@ -66,12 +66,12 @@ class App extends Component {
                       {/* Home page with text only */}
                       <Route path="/" element={<Home />} />
 
-                      {/* Category page - Render Content and Content2 in parallel */}
+                      {/* Category page - Render Content in parallel */}
                       <Route 
                         path="/category/:categoryId" 
                         element={
                             <SocketContext.Consumer>
-                              {socket => <Content2 someProp="someValue" socket={socket} />}
+                              {socket => <Content someProp="someValue" socket={socket} />}
                             </SocketContext.Consumer>
                         }
                       />
