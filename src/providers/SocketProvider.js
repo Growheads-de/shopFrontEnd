@@ -7,15 +7,19 @@ class SocketProvider extends Component {
     super(props);
     this.socket = null;
     this.state = {
-      connected: false
+      connected: false,
+      usingFallback: false
     };
   }
 
-  componentDidMount() {
-    const serverUrl = this.props.url;
-    console.log('SocketProvider: Connecting to socket server...', serverUrl);
+  connectToSocket(url) {
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+
+    console.log(`SocketProvider: Connecting to socket server... ${url}`);
     
-    this.socket = io(serverUrl, {
+    this.socket = io(url, {
       transports: ['websocket']
     });
 
@@ -31,6 +35,11 @@ class SocketProvider extends Component {
 
     this.socket.on('connect_error', (error) => {
       console.error('SocketProvider: Connection error:', error);
+      if (!this.state.usingFallback && this.props.fallbackUrl) {
+        console.log('SocketProvider: Attempting to connect to fallback URL...');
+        this.setState({ usingFallback: true });
+        this.connectToSocket(this.props.fallbackUrl);
+      }
     });
 
     this.socket.on('reconnect_attempt', (attemptNumber) => {
@@ -39,7 +48,16 @@ class SocketProvider extends Component {
 
     this.socket.on('reconnect_failed', () => {
       console.error('SocketProvider: Failed to reconnect');
+      if (!this.state.usingFallback && this.props.fallbackUrl) {
+        console.log('SocketProvider: Attempting to connect to fallback URL...');
+        this.setState({ usingFallback: true });
+        this.connectToSocket(this.props.fallbackUrl);
+      }
     });
+  }
+
+  componentDidMount() {
+    this.connectToSocket(this.props.url);
   }
 
   componentWillUnmount() {

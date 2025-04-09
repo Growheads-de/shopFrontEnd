@@ -8,7 +8,7 @@ import Content from './components/Content.js';
 import ProductDetailWithSocket from './components/ProductDetailPage.js';
 import SocketProvider from './providers/SocketProvider.js';
 import SocketContext from './contexts/SocketContext.js';
-
+import config from './config.js';
 
 import Header from './components/Header.js';
 import Footer from './components/Footer.js';
@@ -37,7 +37,8 @@ class App extends Component {
         <CssBaseline />
         <Suspense fallback={<Loading />}>
           <SocketProvider
-            url="http://10.10.10.43:9303"
+            url={config.apiBaseUrl}
+            fallbackUrl={config.fallbackUrl}
             fallback={
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <CircularProgress color="primary" />
