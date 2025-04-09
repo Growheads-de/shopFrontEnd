@@ -14,8 +14,8 @@ const theme = createTheme({
       dark: '#66BB6A', // Mid green
     },
     background: {
-      default: '#F1F8E9', // Very light green background
-      paper: '#FFFFFF',
+      default: '#C8E6C9', // Darker green background
+      paper: '#ffffff', // Darker gray
     },
     text: {
       primary: '#33691E', // Dark green text
