@@ -79,9 +79,9 @@ class Filter extends Component {
     if(props.filterType === 'availability'){
  
       const availabilityFilter = localStorage.getItem('filter_availability');
+      const optionsState = {};
       if(availabilityFilter) optionsState[availabilityFilter] = true;
 
-      const optionsState = {};
       const inStock = props.searchParams.get('inStock');
       if(inStock) optionsState[inStock] = true;
       return optionsState;
@@ -91,7 +91,7 @@ class Filter extends Component {
 
   componentDidUpdate(prevProps) {
     // make this more fine grained with dependencies on props
-    
+
     if((prevProps.products !== this.props.products) || (prevProps.filteredProducts !== this.props.filteredProducts) || (prevProps.options !== this.props.options) || (prevProps.attributes !== this.props.attributes)){
       const options = this.initializeOptions(this.props);
       const counts = this.initializeCounts(this.props,options);
