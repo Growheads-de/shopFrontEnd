@@ -9,18 +9,13 @@ import ProductDetailWithSocket from './components/ProductDetailPage.js';
 import SocketProvider from './providers/SocketProvider.js';
 import SocketContext from './contexts/SocketContext.js';
 
-// Lazy load components and custom components
-const Header = lazy(() => import('./components/Header.js'));
 
-const Footer = lazy(() => import('./components/Footer.js'));
+import Header from './components/Header.js';
+import Footer from './components/Footer.js';
+import Home from './pages/Home.js';
 
-const Home = lazy(() => import('./pages/Home.js'));
 const Cart = lazy(() => import('./pages/Cart.js'));
 const Checkout = lazy(() => import('./pages/Checkout.js'));
-
-
-
-
 
 
 // Import theme from separate file to reduce main bundle size
