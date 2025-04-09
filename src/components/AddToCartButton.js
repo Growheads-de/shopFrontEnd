@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+//import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -23,6 +23,7 @@ class AddToCartButton extends Component {
       isEditing: false,
       editValue: ''
     };
+    console.log('AddToCartButton',props);
   }
 
   handleIncrement = () => {
@@ -140,8 +141,8 @@ class AddToCartButton extends Component {
           variant="contained" 
           color="primary"
           size={size || "medium"}
-          startIcon={<ShoppingCartIcon />}
-          onClick={this.handleIncrement}
+          
+          onClick={/*this.handleIncrement startIcon={<ShoppingCartIcon />}*/console.log(this.handleIncrement)}
           sx={{ 
             borderRadius: 2,
             fontWeight: 'bold',
@@ -150,7 +151,7 @@ class AddToCartButton extends Component {
             }
           }}
         >
-          Add to Cart
+          Im Regal
         </Button>
       );
     }

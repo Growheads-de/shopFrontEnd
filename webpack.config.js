@@ -19,7 +19,7 @@ export default {
     clean: true,
     publicPath: '/'
   },
-  devtool: isDevelopment ? 'eval-source-map' : false,
+  devtool: isDevelopment ? 'source-map' : false,
   optimization: {
     runtimeChunk: 'single',
     splitChunks: {

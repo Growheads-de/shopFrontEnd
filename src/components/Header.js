@@ -212,6 +212,7 @@ class ButtonGroup extends Component {
     );
   }
 }
+console.log(ButtonGroup,SearchBarWithRouter)
 
 // CategoryList Subcomponent
 class CategoryList extends Component {
@@ -399,7 +400,7 @@ class Header extends Component {
   };
 
   render() {
-    const { cartItems } = this.state;
+    //const { cartItems } = this.state;
     // Get socket directly from context in render method
     const socket = this.context;
 
@@ -408,12 +409,12 @@ class Header extends Component {
         <Toolbar sx={{ minHeight: 64 }}>
           <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
             <Logo />
-            <SearchBarWithRouter />
+            {/*<SearchBarWithRouter />
             <ButtonGroup 
               cartItems={cartItems}
               onCartQuantityChange={this.handleCartQuantityChange}
               onCartRemoveItem={this.handleCartRemoveItem}
-            />
+            />*/}
           </Container>
         </Toolbar>
         <CategoryList socket={socket} />

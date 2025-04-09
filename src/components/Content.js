@@ -161,6 +161,7 @@ class Content extends Component {
           }}>
             <ProductFilters 
               products={this.state.unfilteredProducts}
+              filteredProducts={this.state.filteredProducts}
               attributes={this.state.attributes}
               onFilterChange={()=>{this.filterProducts()}}
             />

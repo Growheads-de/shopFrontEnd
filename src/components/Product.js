@@ -174,7 +174,7 @@ class Product extends Component {
             
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                {manufacturer || 'Unknown Manufacturer'}
+                {manufacturer || ''}
               </Typography>
             </Box>
             
@@ -190,8 +190,7 @@ class Product extends Component {
         
         <Box sx={{ p: 2, pt: 0 }}>
           <AddToCartButton 
-            product={{ id, name, price, available }} 
-            disabled={!available}
+            available={!(available>0)}
           />
         </Box>
       </Card>

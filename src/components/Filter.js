@@ -8,10 +8,53 @@ import {
 class Filter extends Component {
   constructor(props) {
     super(props);
+    const options = this.initializeOptions(props);
     this.state = {
-      options: this.initializeOptions(props)
+      options,
+      counts: this.initializeCounts(props,options)
     };
     console.log('WSXFilter',props);
+  }
+
+  initializeCounts = (props,options) => {
+    console.log('initializeCounts',props);
+    const counts = {};
+
+    if(props.filterType === 'availability'){
+      console.log('initializeCounts OP',options);
+      const products = options[1] ? props.products : props.products;
+      if(products) for(const product of products){
+        if(product.available) counts[1] = (counts[1] || 0) + 1;
+      }
+    }
+    if(props.filterType === 'manufacturer'){
+      const uniqueManufacturers = [...new Set(props.products.filter(product => product.manufacturerId).map(product => product.manufacturerId))];
+      const filteredManufacturers = uniqueManufacturers.filter(manufacturerId => options[manufacturerId] === true);
+      const products = filteredManufacturers.length > 0 ? props.products : props.filteredProducts;
+      for(const product of products){
+        counts[product.manufacturerId] = (counts[product.manufacturerId] || 0) + 1;
+      }
+    }
+    if(props.filterType === 'attribute'){
+      const optionIds = props.options.map(option => option.id);
+      const attributeCount = {};
+      for(const attribute of props.attributes){
+        attributeCount[attribute.kMerkmalWert] = (attributeCount[attribute.kMerkmalWert] || 0) + 1;
+      }
+      const uniqueProductIds = props.filteredProducts.map(product => product.id);
+      const attributesFilteredByUniqueAttributeProducts = props.attributes.filter(attribute => uniqueProductIds.includes(attribute.kArtikel));
+      const attributeCountFiltered = {};
+      for(const attribute of attributesFilteredByUniqueAttributeProducts){
+        attributeCountFiltered[attribute.kMerkmalWert] = (attributeCountFiltered[attribute.kMerkmalWert] || 0) + 1;
+      }
+      let oneIsSelected = false;
+      for(const option of optionIds) if(options[option]) oneIsSelected = true;
+      for(const option of props.options){
+        counts[option.id] = oneIsSelected?attributeCount[option.id]:attributeCountFiltered[option.id];
+      }
+      console.log('uniqueAttributeInProducts',props.title,oneIsSelected,props.options);
+    }
+    return counts;
   }
 
   initializeOptions = (props) => {
@@ -48,26 +91,12 @@ class Filter extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    console.log('WSXFilter componentDidUpdate',prevProps,this.props);
-    // Check if initialValues actually changed (deep comparison)
-    const prevInitialValues = JSON.stringify(prevProps.initialValues || {});
-    const currentInitialValues = JSON.stringify(this.props.initialValues || {});
-    
-    // Check if options list changed
-    const prevOptions = JSON.stringify(prevProps.options || []);
-    const currentOptions = JSON.stringify(this.props.options || []);
-    
-    if (prevInitialValues !== currentInitialValues || prevOptions !== currentOptions) {
-      // Debug what's happening
-      console.log('Filter updating state from props:', 
-                 { 
-                   title: this.props.title,
-                   prevValues: prevProps.initialValues, 
-                   newValues: this.props.initialValues 
-                 });
-      
+    if((prevProps.products !== this.props.products) || (prevProps.filteredProducts !== this.props.filteredProducts)){
+      const options = this.initializeOptions(this.props);
+      const counts = this.initializeCounts(this.props,options);
       this.setState({ 
-        options: this.initializeOptions(this.props) 
+        options,
+        counts
       });
     }
   }
@@ -114,8 +143,9 @@ class Filter extends Component {
   };
 
   render() {
-    const { options } = this.state;
-    const { title, options: optionsList = [], counts = {} } = this.props;
+    const { options, counts } = this.state;
+    console.log('WSXFilter render',options,counts);
+    const { title, options: optionsList = [] } = this.props;
 
     // Debug render
     console.log(`Filter render: ${title}`, options);
@@ -213,7 +243,7 @@ class Filter extends Component {
                     {option.name}
                   </td>
                   <td style={countCellStyle}>
-                    {counts[option.id] !== undefined && (
+                    {counts && counts[option.id] !== undefined && (
                       <span style={countBoxStyle}>
                         {counts[option.id]}
                       </span>

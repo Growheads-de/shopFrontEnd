@@ -102,8 +102,10 @@ class ProductFilters extends Component {
         <Filter
           title={attributeGroup.name}
           options={Object.values(attributeGroup.values)}
-          initialValues={[]}
           filterType="attribute"
+          products={this.props.products}
+          filteredProducts={this.props.filteredProducts}
+          attributes={this.props.attributes}
           onFilterChange={(msg)=>{
             if(msg.value) {
               document.cookie = "filter_"+msg.type+"_"+msg.name+"=true";
@@ -135,7 +137,9 @@ class ProductFilters extends Component {
         <Filter 
           title="Availability"
           options={this.state.availabilityValues}
-          initialValues={[]}
+          products={this.props.products}
+          filteredProducts={this.props.filteredProducts}
+          attributes={this.props.attributes}
           filterType="availability"
           onFilterChange={(msg)=>{console.log('WSXonFilterChangeAV', msg)}}
         />
@@ -145,9 +149,10 @@ class ProductFilters extends Component {
         <Filter 
           title="Manufacturer"
           options={this.state.uniqueManufacturerArray}
-          counts={this.state.filteredManufacturerCounts}
-          initialValues={[]}
           filterType="manufacturer"
+          products={this.props.products}
+          filteredProducts={this.props.filteredProducts}
+          attributes={this.props.attributes}
           onFilterChange={(msg)=>{ 
             if(msg.value) {
               document.cookie = "filter_"+msg.type+"_"+msg.name+"=true";
