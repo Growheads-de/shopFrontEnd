@@ -84,18 +84,23 @@ class ProductList extends Component {
           mb: 2
         }}>
             <Typography variant="body2" color="text.secondary">
-              {`Showing all ${this.props.totalProductCount} products`}
+              {
+                this.props.totalProductCount==this.props.products.length && this.props.totalProductCount>0 ?
+              `${this.props.totalProductCount} Produkte`
+              :
+              `${this.props.products.length} von ${this.props.totalProductCount} Produkten`
+              }
             </Typography>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               {/* Sort Dropdown */}
               <FormControl variant="outlined" size="small" sx={{ minWidth: 140 }}>
-                <InputLabel id="sort-by-label">Sort By</InputLabel>
+                <InputLabel id="sort-by-label">Sortierung</InputLabel>
                 <Select
                   labelId="sort-by-label"
                   value={this.state.sortBy}
                   onChange={this.handleSortChange}
-                  label="Sort By"
+                  label="Sortierung"
                   MenuProps={{
                     disableScrollLock: true,
                     anchorOrigin: {
@@ -116,19 +121,19 @@ class ProductList extends Component {
                   }}
                 >
                   <MenuItem value="name">Name</MenuItem>
-                  <MenuItem value="price-low-high">Price: Low to High</MenuItem>
-                  <MenuItem value="price-high-low">Price: High to Low</MenuItem>
+                  <MenuItem value="price-low-high">Preis: Niedrig zu Hoch</MenuItem>
+                  <MenuItem value="price-high-low">Preis: Hoch zu Niedrig</MenuItem>
                 </Select>
               </FormControl>
               
               {/* Per Page Dropdown */}
               <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
-                <InputLabel id="products-per-page-label">Per Page</InputLabel>
+                <InputLabel id="products-per-page-label">pro Seite</InputLabel>
                 <Select
                   labelId="products-per-page-label"
                   value={this.state.itemsPerPage}
                   onChange={this.handleProductsPerPageChange}
-                  label="Per Page"
+                  label="pro Seite"
                   MenuProps={{
                     disableScrollLock: true,
                     anchorOrigin: {
@@ -153,7 +158,7 @@ class ProductList extends Component {
                 >
                   <MenuItem value={20}>20</MenuItem>
                   <MenuItem value={50}>50</MenuItem>
-                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="all">Alle</MenuItem>
                 </Select>
               </FormControl>
             </Box>

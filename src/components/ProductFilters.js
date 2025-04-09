@@ -1,8 +1,24 @@
 import React, { Component } from 'react';
-import { 
-  Paper
-} from '@mui/material';
+import { Paper } from '@mui/material';
 import Filter from './Filter.js';
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+
+// HOC to provide router props to class components
+const withRouter = (ClassComponent) => {
+  return (props) => {
+    const params = useParams();
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const location = useLocation();
+    return <ClassComponent 
+      {...props} 
+      params={params} 
+      searchParams={searchParams}
+      navigate={navigate}
+      location={location} 
+    />;
+  };
+};
 
 class ProductFilters extends Component {
   constructor(props) {
@@ -12,7 +28,7 @@ class ProductFilters extends Component {
     const attributeGroups = this._getAttributeGroups(this.props.attributes);
 
     this.state = {
-      availabilityValues: [{id:1,name:'in Stock'}],
+      availabilityValues: [{id:1,name:'auf Lager'}],
       uniqueManufacturerArray,
       attributeGroups
     };
@@ -135,13 +151,33 @@ class ProductFilters extends Component {
         }}
       >
         <Filter 
-          title="Availability"
+          title="Verfügbarkeit"
           options={this.state.availabilityValues}
+          searchParams={this.props.searchParams}
           products={this.props.products}
           filteredProducts={this.props.filteredProducts}
           attributes={this.props.attributes}
           filterType="availability"
-          onFilterChange={(msg)=>{console.log('WSXonFilterChangeAV', msg)}}
+          onFilterChange={(msg)=>{
+            
+            if(msg.value) {
+              localStorage.setItem('filter_availability', msg.name);
+              //this.props.navigate({
+              //  pathname: this.props.location.pathname,
+              //  search: `?inStock=${msg.name}`
+              //}); 
+            } else {
+              localStorage.removeItem('filter_availability');
+              //this.props.navigate({
+              //  pathname: this.props.location.pathname,
+              //  search: this.props.location.search.replace(/inStock=[^&]*/, '')
+              //});
+            }
+            
+            this.props.onFilterChange();
+          
+          
+          }}
         />
 
         {this.generateAttributeFilters()}
@@ -167,4 +203,4 @@ class ProductFilters extends Component {
   }
 }
 
-export default ProductFilters; 
+export default withRouter(ProductFilters); 

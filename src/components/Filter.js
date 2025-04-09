@@ -83,6 +83,15 @@ class Filter extends Component {
         return acc;
       }, {});
     }
+    if(props.filterType === 'availability'){
+ 
+      const availabilityFilter = localStorage.getItem('filter_availability');
+      if(availabilityFilter) optionsState[availabilityFilter] = true;
+
+      const inStock = props.searchParams.get('inStock');
+      if(inStock) optionsState[inStock] = true;
+    }
+
     return optionsState;
   }
 
@@ -209,7 +218,7 @@ class Filter extends Component {
         <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
           {title}
           {/* Only show reset button on Availability filter */}
-          {title === "Availability" && (
+          {title === "Verfügbarkeit" && (
             <button 
               style={resetButtonStyle} 
               onClick={this.resetFilters}

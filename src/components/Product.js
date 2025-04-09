@@ -190,7 +190,7 @@ class Product extends Component {
         
         <Box sx={{ p: 2, pt: 0 }}>
           <AddToCartButton 
-            available={!(available>0)}
+            available={available}
           />
         </Box>
       </Card>

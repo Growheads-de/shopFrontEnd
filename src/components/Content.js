@@ -3,11 +3,12 @@ import { Container, Box } from '@mui/material';
 import ProductFilters from './ProductFilters.js';
 import ProductList from './ProductList.js';
 
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 const withRouter = (ClassComponent) => {
   return (props) => {
     const params = useParams();
-    return <ClassComponent {...props} params={params} />;
+    const [searchParams] = useSearchParams();
+    return <ClassComponent {...props} params={params} searchParams={searchParams} />;
   };
 };
 
@@ -35,7 +36,9 @@ function getCachedCategoryData(categoryId) {
   return null;
 }
 
-function getFilteredProducts(unfilteredProducts,attributes) {
+
+function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
+
   const attributeCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_attribute_'));
   const manufacturerCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_manufacturer_'));
   const attributeFilters = attributeCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
@@ -45,6 +48,8 @@ function getFilteredProducts(unfilteredProducts,attributes) {
   const activeAttributeFilters = attributeFilters.filter(filter => uniqueAttributes.includes(filter));
   const activeManufacturerFilters = manufacturerFilters.filter(filter => uniqueManufacturers.includes(filter)); 
   const filteredProducts = unfilteredProducts.filter(product => {
+    const availabilityFilter = localStorage.getItem('filter_availability');
+    const inStockMatch = availabilityFilter == 1 ? (product.available>0) : true;
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
       (product.manufacturerId && activeManufacturerFilters.includes(product.manufacturerId.toString()));
     let attributeMatch = true;
@@ -54,7 +59,7 @@ function getFilteredProducts(unfilteredProducts,attributes) {
         .map(attr => attr.kMerkmalWert.toString());
       attributeMatch = activeAttributeFilters.every(filter => productAttributes.includes(filter));
     }
-    return manufacturerMatch && attributeMatch;
+    return manufacturerMatch && attributeMatch && inStockMatch;
   });
   console.log('shouldComponentUpdateProducts',filteredProducts.length);
   return filteredProducts;
@@ -110,7 +115,7 @@ class Content extends Component {
     const unfilteredProducts = response.products;
     this.setState({
       unfilteredProducts: unfilteredProducts,
-      filteredProducts: getFilteredProducts(unfilteredProducts,response.attributes),
+      filteredProducts: getFilteredProducts(unfilteredProducts,response.attributes,this.props.searchParams),
       attributes: response.attributes,
       categoryName: response.categoryName,
       loaded: true
@@ -137,7 +142,7 @@ class Content extends Component {
 
   filterProducts() {
     console.log('shouldComponentUpdate_filterProducts',this.state.unfilteredProducts.length);
-    this.setState({ filteredProducts: getFilteredProducts(this.state.unfilteredProducts,this.state.attributes) });
+    this.setState({ filteredProducts: getFilteredProducts(this.state.unfilteredProducts,this.state.attributes,this.props.searchParams) });
   }
 
   render() {
@@ -163,6 +168,7 @@ class Content extends Component {
               products={this.state.unfilteredProducts}
               filteredProducts={this.state.filteredProducts}
               attributes={this.state.attributes}
+              searchParams={this.props.searchParams}
               onFilterChange={()=>{this.filterProducts()}}
             />
           </Box>
