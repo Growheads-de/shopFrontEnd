@@ -47,20 +47,49 @@ function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
   const uniqueManufacturers = [...new Set(unfilteredProducts.filter(product => product.manufacturerId).map(product => product.manufacturerId.toString()))];
   const activeAttributeFilters = attributeFilters.filter(filter => uniqueAttributes.includes(filter));
   const activeManufacturerFilters = manufacturerFilters.filter(filter => uniqueManufacturers.includes(filter)); 
+  
+  // Group attribute filters by their group name (cName)
+  const attributeFiltersByGroup = {};
+  for (const filterId of activeAttributeFilters) {
+    const attribute = attributes.find(attr => attr.kMerkmalWert.toString() === filterId);
+    if (attribute) {
+      if (!attributeFiltersByGroup[attribute.cName]) {
+        attributeFiltersByGroup[attribute.cName] = [];
+      }
+      attributeFiltersByGroup[attribute.cName].push(filterId);
+    }
+  }
+  
   const filteredProducts = unfilteredProducts.filter(product => {
     const availabilityFilter = localStorage.getItem('filter_availability');
     const inStockMatch = availabilityFilter == 1 ? (product.available>0) : true;
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
       (product.manufacturerId && activeManufacturerFilters.includes(product.manufacturerId.toString()));
-    let attributeMatch = true;
-    if (activeAttributeFilters.length > 0) {
-      const productAttributes = attributes
-        .filter(attr => attr.kArtikel === product.id)
-        .map(attr => attr.kMerkmalWert.toString());
-      attributeMatch = activeAttributeFilters.every(filter => productAttributes.includes(filter));
+    
+    // If no attribute filters are active, all products match
+    if (Object.keys(attributeFiltersByGroup).length === 0) {
+      return manufacturerMatch && inStockMatch;
     }
+    
+    // Get all attributes for this product
+    const productAttributes = attributes
+      .filter(attr => attr.kArtikel === product.id);
+    
+    // Check if product matches all attribute filter groups (AND between groups)
+    // For each group, at least one attribute must match (OR within group)
+    const attributeMatch = Object.entries(attributeFiltersByGroup).every(([groupName, groupFilters]) => {
+      // Get all attributes from this group for the current product
+      const productGroupAttributes = productAttributes
+        .filter(attr => attr.cName === groupName)
+        .map(attr => attr.kMerkmalWert.toString());
+      
+      // Return true if any attribute in this group matches (OR logic within group)
+      return groupFilters.some(filter => productGroupAttributes.includes(filter));
+    });
+    
     return manufacturerMatch && attributeMatch && inStockMatch;
   });
+  
   return filteredProducts;
 }
 
