@@ -47,8 +47,6 @@ function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
   const uniqueManufacturers = [...new Set(unfilteredProducts.filter(product => product.manufacturerId).map(product => product.manufacturerId.toString()))];
   const activeAttributeFilters = attributeFilters.filter(filter => uniqueAttributes.includes(filter));
   const activeManufacturerFilters = manufacturerFilters.filter(filter => uniqueManufacturers.includes(filter)); 
-  
-  // Group attribute filters by their group name (cName)
   const attributeFiltersByGroup = {};
   for (const filterId of activeAttributeFilters) {
     const attribute = attributes.find(attr => attr.kMerkmalWert.toString() === filterId);
@@ -59,40 +57,55 @@ function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
       attributeFiltersByGroup[attribute.cName].push(filterId);
     }
   }
-  
   const filteredProducts = unfilteredProducts.filter(product => {
     const availabilityFilter = localStorage.getItem('filter_availability');
     const inStockMatch = availabilityFilter == 1 ? (product.available>0) : true;
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
       (product.manufacturerId && activeManufacturerFilters.includes(product.manufacturerId.toString()));
-    
-    // If no attribute filters are active, all products match
     if (Object.keys(attributeFiltersByGroup).length === 0) {
       return manufacturerMatch && inStockMatch;
     }
-    
-    // Get all attributes for this product
     const productAttributes = attributes
       .filter(attr => attr.kArtikel === product.id);
-    
-    // Check if product matches all attribute filter groups (AND between groups)
-    // For each group, at least one attribute must match (OR within group)
     const attributeMatch = Object.entries(attributeFiltersByGroup).every(([groupName, groupFilters]) => {
-      // Get all attributes from this group for the current product
       const productGroupAttributes = productAttributes
         .filter(attr => attr.cName === groupName)
         .map(attr => attr.kMerkmalWert.toString());
-      
-      // Return true if any attribute in this group matches (OR logic within group)
       return groupFilters.some(filter => productGroupAttributes.includes(filter));
     });
-    
     return manufacturerMatch && attributeMatch && inStockMatch;
   });
   
   return filteredProducts;
 }
-
+/*
+function getFilteredProducts(unfilteredProducts, attributes) {
+  const getCookies = prefix => document.cookie.split(';').filter(c => c.trim().startsWith(prefix)).map(c => c.split('=')[0].split('_')[2]);
+  const attributeFilters = getCookies('filter_attribute_');
+  const manufacturerFilters = getCookies('filter_manufacturer_');
+  const uniqueAttributeIds = [...new Set(attributes.map(a => a.kMerkmalWert.toString()))];
+  const uniqueManufacturerIds = [...new Set(unfilteredProducts.filter(p => p.manufacturerId).map(p => p.manufacturerId.toString()))];
+  const activeAttributeFilters = attributeFilters.filter(f => uniqueAttributeIds.includes(f));
+  const activeManufacturerFilters = manufacturerFilters.filter(f => uniqueManufacturerIds.includes(f));
+  const groupedAttributeFilters = {};
+  for (const id of activeAttributeFilters) {
+    const attr = attributes.find(a => a.kMerkmalWert.toString() === id);
+    if (attr) (groupedAttributeFilters[attr.cName] ??= []).push(id);
+  }
+  const availabilityFilter = localStorage.getItem('filter_availability');
+  return unfilteredProducts.filter(p => {
+    const matchesStock = availabilityFilter != 1 || p.available > 0;
+    const matchesManufacturer = !activeManufacturerFilters.length || (p.manufacturerId && activeManufacturerFilters.includes(p.manufacturerId.toString()));
+    if (!Object.keys(groupedAttributeFilters).length) return matchesStock && matchesManufacturer;
+    const productAttributes = attributes.filter(a => a.kArtikel === p.id);
+    const matchesAttributes = Object.entries(groupedAttributeFilters).every(([name, filters]) => {
+      const productValues = productAttributes.filter(a => a.cName === name).map(a => a.kMerkmalWert.toString());
+      return filters.some(f => productValues.includes(f));
+    });
+    return matchesStock && matchesManufacturer && matchesAttributes;
+  });
+}
+*/
 function setCachedCategoryData(categoryId, data) {
   if (!window.productCache) {
     window.productCache = {};

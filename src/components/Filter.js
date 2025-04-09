@@ -86,7 +86,6 @@ class Filter extends Component {
       if(inStock) optionsState[inStock] = true;
       return optionsState;
     }
- 
   }
 
   componentDidUpdate(prevProps) {
@@ -166,7 +165,8 @@ class Filter extends Component {
     const labelCellStyle = {
       ...cellStyle,
       cursor: 'pointer',
-      verticalAlign: 'middle'
+      verticalAlign: 'middle',
+      userSelect: 'none'
     };
     
     const countCellStyle = { 
