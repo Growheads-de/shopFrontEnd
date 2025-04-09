@@ -29,7 +29,7 @@ class Product extends Component {
     
     const cacheKey = `productImage_${this.props.id}`;
     try {
-      const cachedData = 0;//= window.productCache[cacheKey];
+      const cachedData = window.productCache[cacheKey];
       if (cachedData) {
         const { imageUrl, error, timestamp } = cachedData;
         const cacheAge = Date.now() - timestamp;
@@ -39,12 +39,10 @@ class Product extends Component {
         if (cacheAge < tenMinutes) {
           if (error) {
             // This is a cached error response, no need to call socket again
-            console.log(`Using cached error response for product ${this.props.id}, error: ${error}, age:`, Math.round(cacheAge/1000), 'seconds');
             this.setState({ imageError: true });
             return;
           } else if (imageUrl !== undefined) {
             // This is a cached successful response
-            console.log(`Using cached image for product ${this.props.id}, age:`, Math.round(cacheAge/1000), 'seconds');
             this.setState({ image: imageUrl });
             return;
           }
@@ -67,12 +65,10 @@ class Product extends Component {
         };
         
         if (res.success) {
-          console.log(`Cached successful image response for product ${this.props.id}`);
           this.setState({ 
             image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
           });
         } else {
-          console.log(`Cached error response for product ${this.props.id}: ${res.error || "Unknown error"}`);
           this.setState({ imageError: true });
         }
       } catch (err) {

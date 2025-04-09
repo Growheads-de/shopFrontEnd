@@ -81,7 +81,6 @@ class ProductFilters extends Component {
         name: name
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-    console.log('WSXuniqueManufacturerArray', uniqueManufacturerArray, manufacturers);
     return uniqueManufacturerArray;
   }
 
@@ -91,12 +90,10 @@ class ProductFilters extends Component {
       if(!attributeGroups[attribute.cName]) attributeGroups[attribute.cName] = {name:attribute.cName, values:{}};
       attributeGroups[attribute.cName].values[attribute.kMerkmalWert] = {id:attribute.kMerkmalWert, name:attribute.cWert};
     }
-    console.log('WSXattributeGroups', attributeGroups);
     return attributeGroups;
   }
 
   shouldComponentUpdate(nextProps) {
-    console.log('WSXcomponentShouldUpdate',nextProps);
     if(nextProps.products !== this.props.products) {
       const uniqueManufacturerArray = this._getUniqueManufacturers(nextProps.products);
       this.setState({uniqueManufacturerArray});

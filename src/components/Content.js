@@ -61,7 +61,6 @@ function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
     }
     return manufacturerMatch && attributeMatch && inStockMatch;
   });
-  console.log('shouldComponentUpdateProducts',filteredProducts.length);
   return filteredProducts;
 }
 
@@ -131,7 +130,6 @@ class Content extends Component {
 
     this.props.socket.emit('getCategoryProducts', { categoryId: parseInt(categoryId) }, (response) => {
       setCachedCategoryData(categoryId, response);
-      console.log('fetchCategoryData in Content', response);
       if (response && response.products) {
         this.processCategoryData(response);
       } else {
@@ -141,7 +139,6 @@ class Content extends Component {
   }
 
   filterProducts() {
-    console.log('shouldComponentUpdate_filterProducts',this.state.unfilteredProducts.length);
     this.setState({ filteredProducts: getFilteredProducts(this.state.unfilteredProducts,this.state.attributes,this.props.searchParams) });
   }
 
@@ -149,7 +146,6 @@ class Content extends Component {
     if (!this.state.isMounted) {
       return <div></div>;
     }
-    console.log('shouldComponentUpdate render content');
     return (
       <Container maxWidth="lg" sx={{ py: 4, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
 

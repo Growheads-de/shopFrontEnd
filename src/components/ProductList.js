@@ -19,7 +19,6 @@ class ProductList extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    console.log('shouldComponentUpdateINSIDE',this.props.products,nextProps.products);
     if((this.props.products !== nextProps.products)&&(this.state.page != 1)){
       this.setState({ page:1 });
       return false;
@@ -32,7 +31,6 @@ class ProductList extends Component {
     const newState = { itemsPerPage: newItemsPerPage };
     if(newItemsPerPage!=='all'){
       const newTotalPages = Math.ceil(this.props.products.length / newItemsPerPage);
-      console.log('newTotalPages',newTotalPages);
       if (this.state.page > newTotalPages) newState.page = newTotalPages; 
     }
     this.setState(newState);
@@ -74,7 +72,6 @@ class ProductList extends Component {
       }
     });
 
-    console.log('render ProductList',this.props.totalProductCount);
     return (
       <Box sx={{ height: '100%' }}>
         <Box sx={{ 

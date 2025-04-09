@@ -13,15 +13,12 @@ class Filter extends Component {
       options,
       counts: this.initializeCounts(props,options)
     };
-    console.log('WSXFilter',props);
   }
 
   initializeCounts = (props,options) => {
-    console.log('initializeCounts',props);
     const counts = {};
 
     if(props.filterType === 'availability'){
-      console.log('initializeCounts OP',options);
       const products = options[1] ? props.products : props.products;
       if(products) for(const product of products){
         if(product.available) counts[1] = (counts[1] || 0) + 1;
@@ -52,13 +49,11 @@ class Filter extends Component {
       for(const option of props.options){
         counts[option.id] = oneIsSelected?attributeCount[option.id]:attributeCountFiltered[option.id];
       }
-      console.log('uniqueAttributeInProducts',props.title,oneIsSelected,props.options);
     }
     return counts;
   }
 
   initializeOptions = (props) => {
-    console.log('initializeOptions',props);
     const { options = [], initialValues = {} } = props;
     let optionsState = {};
     
@@ -113,8 +108,6 @@ class Filter extends Component {
   handleOptionChange = (event) => {
     const { name, checked } = event.target;
     
-    console.log(`Checkbox change: ${name} = ${checked}`);
-    
     // Update local state first to ensure immediate UI feedback
     this.setState(prevState => ({
       options: {
@@ -153,11 +146,7 @@ class Filter extends Component {
 
   render() {
     const { options, counts } = this.state;
-    console.log('WSXFilter render',options,counts);
     const { title, options: optionsList = [] } = this.props;
-
-    // Debug render
-    console.log(`Filter render: ${title}`, options);
 
     const tableStyle = { 
       width: '100%', 

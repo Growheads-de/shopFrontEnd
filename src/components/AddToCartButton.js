@@ -23,10 +23,9 @@ class AddToCartButton extends Component {
       isEditing: false,
       editValue: ''
     };
-    console.log('AddToCartButton',props);
   }
 
-  handleIncrement = () => {
+  /*handleIncrement = () => {
     this.setState(
       prevState => ({ 
         quantity: prevState.quantity + 1,
@@ -38,7 +37,7 @@ class AddToCartButton extends Component {
         }
       }
     );
-  };
+  };*/
 
   handleDecrement = () => {
     if (this.state.quantity > 0) {
@@ -133,7 +132,7 @@ class AddToCartButton extends Component {
       );
     }
     
-    // If no items in cart, show simple "Add to Cart" button
+    // If no items in cart, show simple "Add to Cart" button   onClick={/*this.handleIncrement startIcon={<ShoppingCartIcon />}*/}
     if (quantity === 0) {
       return (
         <Button 
@@ -142,7 +141,7 @@ class AddToCartButton extends Component {
           color="primary"
           size={size || "medium"}
           
-          onClick={/*this.handleIncrement startIcon={<ShoppingCartIcon />}*/console.log(this.handleIncrement)}
+        
           sx={{ 
             borderRadius: 2,
             fontWeight: 'bold',
