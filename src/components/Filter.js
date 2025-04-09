@@ -9,9 +9,10 @@ class Filter extends Component {
   constructor(props) {
     super(props);
     const options = this.initializeOptions(props);
+    const counts = this.initializeCounts(props,options);
     this.state = {
       options,
-      counts: this.initializeCounts(props,options)
+      counts
     };
   }
 
@@ -33,7 +34,9 @@ class Filter extends Component {
       }
     }
     if(props.filterType === 'attribute'){
+      console.log('countCaclulation for attribute filter',props.title,this.props.title);
       const optionIds = props.options.map(option => option.id);
+      console.log('optionIds',optionIds);
       const attributeCount = {};
       for(const attribute of props.attributes){
         attributeCount[attribute.kMerkmalWert] = (attributeCount[attribute.kMerkmalWert] || 0) + 1;
@@ -54,48 +57,42 @@ class Filter extends Component {
   }
 
   initializeOptions = (props) => {
-    const { options = [], initialValues = {} } = props;
-    let optionsState = {};
-    
-    options.forEach(option => {
-      // If there's an initial value provided, use it, otherwise default to false
-      optionsState[option.id] = initialValues[option.id] !== undefined ? initialValues[option.id] : false;
-    });
 
     if(props.filterType === 'attribute'){
       const attributeCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_attribute_'));;
       const attributeFilters = attributeCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
-      optionsState = attributeFilters.reduce((acc, filter) => {
+      return attributeFilters.reduce((acc, filter) => {
         acc[filter] = true;
         return acc;
       }, {});
     }
+
     if(props.filterType === 'manufacturer'){
       const manufacturerCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_manufacturer_'));
       const manufacturerFilters = manufacturerCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
-      optionsState = manufacturerFilters.reduce((acc, filter) => {
+      return manufacturerFilters.reduce((acc, filter) => {
         acc[filter] = true;
         return acc;
       }, {});
     }
+
     if(props.filterType === 'availability'){
  
       const availabilityFilter = localStorage.getItem('filter_availability');
       if(availabilityFilter) optionsState[availabilityFilter] = true;
 
+      const optionsState = {};
       const inStock = props.searchParams.get('inStock');
       if(inStock) optionsState[inStock] = true;
+      return optionsState;
     }
-
-    return optionsState;
-  }
-
-  componentDidMount() {
-    // Nothing needed here anymore as initialization happens in constructor
+ 
   }
 
   componentDidUpdate(prevProps) {
-    if((prevProps.products !== this.props.products) || (prevProps.filteredProducts !== this.props.filteredProducts)){
+    // make this more fine grained with dependencies on props
+    
+    if((prevProps.products !== this.props.products) || (prevProps.filteredProducts !== this.props.filteredProducts) || (prevProps.options !== this.props.options) || (prevProps.attributes !== this.props.attributes)){
       const options = this.initializeOptions(this.props);
       const counts = this.initializeCounts(this.props,options);
       this.setState({ 
@@ -176,7 +173,7 @@ class Filter extends Component {
       ...cellStyle, 
       textAlign: 'right', 
       color: 'rgba(0, 0, 0, 0.6)', 
-      fontSize: '0.8rem',
+      fontSize: '1rem',
       verticalAlign: 'middle'
     };
 
@@ -201,8 +198,7 @@ class Filter extends Component {
       color: 'rgba(0, 0, 0, 0.7)',
       float: 'right'
     };
-
-    return (
+    return (  
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
           {title}
@@ -220,7 +216,7 @@ class Filter extends Component {
           <table style={tableStyle}>
             <tbody>
               {optionsList.map((option) => (
-                <tr key={option.id} style={{ height: '24px' }}>
+                <tr key={option.id} style={{ height: '28px' }}>
                   <td style={checkboxCellStyle}>
                     <Checkbox 
                       checked={options[option.id] || false} 

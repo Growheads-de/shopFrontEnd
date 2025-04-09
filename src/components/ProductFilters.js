@@ -113,6 +113,7 @@ class ProductFilters extends Component {
     for(const attributeGroup of sortedAttributeGroups) {
       const filter = (
         <Filter
+          key={`attr-filter-${attributeGroup.name}`}
           title={attributeGroup.name}
           options={Object.values(attributeGroup.values)}
           filterType="attribute"
@@ -157,6 +158,17 @@ class ProductFilters extends Component {
           filterType="availability"
           onFilterChange={(msg)=>{
             
+            if(msg.resetAll) {
+              localStorage.removeItem('filter_availability');
+              const cookies = document.cookie.split(';');
+              for(const cookie of cookies) {
+                const [name, ] = cookie.split('=');
+                if(name.startsWith('filter_')) document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+              }
+              this.props.onFilterChange();
+              return;
+            }
+
             if(msg.value) {
               localStorage.setItem('filter_availability', msg.name);
               //this.props.navigate({

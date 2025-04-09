@@ -128,14 +128,16 @@ class Content extends Component {
       return;
     }
 
-    this.props.socket.emit('getCategoryProducts', { categoryId: parseInt(categoryId) }, (response) => {
-      setCachedCategoryData(categoryId, response);
-      if (response && response.products) {
-        this.processCategoryData(response);
-      } else {
-        console.log('fetchCategoryData in Content failed', response);
+    this.props.socket.emit("getCategoryProducts", { categoryId: parseInt(categoryId) },
+      (response) => {
+        setCachedCategoryData(categoryId, response);
+        if (response && response.products) {
+          this.processCategoryData(response);
+        } else {
+          console.log("fetchCategoryData in Content failed", response);
+        }
       }
-    });
+    );
   }
 
   filterProducts() {

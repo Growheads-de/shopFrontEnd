@@ -5,6 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Content from './components/Content.js';
+import ProductDetailWithSocket from './components/ProductDetailPage.js';
 import SocketProvider from './providers/SocketProvider.js';
 import SocketContext from './contexts/SocketContext.js';
 
@@ -12,9 +13,7 @@ import SocketContext from './contexts/SocketContext.js';
 const Header = lazy(() => import('./components/Header.js'));
 
 const Footer = lazy(() => import('./components/Footer.js'));
-const ProductDetailPage = lazy(() => import('./components/ProductDetailPage.js').then(module => ({
-  default: module.ProductDetailWithSocket
-})));
+
 const Home = lazy(() => import('./pages/Home.js'));
 const Cart = lazy(() => import('./pages/Cart.js'));
 const Checkout = lazy(() => import('./pages/Checkout.js'));
@@ -76,7 +75,7 @@ class App extends Component {
                         }
                       />
                       {/* Single product page */}
-                      <Route path="/product/:productId" element={<ProductDetailPage />} />
+                      <Route path="/product/:productId" element={<ProductDetailWithSocket />} />
 
                       {/* Cart page */}
                       <Route path="/cart" element={<Cart />} />

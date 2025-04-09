@@ -11,8 +11,7 @@ import {
   DialogContent,
   Slide
 } from '@mui/material';
-import AddToCartButton from './AddToCartButton.js';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation} from 'react-router-dom';
 import SocketContext from '../contexts/SocketContext.js';
 import CircleIcon from '@mui/icons-material/Circle';
 import CloseIcon from '@mui/icons-material/Close';
@@ -25,10 +24,12 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 // Wrapper component for individual product detail page with socket
 const ProductDetailWithSocket = () => {
   const { productId } = useParams();
-  
+  const navigate = useNavigate();
+  const location = useLocation();
+
   return (
     <SocketContext.Consumer>
-      {socket => <ProductDetailPage productId={productId} socket={socket} />}
+      {socket => <ProductDetailPage productId={productId} navigate={navigate} location={location} socket={socket} />}
     </SocketContext.Consumer>
   );
 };
@@ -245,7 +246,6 @@ class ProductDetailPage extends Component {
     
     // Format price with tax
     const priceWithTax = new Intl.NumberFormat("de-DE", {style: "currency", currency: "EUR",}).format(product.fPreis);
-    const isAvailable = product.fVerfuegbar > 0;
     
     // Determine if we have images or need to use default
     const hasImages = images && images.length > 0;
@@ -374,11 +374,11 @@ class ProductDetailPage extends Component {
         {/* Breadcrumbs */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="body2" color="text.secondary">
-            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-              Home
+            <Link to="/" onClick={() => this.props.navigate(-1)} style={{ textDecoration: 'none', color: 'inherit' }}>
+              Zurück
             </Link> 
-            {' > '} 
-            {product.cName}
+            {/*{' > '} 
+            {product.cName}*/}
           </Typography>
         </Box>
       
@@ -565,17 +565,6 @@ class ProductDetailPage extends Component {
                   sx={{ fontWeight: 'medium', mb: 1 }}
                 />
                 
-                <AddToCartButton 
-                  product={{ 
-                    id: product.kArtikel, 
-                    name: product.cName, 
-                    price: product.fPreis, 
-                    available: isAvailable 
-                  }} 
-                  disabled={!isAvailable}
-                  size="large"
-                  sx={{ minWidth: '180px' }}
-                />
               </Box>
             </Box>
           </Box>
@@ -674,4 +663,4 @@ class ProductDetailPage extends Component {
   }
 }
 
-export { ProductDetailPage as default, ProductDetailWithSocket }; 
+export default ProductDetailWithSocket;
