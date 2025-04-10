@@ -28,4 +28,7 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
-*.sw? 
+*.sw?
+
+# Local configuration
+src/config.local.js 
