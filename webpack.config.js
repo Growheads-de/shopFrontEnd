@@ -4,6 +4,23 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import ESLintPlugin from 'eslint-webpack-plugin';
+import { cpSync } from 'fs';
+
+// Custom plugin to copy assets
+const CopyAssetsPlugin = {
+  apply: (compiler) => {
+    compiler.hooks.afterEmit.tap('CopyAssetsPlugin', () => {
+      const src = path.resolve(__dirname, 'public/assets');
+      const dest = path.resolve(__dirname, 'dist/assets');
+      try {
+        cpSync(src, dest, { recursive: true });
+        console.log('Assets copied successfully');
+      } catch (err) {
+        console.error('Error copying assets:', err);
+      }
+    });
+  },
+};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -95,6 +112,7 @@ export default {
       quiet: false,
       eslintPath: 'eslint/use-at-your-own-risk'
     }),
+    !isDevelopment && CopyAssetsPlugin,
   ].filter(Boolean),
   devServer: {
     headers: {
