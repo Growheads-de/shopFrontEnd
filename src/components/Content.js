@@ -154,6 +154,17 @@ class Content extends Component {
 
   processCategoryData(response) {
     const unfilteredProducts = response.products;
+    
+    if (!window.individualProductCache) {
+      window.individualProductCache = {};
+    }
+    unfilteredProducts.forEach(product => {
+      window.individualProductCache[product.id] = {
+        data: product,
+        timestamp: Date.now()
+      };
+    });
+
     this.setState({
       unfilteredProducts: unfilteredProducts,
       filteredProducts: getFilteredProducts(unfilteredProducts,response.attributes,this.props.searchParams),

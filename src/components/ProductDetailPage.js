@@ -46,6 +46,19 @@ class ProductDetailPage extends Component {
       currentImageIndex: 0,
       dialogOpen: false
     };
+
+    console.log('ProductDetailPage constructor',this.props);
+
+    if (window.individualProductCache && window.individualProductCache[this.props.productId]) {
+      const cachedProduct = window.individualProductCache[this.props.productId].data;
+      const cacheTimestamp = window.individualProductCache[this.props.productId].timestamp;
+      const isFresh = (Date.now() - cacheTimestamp) < (10 * 60 * 1000);
+      if (isFresh){
+        console.log('Using cached product:', cachedProduct);
+        this.state.product = {cArtNr:cachedProduct.articleNumber,cName:cachedProduct.name,fPreis:cachedProduct.price,fVerfuegbar:cachedProduct.available};
+        this.state.loading = false;
+      }
+    }
   }
 
   componentDidMount() {
@@ -54,7 +67,7 @@ class ProductDetailPage extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.productId !== this.props.productId) {
-      this.loadProductData();
+      //this.loadProductData();
     }
   }
 
