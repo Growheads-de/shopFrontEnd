@@ -16,5 +16,4 @@ try {
   // Local config doesn't exist, using default config
   console.log('Using default configuration');
 }
-
 export default config; 
