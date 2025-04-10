@@ -11,7 +11,9 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 
 export default {
   mode: isDevelopment ? 'development' : 'production',
-  entry: './src/index.js',
+  entry: {
+    main: './src/index.js'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: isDevelopment ? 'js/[name].[contenthash].bundle.js' : 'js/[name].[contenthash].js',
@@ -23,10 +25,8 @@ export default {
   optimization: {
     runtimeChunk: 'single',
     splitChunks: {
-      chunks: 'all',
+      chunks: chunk => chunk.name !== 'main',
       maxInitialRequests: Infinity,
-      maxSize: 20000,
-      minSize: 20000,
       cacheGroups: {
         defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
@@ -48,17 +48,6 @@ export default {
           maxSize: 200000,
         },
       },
-      /*cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name(module) {
-            // Get the name of the npm package
-            const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
-            // Return a name that won't conflict with other chunks
-            return `vendor.${packageName.replace('@', '')}`;
-          },
-        },
-      },*/
     },
   },
   module: {
