@@ -80,7 +80,7 @@ class Filter extends Component {
  
       const availabilityFilter = localStorage.getItem('filter_availability');
       const optionsState = {};
-      if(availabilityFilter) optionsState[availabilityFilter] = true;
+      if(!availabilityFilter) optionsState['1'] = true;
 
       const inStock = props.searchParams.get('inStock');
       if(inStock) optionsState[inStock] = true;
@@ -208,7 +208,7 @@ class Filter extends Component {
               style={resetButtonStyle} 
               onClick={this.resetFilters}
             >
-              Reset All
+              Reset
             </button>
           )}
         </Typography>

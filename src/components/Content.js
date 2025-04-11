@@ -59,7 +59,7 @@ function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
   }
   const filteredProducts = unfilteredProducts.filter(product => {
     const availabilityFilter = localStorage.getItem('filter_availability');
-    const inStockMatch = availabilityFilter == 1 ? (product.available>0) : true;
+    const inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
       (product.manufacturerId && activeManufacturerFilters.includes(product.manufacturerId.toString()));
     if (Object.keys(attributeFiltersByGroup).length === 0) {

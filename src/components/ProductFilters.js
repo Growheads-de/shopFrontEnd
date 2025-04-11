@@ -169,7 +169,7 @@ class ProductFilters extends Component {
               return;
             }
 
-            if(msg.value) {
+            if(!msg.value) {
               localStorage.setItem('filter_availability', msg.name);
               //this.props.navigate({
               //  pathname: this.props.location.pathname,
