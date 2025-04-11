@@ -29,7 +29,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Poppins', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+    fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
     h4: {
       fontWeight: 600,
       color: '#33691E',

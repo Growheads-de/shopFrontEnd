@@ -254,7 +254,7 @@ class Product extends Component {
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                minHeight: '3.6em'
+                minHeight: '3.4em'
               }}
             >
               {name}
