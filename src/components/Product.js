@@ -98,29 +98,15 @@ class Product extends Component {
     const isNew = neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
     
     return (
-      <Card 
-        sx={{ 
-          width: '250px',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-          position: 'relative',
-          overflow: 'visible',
-          '&:hover': {
-            transform: 'translateY(-5px)',
-            boxShadow: '0px 10px 20px rgba(0,0,0,0.1)'
-          }
-        }}
-      >
+      <Box sx={{ position: 'relative', height: '100%' }}>
         {isNew && (
           <div
             style={{
               position: 'absolute',
-              top: '-35px',
-              right: '-35px',
-              width: '80px',
-              height: '80px',
+              top: '-15px',
+              right: '-15px',
+              width: '60px',
+              height: '60px',
               zIndex: 999,
               pointerEvents: 'none'
             }}
@@ -128,8 +114,8 @@ class Product extends Component {
             {/* Background star - slightly larger and rotated */}
             <svg 
               viewBox="0 0 60 60" 
-              width="76" 
-              height="76"
+              width="56" 
+              height="56"
               style={{
                 position: 'absolute',
                 top: '-3px',
@@ -139,7 +125,7 @@ class Product extends Component {
             >
               <polygon 
                 points="30,0 38,20 60,22 43,37 48,60 30,48 12,60 17,37 0,22 22,20"
-                fill="#00403a" 
+                fill="#20403a" 
                 stroke="none"
               />
             </svg>
@@ -147,8 +133,8 @@ class Product extends Component {
             {/* Middle star - medium size with different rotation */}
             <svg 
               viewBox="0 0 60 60" 
-              width="73" 
-              height="73"
+              width="53" 
+              height="53"
               style={{
                 position: 'absolute',
                 top: '-1.5px',
@@ -158,7 +144,7 @@ class Product extends Component {
             >
               <polygon 
                 points="30,0 38,20 60,22 43,37 48,60 30,48 12,60 17,37 0,22 22,20"
-                fill="#00736b" 
+                fill="#40736b" 
                 stroke="none"
               />
             </svg>
@@ -166,12 +152,12 @@ class Product extends Component {
             {/* Foreground star - main star with text */}
             <svg 
               viewBox="0 0 60 60" 
-              width="70" 
-              height="70"
+              width="50" 
+              height="50"
             >
               <polygon 
                 points="30,0 38,20 60,22 43,37 48,60 30,48 12,60 17,37 0,22 22,20"
-                fill="#009688" 
+                fill="#609688" 
                 stroke="none"
               />
             </svg>
@@ -194,104 +180,123 @@ class Product extends Component {
             </div>
           </div>
         )}
-        <Box
-          component={Link}
-          to={`/product/${id}`}
+        <Card 
           sx={{ 
-            flexGrow: 1, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'stretch',
-            textDecoration: 'none',
-            color: 'inherit'
+            width: '250px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            position: 'relative',
+            overflow: 'visible',
+            borderRadius: '8px',
+            '&:hover': {
+              transform: 'translateY(-5px)',
+              boxShadow: '0px 10px 20px rgba(0,0,0,0.1)'
+            }
           }}
         >
-          <Box sx={{ 
-            position: 'relative', 
-            height: '180px',
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            backgroundColor: '#ffffff'
-          }}>
-            {imageError ? (
-              <CardMedia
-                component="img"
-                height="180"
-                image="/assets/images/nopicture.jpg"
-                alt={name}
-                sx={{ objectFit: 'cover' }}
-              />
-            ) : image === null ? (
-              <CircularProgress sx={{ color: '#90ffc0' }} />
-            ) : (
-              <CardMedia
-                component="img"
-                height="180"
-                image={image}
-                alt={name}
-                sx={{ objectFit: 'cover' }}
-              />
-            )}
-          </Box>
-          
-          <CardContent sx={{ 
-            flexGrow: 1, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            '&.MuiCardContent-root:last-child': {
-              paddingBottom: 0
-            }
-          }}>
-            <Typography
-              gutterBottom
-              variant="h6"
-              component="h2"
-              sx={{
-                fontWeight: 600,
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                minHeight: '3.4em'
-              }}
-            >
-              {name}
-            </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <Typography variant="body2" color="text.secondary" style={{minHeight:'1.5em'}}>
-                {manufacturer || ''}
-              </Typography>
+          <Box
+            component={Link}
+            to={`/product/${id}`}
+            sx={{ 
+              flexGrow: 1, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'stretch',
+              textDecoration: 'none',
+              color: 'inherit'
+            }}
+          >
+            <Box sx={{ 
+              position: 'relative', 
+              height: '180px',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              backgroundColor: '#ffffff',
+              borderTopLeftRadius: '8px',
+              borderTopRightRadius: '8px'
+            }}>
+              {imageError ? (
+                <CardMedia
+                  component="img"
+                  height="180"
+                  image="/assets/images/nopicture.jpg"
+                  alt={name}
+                  sx={{ objectFit: 'cover', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
+                />
+              ) : image === null ? (
+                <CircularProgress sx={{ color: '#90ffc0' }} />
+              ) : (
+                <CardMedia
+                  component="img"
+                  height="180"
+                  image={image}
+                  alt={name}
+                  sx={{ objectFit: 'cover', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
+                />
+              )}
             </Box>
             
-            <div style={{padding:'0px',margin:'0px',minHeight:'3.8em'}}>
-            <Typography
-              variant="h6"
-              color="primary"
-              sx={{ mt: 'auto', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-            >
-              <span>{new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price)}</span>
-              <small style={{ color: '#77aa77', fontSize: '0.6em' }}>(incl. {steuersatz}% USt.,*)</small>
+            <CardContent sx={{ 
+              flexGrow: 1, 
+              display: 'flex', 
+              flexDirection: 'column', 
+              '&.MuiCardContent-root:last-child': {
+                paddingBottom: 0
+              }
+            }}>
+              <Typography
+                gutterBottom
+                variant="h6"
+                component="h2"
+                sx={{
+                  fontWeight: 600,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  minHeight: '3.4em'
+                }}
+              >
+                {name}
+              </Typography>
               
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <Typography variant="body2" color="text.secondary" style={{minHeight:'1.5em'}}>
+                  {manufacturer || ''}
+                </Typography>
+              </Box>
+              
+              <div style={{padding:'0px',margin:'0px',minHeight:'3.8em'}}>
+              <Typography
+                variant="h6"
+                color="primary"
+                sx={{ mt: 'auto', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span>{new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price)}</span>
+                <small style={{ color: '#77aa77', fontSize: '0.6em' }}>(incl. {steuersatz}% USt.,*)</small>
+                
 
-         
-            </Typography>
-            {massMenge != 1 && massEinheit && (<Typography variant="body2" color="text.secondary" sx={{ m: 0,p: 0 }}>
-                ({new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price/massMenge)}/{massEinheit})
-            </Typography>   )}
-            </div>
-               {/*incoming*/}
-          </CardContent>
-        </Box>
-        
-        <Box sx={{ p: 2, pt: 0 }}>
-          <AddToCartButton 
-            available={available}
-          />
-        </Box>
-      </Card>
+           
+              </Typography>
+              {massMenge != 1 && massEinheit && (<Typography variant="body2" color="text.secondary" sx={{ m: 0,p: 0 }}>
+                  ({new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price/massMenge)}/{massEinheit})
+              </Typography>   )}
+              </div>
+                 {/*incoming*/}
+            </CardContent>
+          </Box>
+          
+          <Box sx={{ p: 2, pt: 0 }}>
+            <AddToCartButton 
+              available={available}
+            />
+          </Box>
+        </Card>
+      </Box>
     );
   }
 }
