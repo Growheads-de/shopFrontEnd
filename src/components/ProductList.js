@@ -178,15 +178,20 @@ class ProductList extends Component {
                 mb: 1
               }}
             > 
-                <Product 
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  currency={product.currency}
-                  available={product.available}
-                  manufacturer={product.manufacturer}
-                  socket={this.props.socket} 
-                />
+              <Product 
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                currency={product.currency}
+                available={product.available}
+                manufacturer={product.manufacturer}
+                steuersatz={product.steuersatz}
+                massMenge={product.massMenge}
+                massEinheit={product.massEinheit}
+                incoming={product.incoming}
+                neu={product.neu}
+                socket={this.props.socket} 
+              />
             </Grid>
           ))}
         </Grid>
