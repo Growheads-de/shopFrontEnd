@@ -35,7 +35,7 @@ export default {
     path: path.resolve(__dirname, 'dist'),
     filename: isDevelopment ? 'js/[name].[contenthash].bundle.js' : 'js/[name].[contenthash].js',
     chunkFilename: isDevelopment ? 'js/[name].[contenthash].chunk.js' : 'js/[name].[contenthash].chunk.js',
-    clean: true,
+    clean: isDevelopment ? true : false,
     publicPath: '/'
   },
   devtool: isDevelopment ? 'source-map' : false,
