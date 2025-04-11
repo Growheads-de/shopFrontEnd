@@ -159,7 +159,7 @@ class Filter extends Component {
       ...cellStyle,
       width: '20px',
       verticalAlign: 'middle',
-      paddingRight: '0'
+      paddingRight: '8px'
     };
     
     const labelCellStyle = {
@@ -216,7 +216,7 @@ class Filter extends Component {
           <table style={tableStyle}>
             <tbody>
               {optionsList.map((option) => (
-                <tr key={option.id} style={{ height: '28px' }}>
+                <tr key={option.id} style={{ height: '32px' }}>
                   <td style={checkboxCellStyle}>
                     <Checkbox 
                       checked={options[option.id] || false} 
@@ -226,7 +226,7 @@ class Filter extends Component {
                       size="small"
                       sx={{ 
                         padding: '0px',
-                        '& .MuiSvgIcon-root': { fontSize: 18 } 
+                        '& .MuiSvgIcon-root': { fontSize: 28 } 
                       }}
                     />
                   </td>

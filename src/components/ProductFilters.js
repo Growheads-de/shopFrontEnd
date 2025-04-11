@@ -122,9 +122,9 @@ class ProductFilters extends Component {
           attributes={this.props.attributes}
           onFilterChange={(msg)=>{
             if(msg.value) {
-              document.cookie = "filter_"+msg.type+"_"+msg.name+"=true";
+              document.cookie = "filter_"+msg.type+"_"+msg.name+"=true; path=/";
             } else {
-              document.cookie = "filter_"+msg.type+"_"+msg.name+"=false; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+              document.cookie = "filter_"+msg.type+"_"+msg.name+"=false; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
             }
             this.props.onFilterChange();
           }}
@@ -163,7 +163,8 @@ class ProductFilters extends Component {
               const cookies = document.cookie.split(';');
               for(const cookie of cookies) {
                 const [name, ] = cookie.split('=');
-                if(name.startsWith('filter_')) document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+                const trimmedName = name.trim();
+                if(trimmedName.startsWith('filter_')) document.cookie = trimmedName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
               }
               this.props.onFilterChange();
               return;
