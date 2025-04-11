@@ -278,7 +278,7 @@ class Product extends Component {
 
          
             </Typography>
-            {massMenge != 1 && (<Typography variant="body2" color="text.secondary" sx={{ m: 0,p: 0 }}>
+            {massMenge != 1 && massEinheit && (<Typography variant="body2" color="text.secondary" sx={{ m: 0,p: 0 }}>
                 ({new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price/massMenge)}/{massEinheit})
             </Typography>   )}
             </div>
