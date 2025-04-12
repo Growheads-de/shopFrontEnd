@@ -36,9 +36,54 @@ function getCachedCategoryData(categoryId) {
   return null;
 }
 
+// Sort products by fuzzy similarity to their name/description
+function sortProductsByFuzzySimilarity(products, searchTerm) {
+  // Create an array that preserves the product object and its searchable text
+  const productsWithText = products.map(product => {
+    const searchableText = `${product.name || ''} ${product.description || ''}`;
+    return { product, searchableText };
+  });
+  
+  // Sort products based on their searchable text similarity
+  productsWithText.sort((a, b) => {
+    const scoreA = getFuzzySimilarityScore(a.searchableText, searchTerm);
+    const scoreB = getFuzzySimilarityScore(b.searchableText, searchTerm);
+    return scoreB - scoreA; // Higher scores first
+  });
+  
+  // Return just the sorted product objects
+  return productsWithText.map(item => item.product);
+}
 
-function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
+// Calculate a similarity score between text and search term
+function getFuzzySimilarityScore(text, searchTerm) {
+  const searchWords = searchTerm.toLowerCase().split(/\W+/).filter(Boolean);
+  const textWords = text.toLowerCase().split(/\W+/).filter(Boolean);
+  
+  let totalScore = 0;
+  for (let searchWord of searchWords) {
+    // Exact matches get highest priority
+    if (textWords.includes(searchWord)) {
+      totalScore += 2;
+      continue;
+    }
+    
+    // Partial matches get scored based on similarity
+    let bestMatch = 0;
+    for (let textWord of textWords) {
+      if (textWord.includes(searchWord) || searchWord.includes(textWord)) {
+        const similarity = Math.min(searchWord.length, textWord.length) / 
+                           Math.max(searchWord.length, textWord.length);
+        if (similarity > bestMatch) bestMatch = similarity;
+      }
+    }
+    totalScore += bestMatch;
+  }
+  
+  return totalScore;
+}
 
+function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
   const attributeCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_attribute_'));
   const manufacturerCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_manufacturer_'));
   const attributeFilters = attributeCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
@@ -57,7 +102,8 @@ function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
       attributeFiltersByGroup[attribute.cName].push(filterId);
     }
   }
-  const filteredProducts = unfilteredProducts.filter(product => {
+  
+  let filteredProducts = unfilteredProducts.filter(product => {
     const availabilityFilter = localStorage.getItem('filter_availability');
     const inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
@@ -75,6 +121,11 @@ function getFilteredProducts(unfilteredProducts,attributes/*,searchParams*/) {
     });
     return manufacturerMatch && attributeMatch && inStockMatch;
   });
+  
+  // Sort products by fuzzy similarity to search query instead of filtering them out
+  if (searchQuery && searchQuery.trim() !== '') {
+    filteredProducts = sortProductsByFuzzySimilarity(filteredProducts, searchQuery);
+  }
   
   return filteredProducts;
 }
@@ -125,13 +176,17 @@ function setCachedCategoryData(categoryId, data) {
 class Content extends Component {
   constructor(props) {
     super(props);
+    // Check if there's a global search query
+    const initialSearchQuery = window.currentSearchQuery || '';
+    
     this.state = {
       loaded: false,
       categoryName: null, 
       unfilteredProducts: [],
       filteredProducts: [],
       attributes: [],
-      isMounted: false
+      isMounted: false,
+      searchQuery: initialSearchQuery
     };
   }
 
@@ -150,6 +205,21 @@ class Content extends Component {
 
   componentDidMount() {
     this.setState({ isMounted: true, loaded: false },()=>{this.fetchCategoryData(this.props.params.categoryId)});
+    
+    // Add event listener for search queries
+    this.handleSearchQuery = (event) => {
+      const query = event.detail.query;
+      this.setState({ searchQuery: query }, () => {
+        this.filterProducts();
+      });
+    };
+    
+    window.addEventListener('search-query-change', this.handleSearchQuery);
+  }
+  
+  componentWillUnmount() {
+    // Remove event listener when component unmounts
+    window.removeEventListener('search-query-change', this.handleSearchQuery);
   }
 
   processCategoryData(response) {
@@ -167,7 +237,11 @@ class Content extends Component {
 
     this.setState({
       unfilteredProducts: unfilteredProducts,
-      filteredProducts: getFilteredProducts(unfilteredProducts,response.attributes,this.props.searchParams),
+      filteredProducts: getFilteredProducts(
+        unfilteredProducts,
+        response.attributes,
+        this.state.searchQuery || ''
+      ),
       attributes: response.attributes,
       categoryName: response.categoryName,
       loaded: true
@@ -194,7 +268,13 @@ class Content extends Component {
   }
 
   filterProducts() {
-    this.setState({ filteredProducts: getFilteredProducts(this.state.unfilteredProducts,this.state.attributes,this.props.searchParams) });
+    this.setState({ 
+      filteredProducts: getFilteredProducts(
+        this.state.unfilteredProducts,
+        this.state.attributes,
+        this.state.searchQuery || ''
+      ) 
+    });
   }
 
   render() {
