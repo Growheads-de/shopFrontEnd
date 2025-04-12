@@ -114,6 +114,10 @@ const SearchBar = () => {
         fullWidth
         value={searchQuery}
         onChange={handleSearchChange}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck="false"
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
