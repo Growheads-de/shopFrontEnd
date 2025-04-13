@@ -4,6 +4,9 @@ import ProductFilters from './ProductFilters.js';
 import ProductList from './ProductList.js';
 
 import { useParams, useSearchParams } from 'react-router-dom';
+
+const isNew = (neu) => neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
+
 const withRouter = (ClassComponent) => {
   return (props) => {
     const params = useParams();
@@ -86,8 +89,10 @@ function getFuzzySimilarityScore(text, searchTerm) {
 function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
   const attributeCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_attribute_'));
   const manufacturerCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_manufacturer_'));
+  const availabilityCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_availability_'));
   const attributeFilters = attributeCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
   const manufacturerFilters = manufacturerCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
+  const availabilityFilters = availabilityCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
   const uniqueAttributes = [...new Set(attributes.map(attr => attr.kMerkmalWert.toString()))];
   const uniqueManufacturers = [...new Set(unfilteredProducts.filter(product => product.manufacturerId).map(product => product.manufacturerId.toString()))];
   const activeAttributeFilters = attributeFilters.filter(filter => uniqueAttributes.includes(filter));
@@ -106,10 +111,11 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
   let filteredProducts = unfilteredProducts.filter(product => {
     const availabilityFilter = localStorage.getItem('filter_availability');
     const inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
+    const isNewMatch = availabilityFilters.includes('2') ?  isNew(product.neu) : true;
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
       (product.manufacturerId && activeManufacturerFilters.includes(product.manufacturerId.toString()));
     if (Object.keys(attributeFiltersByGroup).length === 0) {
-      return manufacturerMatch && inStockMatch;
+      return manufacturerMatch && inStockMatch && isNewMatch;
     }
     const productAttributes = attributes
       .filter(attr => attr.kArtikel === product.id);
@@ -119,7 +125,7 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
         .map(attr => attr.kMerkmalWert.toString());
       return groupFilters.some(filter => productGroupAttributes.includes(filter));
     });
-    return manufacturerMatch && attributeMatch && inStockMatch;
+    return manufacturerMatch && attributeMatch && inStockMatch && isNewMatch;
   });
   
   // Sort products by fuzzy similarity to search query instead of filtering them out

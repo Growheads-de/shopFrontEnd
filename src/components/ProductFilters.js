@@ -3,6 +3,8 @@ import { Paper } from '@mui/material';
 import Filter from './Filter.js';
 import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 
+const isNew = (neu) => neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
+
 // HOC to provide router props to class components
 const withRouter = (ClassComponent) => {
   return (props) => {
@@ -26,9 +28,10 @@ class ProductFilters extends Component {
 
     const uniqueManufacturerArray = this._getUniqueManufacturers(this.props.products);
     const attributeGroups = this._getAttributeGroups(this.props.attributes);
+    const availabilityValues = this._getAvailabilityValues(this.props.products);
 
     this.state = {
-      availabilityValues: [{id:1,name:'auf Lager'}],
+      availabilityValues,
       uniqueManufacturerArray,
       attributeGroups
     };
@@ -84,6 +87,15 @@ class ProductFilters extends Component {
     return uniqueManufacturerArray;
   }
 
+  _getAvailabilityValues = (products) => {
+    for(const product of products){
+      if(isNew(product.neu)){
+        return [{id:1,name:'auf Lager'},{id:2,name:'Neu'}]
+      }
+    }
+    return [{id:1,name:'auf Lager'}]
+  }
+
   _getAttributeGroups = (attributes) => {
     const attributeGroups = {};
     for(const attribute of attributes) {
@@ -96,7 +108,8 @@ class ProductFilters extends Component {
   shouldComponentUpdate(nextProps) {
     if(nextProps.products !== this.props.products) {
       const uniqueManufacturerArray = this._getUniqueManufacturers(nextProps.products);
-      this.setState({uniqueManufacturerArray});
+      const availabilityValues = this._getAvailabilityValues(nextProps.products);
+      this.setState({uniqueManufacturerArray, availabilityValues});
     }
     if(nextProps.attributes !== this.props.attributes) {
       const attributeGroups = this._getAttributeGroups(nextProps.attributes);
@@ -164,6 +177,7 @@ class ProductFilters extends Component {
               for(const cookie of cookies) {
                 const [name, ] = cookie.split('=');
                 const trimmedName = name.trim();
+                console.log('trimmedName',trimmedName);
                 if(trimmedName.startsWith('filter_')) document.cookie = trimmedName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
               }
               this.props.onFilterChange();
@@ -171,13 +185,17 @@ class ProductFilters extends Component {
             }
 
             if(!msg.value) {
-              localStorage.setItem('filter_availability', msg.name);
+              console.log('msg',msg);
+              if(msg.name == '1') localStorage.setItem('filter_availability', msg.name);
+              if(msg.name == '2') document.cookie = "filter_"+msg.type+"_"+msg.name+"=false; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/"
               //this.props.navigate({
               //  pathname: this.props.location.pathname,
               //  search: `?inStock=${msg.name}`
               //}); 
             } else {
-              localStorage.removeItem('filter_availability');
+              if(msg.name == '1') localStorage.removeItem('filter_availability');
+              if(msg.name == '2') document.cookie = "filter_"+msg.type+"_"+msg.name+"=true; path=/";
+              console.log('msg',msg);
               //this.props.navigate({
               //  pathname: this.props.location.pathname,
               //  search: this.props.location.search.replace(/inStock=[^&]*/, '')

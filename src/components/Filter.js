@@ -5,6 +5,8 @@ import {
   Checkbox
 } from '@mui/material';
 
+const isNew = (neu) => neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
+
 class Filter extends Component {
   constructor(props) {
     super(props);
@@ -23,6 +25,7 @@ class Filter extends Component {
       const products = options[1] ? props.products : props.products;
       if(products) for(const product of products){
         if(product.available) counts[1] = (counts[1] || 0) + 1;
+        if(isNew(product.neu)) counts[2] = (counts[2] || 0) + 1;
       }
     }
     if(props.filterType === 'manufacturer'){
@@ -79,8 +82,12 @@ class Filter extends Component {
     if(props.filterType === 'availability'){
  
       const availabilityFilter = localStorage.getItem('filter_availability');
+      const newCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_availability_'));
+      const newFilters = newCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
+      console.log('newFilters',newFilters);
       const optionsState = {};
       if(!availabilityFilter) optionsState['1'] = true;
+      if(newFilters.length > 0) optionsState['2'] = true;
 
       const inStock = props.searchParams.get('inStock');
       if(inStock) optionsState[inStock] = true;
