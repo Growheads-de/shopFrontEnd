@@ -55,7 +55,18 @@ class ProductDetailPage extends Component {
       const isFresh = (Date.now() - cacheTimestamp) < (10 * 60 * 1000);
       if (isFresh){
         console.log('Using cached product:', cachedProduct);
-        this.state.product = {cArtNr:cachedProduct.articleNumber,cName:cachedProduct.name,fPreis:cachedProduct.price,fVerfuegbar:cachedProduct.available};
+        this.state.product = {
+          cArtNr:cachedProduct.articleNumber,
+          cName:cachedProduct.name,
+          fPreis:cachedProduct.price,
+          fVerfuegbar:cachedProduct.available,
+          fZulauf:cachedProduct.stock,
+          dLieferdatum:cachedProduct.deliveryDate,
+          fSteuersatz:cachedProduct.steuersatz,
+          HerstellerName:cachedProduct.manufacturer,
+          manufacturerId:cachedProduct.manufacturerId
+        };
+        console.log('Product state:', cachedProduct);
         this.state.loading = false;
       }
     }

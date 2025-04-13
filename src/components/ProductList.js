@@ -190,7 +190,8 @@ class ProductList extends Component {
                 massEinheit={product.massEinheit}
                 incoming={product.incoming}
                 neu={product.neu}
-                socket={this.props.socket} 
+                socket={this.props.socket}
+                bildListe={product.bildListe}
               />
             </Grid>
           ))}

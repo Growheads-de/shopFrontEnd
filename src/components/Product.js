@@ -26,64 +26,70 @@ class Product extends Component {
     if (!window.productCache) {
       window.productCache = {};
     }
-    
-    const cacheKey = `productImage_${this.props.id}`;
-    try {
-      const cachedData = window.productCache[cacheKey];
-      if (cachedData) {
-        const { imageUrl, error, timestamp } = cachedData;
-        const cacheAge = Date.now() - timestamp;
-        const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
-        
-        // If cache is less than 10 minutes old, use it
-        if (cacheAge < tenMinutes) {
-          if (error) {
-            // This is a cached error response, no need to call socket again
-            this.setState({ imageError: true });
-            return;
-          } else if (imageUrl !== undefined) {
-            // This is a cached successful response
-            this.setState({ image: imageUrl });
-            return;
+
+    console.log('BildListe:', this.props.bildListe);
+    if(this.props.bildListe && this.props.bildListe.length > 0 && this.props.bildListe.split(',').length > 0){
+        const cacheKey = `productImage_${this.props.id}`;
+        try {
+          const cachedData = window.productCache[cacheKey];
+          if (cachedData) {
+            const { imageUrl, error, timestamp } = cachedData;
+            const cacheAge = Date.now() - timestamp;
+            const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+            
+            // If cache is less than 10 minutes old, use it
+            if (cacheAge < tenMinutes) {
+              if (error) {
+                // This is a cached error response, no need to call socket again
+                this.setState({ imageError: true });
+                return;
+              } else if (imageUrl !== undefined) {
+                // This is a cached successful response
+                this.setState({ image: imageUrl });
+                return;
+              }
+            }
           }
+        } catch (err) {
+          console.error('Error reading image from cache:', err);
         }
-      }
-    } catch (err) {
-      console.error('Error reading image from cache:', err);
+        
+        // If no valid cache, fetch from socket
+        const socket = this.props.socket;
+        socket.emit('getPreviewPic', { articleId: this.props.id }, (res) => {
+          // Cache both successful and error responses
+          try {
+            // Store result in global cache with information about the type of response
+            window.productCache[cacheKey] = {
+              imageUrl: res.success ? URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })) : null,
+              error: res.success ? null : (res.error || "Unknown error"),
+              timestamp: Date.now()
+            };
+            
+            if (res.success) {
+              this.setState({ 
+                image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
+              });
+            } else {
+              this.setState({ imageError: true });
+            }
+          } catch (err) {
+            console.error('Error writing to cache:', err);
+            
+            // Still update state if successful, even if caching failed
+            if (res.success) {
+              this.setState({ 
+                image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
+              });
+            } else {
+              this.setState({ imageError: true });
+            }
+          }
+        });
+    }else{
+      this.setState({ imageError: true });
     }
     
-    // If no valid cache, fetch from socket
-    const socket = this.props.socket;
-    socket.emit('getPreviewPic', { articleId: this.props.id }, (res) => {
-      // Cache both successful and error responses
-      try {
-        // Store result in global cache with information about the type of response
-        window.productCache[cacheKey] = {
-          imageUrl: res.success ? URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })) : null,
-          error: res.success ? null : (res.error || "Unknown error"),
-          timestamp: Date.now()
-        };
-        
-        if (res.success) {
-          this.setState({ 
-            image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
-          });
-        } else {
-          this.setState({ imageError: true });
-        }
-      } catch (err) {
-        console.error('Error writing to cache:', err);
-        
-        // Still update state if successful, even if caching failed
-        if (res.success) {
-          this.setState({ 
-            image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
-          });
-        } else {
-          this.setState({ imageError: true });
-        }
-      }
-    });
   }
 
   handleQuantityChange = (quantity) => {
