@@ -197,8 +197,6 @@ class ProductDetailPage extends Component {
          
           <Box sx={{ 
             width: '555px',
-            minWidth: '555px',
-            flexShrink: 0,
             minHeight: '400px',
             background: '#f8f8f8',
             display: 'flex',

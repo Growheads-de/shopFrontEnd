@@ -6,22 +6,35 @@ class ProductList extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      viewMode: 'grid',
+      viewMode: window.productListViewMode || 'grid',
       products:[],
-      page:1,
-      itemsPerPage:20,
-      sortBy:'name'
+      page: window.productListPage || 1,
+      itemsPerPage: window.productListItemsPerPage || 20,
+      sortBy: window.productListSortBy || 'name'
     };
+  }
+
+  handleViewModeChange = (viewMode) => {
+    this.setState({ viewMode });
+    window.productListViewMode = viewMode;
   }
 
   handlePageChange = (event, value) => {
     this.setState({ page: value });
+    window.productListPage = value;
   }
 
   shouldComponentUpdate(nextProps) {
-    if((this.props.products !== nextProps.products)&&(this.state.page != 1)){
-      this.setState({ page:1 });
-      return false;
+    if (this.props.products !== nextProps.products) {
+      const currentPageCapacity = this.state.page * (this.state.itemsPerPage === 'all' ? Infinity : this.state.itemsPerPage);
+      const newProductsCount = nextProps.products.length;
+      
+      // Only reset to page 1 if we don't have enough products to fill the current page
+      if (newProductsCount < currentPageCapacity && this.state.page > 1) {
+        this.setState({ page: 1 });
+        window.productListPage = 1;
+        return false;
+      }
     }
     return true;
   }
@@ -29,15 +42,22 @@ class ProductList extends Component {
   handleProductsPerPageChange = (event) => {
     const newItemsPerPage = event.target.value;
     const newState = { itemsPerPage: newItemsPerPage };
+    window.productListItemsPerPage = newItemsPerPage;
+    
     if(newItemsPerPage!=='all'){
       const newTotalPages = Math.ceil(this.props.products.length / newItemsPerPage);
-      if (this.state.page > newTotalPages) newState.page = newTotalPages; 
+      if (this.state.page > newTotalPages) {
+        newState.page = newTotalPages;
+        window.productListPage = newTotalPages;
+      }
     }
     this.setState(newState);
   }
 
   handleSortChange = (event) => {
-    this.setState({ sortBy: event.target.value });
+    const sortBy = event.target.value;
+    this.setState({ sortBy });
+    window.productListSortBy = sortBy;
   }
 
   renderPagination = (pages, page) => {
