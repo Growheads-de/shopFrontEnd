@@ -15,81 +15,30 @@ import { Link } from 'react-router-dom';
 class Product extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      image: null,
-      imageError: false
-    };
-  }
-
-  componentDidMount() {
-    // Initialize global cache object if it doesn't exist
-    if (!window.productCache) {
-      window.productCache = {};
-    }
-
-    console.log('BildListe:', this.props.bildListe);
-    if(this.props.bildListe && this.props.bildListe.length > 0 && this.props.bildListe.split(',').length > 0){
-        const cacheKey = `productImage_${this.props.id}`;
-        try {
-          const cachedData = window.productCache[cacheKey];
-          if (cachedData) {
-            const { imageUrl, error, timestamp } = cachedData;
-            const cacheAge = Date.now() - timestamp;
-            const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
-            
-            // If cache is less than 10 minutes old, use it
-            if (cacheAge < tenMinutes) {
-              if (error) {
-                // This is a cached error response, no need to call socket again
-                this.setState({ imageError: true });
-                return;
-              } else if (imageUrl !== undefined) {
-                // This is a cached successful response
-                this.setState({ image: imageUrl });
-                return;
-              }
-            }
-          }
-        } catch (err) {
-          console.error('Error reading image from cache:', err);
-        }
-        
-        // If no valid cache, fetch from socket
-        const socket = this.props.socket;
-        socket.emit('getPreviewPic', { articleId: this.props.id }, (res) => {
-          // Cache both successful and error responses
-          try {
-            // Store result in global cache with information about the type of response
-            window.productCache[cacheKey] = {
-              imageUrl: res.success ? URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType })) : null,
-              error: res.success ? null : (res.error || "Unknown error"),
-              timestamp: Date.now()
-            };
-            
-            if (res.success) {
-              this.setState({ 
-                image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
-              });
-            } else {
-              this.setState({ imageError: true });
-            }
-          } catch (err) {
-            console.error('Error writing to cache:', err);
-            
-            // Still update state if successful, even if caching failed
-            if (res.success) {
-              this.setState({ 
-                image: URL.createObjectURL(new Blob([res.imageBuffer], { type: res.mimeType }))
-              });
-            } else {
-              this.setState({ imageError: true });
-            }
-          }
-        });
-    }else{
-      this.setState({ imageError: true });
-    }
     
+    if (!window.smallPicCache) {
+      window.smallPicCache = {};
+    }
+
+    if(this.props.pictureList && this.props.pictureList.length > 0 && this.props.pictureList.split(',').length > 0) {
+      const bildId = this.props.pictureList.split(',')[0];
+      if(window.smallPicCache[bildId]){
+        this.state = {image:window.smallPicCache[bildId],loading:false, error: false}
+      }else{
+        this.state = {image: null, loading: true, error: false};
+        this.props.socket.emit('getPic', { bildId, size:'small' }, (res) => {
+          if(res.success){
+            window.smallPicCache[bildId] = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
+            this.setState({image: window.smallPicCache[bildId],loading: false});
+          }else{
+            console.log('Fehler beim Laden des Bildes:', res);
+            this.setState({error:true,loading: false});
+          }
+        })
+      }
+    }else{
+      this.state = {image: null, loading: false, error: false};
+    }
   }
 
   handleQuantityChange = (quantity) => {
@@ -98,8 +47,7 @@ class Product extends Component {
   }
 
   render() {
-    const { id, name, price, available, manufacturer, currency, steuersatz, massMenge, massEinheit,/* incoming,*/ neu } = this.props;
-    const { image, imageError } = this.state;
+    const { id, name, price, available, manufacturer, currency, vat, massMenge, massEinheit,/* incoming,*/ neu } = this.props;
     
     const isNew = neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
     
@@ -224,21 +172,22 @@ class Product extends Component {
               borderTopLeftRadius: '8px',
               borderTopRightRadius: '8px'
             }}>
-              {imageError ? (
-                <CardMedia
-                  component="img"
-                  height="180"
-                  image="/assets/images/nopicture.jpg"
-                  alt={name}
-                  sx={{ objectFit: 'cover', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
-                />
-              ) : image === null ? (
+              {this.state.loading ? (
                 <CircularProgress sx={{ color: '#90ffc0' }} />
+
+              ) : this.state.image === null ? (
+                <CardMedia
+                component="img"
+                height="180"
+                image="/assets/images/nopicture.jpg"
+                alt={name}
+                sx={{ objectFit: 'cover', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
+              />  
               ) : (
                 <CardMedia
                   component="img"
                   height="180"
-                  image={image}
+                  image={this.state.image}
                   alt={name}
                   sx={{ objectFit: 'cover', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
                 />
@@ -283,7 +232,7 @@ class Product extends Component {
                 sx={{ mt: 'auto', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
                 <span>{new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price)}</span>
-                <small style={{ color: '#77aa77', fontSize: '0.6em' }}>(incl. {steuersatz}% USt.,*)</small>
+                <small style={{ color: '#77aa77', fontSize: '0.6em' }}>(incl. {vat}% USt.,*)</small>
                 
 
            

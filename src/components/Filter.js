@@ -4,6 +4,7 @@ import {
   Typography, 
   Checkbox
 } from '@mui/material';
+import { getAllSettingsWithPrefix } from '../utils/sessionStorage.js';
 
 const isNew = (neu) => neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
 
@@ -62,8 +63,15 @@ class Filter extends Component {
   initializeOptions = (props) => {
 
     if(props.filterType === 'attribute'){
-      const attributeCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_attribute_'));;
-      const attributeFilters = attributeCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
+      const attributeFilters = [];
+      const attributeSettings = getAllSettingsWithPrefix('filter_attribute_');
+      
+      Object.keys(attributeSettings).forEach(key => {
+        if (attributeSettings[key] === 'true') {
+          attributeFilters.push(key.split('_')[2]);
+        }
+      });
+      
       return attributeFilters.reduce((acc, filter) => {
         acc[filter] = true;
         return acc;
@@ -71,8 +79,15 @@ class Filter extends Component {
     }
 
     if(props.filterType === 'manufacturer'){
-      const manufacturerCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_manufacturer_'));
-      const manufacturerFilters = manufacturerCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
+      const manufacturerFilters = [];
+      const manufacturerSettings = getAllSettingsWithPrefix('filter_manufacturer_');
+      
+      Object.keys(manufacturerSettings).forEach(key => {
+        if (manufacturerSettings[key] === 'true') {
+          manufacturerFilters.push(key.split('_')[2]);
+        }
+      });
+      
       return manufacturerFilters.reduce((acc, filter) => {
         acc[filter] = true;
         return acc;
@@ -80,16 +95,22 @@ class Filter extends Component {
     }
 
     if(props.filterType === 'availability'){
- 
       const availabilityFilter = localStorage.getItem('filter_availability');
-      const newCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_availability_'));
-      const newFilters = newCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
+      const newFilters = [];
+      const availabilitySettings = getAllSettingsWithPrefix('filter_availability_');
+      
+      Object.keys(availabilitySettings).forEach(key => {
+        if (availabilitySettings[key] === 'true') {
+          newFilters.push(key.split('_')[2]);
+        }
+      });
+      
       console.log('newFilters',newFilters);
       const optionsState = {};
       if(!availabilityFilter) optionsState['1'] = true;
       if(newFilters.length > 0) optionsState['2'] = true;
 
-      const inStock = props.searchParams.get('inStock');
+      const inStock = props.searchParams?.get('inStock');
       if(inStock) optionsState[inStock] = true;
       return optionsState;
     }

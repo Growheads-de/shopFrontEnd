@@ -185,13 +185,13 @@ class ProductList extends Component {
                 currency={product.currency}
                 available={product.available}
                 manufacturer={product.manufacturer}
-                steuersatz={product.steuersatz}
+                vat={product.vat}
                 massMenge={product.massMenge}
                 massEinheit={product.massEinheit}
                 incoming={product.incoming}
                 neu={product.neu}
                 socket={this.props.socket}
-                bildListe={product.bildListe}
+                pictureList={product.pictureList}
               />
             </Grid>
           ))}

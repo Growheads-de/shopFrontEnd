@@ -4,6 +4,7 @@ import ProductFilters from './ProductFilters.js';
 import ProductList from './ProductList.js';
 
 import { useParams, useSearchParams } from 'react-router-dom';
+import { getAllSettingsWithPrefix } from '../utils/sessionStorage.js';
 
 const isNew = (neu) => neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
 
@@ -87,12 +88,31 @@ function getFuzzySimilarityScore(text, searchTerm) {
 }
 
 function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
-  const attributeCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_attribute_'));
-  const manufacturerCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_manufacturer_'));
-  const availabilityCookies = document.cookie.split(';').filter(cookie => cookie.trim().startsWith('filter_availability_'));
-  const attributeFilters = attributeCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
-  const manufacturerFilters = manufacturerCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
-  const availabilityFilters = availabilityCookies.map(cookie => cookie.split('=')[0].split('_')[2]);
+  const attributeSettings = getAllSettingsWithPrefix('filter_attribute_');
+  const manufacturerSettings = getAllSettingsWithPrefix('filter_manufacturer_');
+  const availabilitySettings = getAllSettingsWithPrefix('filter_availability_');
+  
+  const attributeFilters = [];
+  Object.keys(attributeSettings).forEach(key => {
+    if (attributeSettings[key] === 'true') {
+      attributeFilters.push(key.split('_')[2]);
+    }
+  });
+  
+  const manufacturerFilters = [];
+  Object.keys(manufacturerSettings).forEach(key => {
+    if (manufacturerSettings[key] === 'true') {
+      manufacturerFilters.push(key.split('_')[2]);
+    }
+  });
+  
+  const availabilityFilters = [];
+  Object.keys(availabilitySettings).forEach(key => {
+    if (availabilitySettings[key] === 'true') {
+      availabilityFilters.push(key.split('_')[2]);
+    }
+  });
+
   const uniqueAttributes = [...new Set(attributes.map(attr => attr.kMerkmalWert.toString()))];
   const uniqueManufacturers = [...new Set(unfilteredProducts.filter(product => product.manufacturerId).map(product => product.manufacturerId.toString()))];
   const activeAttributeFilters = attributeFilters.filter(filter => uniqueAttributes.includes(filter));
@@ -113,6 +133,7 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
     const inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
     const isNewMatch = availabilityFilters.includes('2') ?  isNew(product.neu) : true;
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
+
       (product.manufacturerId && activeManufacturerFilters.includes(product.manufacturerId.toString()));
     if (Object.keys(attributeFiltersByGroup).length === 0) {
       return manufacturerMatch && inStockMatch && isNewMatch;
@@ -135,41 +156,19 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
   
   return filteredProducts;
 }
-/*
-function getFilteredProducts(unfilteredProducts, attributes) {
-  const getCookies = prefix => document.cookie.split(';').filter(c => c.trim().startsWith(prefix)).map(c => c.split('=')[0].split('_')[2]);
-  const attributeFilters = getCookies('filter_attribute_');
-  const manufacturerFilters = getCookies('filter_manufacturer_');
-  const uniqueAttributeIds = [...new Set(attributes.map(a => a.kMerkmalWert.toString()))];
-  const uniqueManufacturerIds = [...new Set(unfilteredProducts.filter(p => p.manufacturerId).map(p => p.manufacturerId.toString()))];
-  const activeAttributeFilters = attributeFilters.filter(f => uniqueAttributeIds.includes(f));
-  const activeManufacturerFilters = manufacturerFilters.filter(f => uniqueManufacturerIds.includes(f));
-  const groupedAttributeFilters = {};
-  for (const id of activeAttributeFilters) {
-    const attr = attributes.find(a => a.kMerkmalWert.toString() === id);
-    if (attr) (groupedAttributeFilters[attr.cName] ??= []).push(id);
-  }
-  const availabilityFilter = localStorage.getItem('filter_availability');
-  return unfilteredProducts.filter(p => {
-    const matchesStock = availabilityFilter != 1 || p.available > 0;
-    const matchesManufacturer = !activeManufacturerFilters.length || (p.manufacturerId && activeManufacturerFilters.includes(p.manufacturerId.toString()));
-    if (!Object.keys(groupedAttributeFilters).length) return matchesStock && matchesManufacturer;
-    const productAttributes = attributes.filter(a => a.kArtikel === p.id);
-    const matchesAttributes = Object.entries(groupedAttributeFilters).every(([name, filters]) => {
-      const productValues = productAttributes.filter(a => a.cName === name).map(a => a.kMerkmalWert.toString());
-      return filters.some(f => productValues.includes(f));
-    });
-    return matchesStock && matchesManufacturer && matchesAttributes;
-  });
-}
-*/
 function setCachedCategoryData(categoryId, data) {
   if (!window.productCache) {
     window.productCache = {};
   }
+  if (!window.productDetailCache) {
+    window.productDetailCache = {};
+  }
 
   try {
     const cacheKey = `categoryProducts_${categoryId}`;
+    if(data.products) for(const product of data.products) {
+      window.productDetailCache[product.id] = product;
+    }
     window.productCache[cacheKey] = {
       ...data,
       timestamp: Date.now()

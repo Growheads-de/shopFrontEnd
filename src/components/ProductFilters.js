@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Paper } from '@mui/material';
 import Filter from './Filter.js';
 import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { setSessionSetting, removeSessionSetting, clearAllSessionSettings } from '../utils/sessionStorage.js';
 
 const isNew = (neu) => neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
 
@@ -135,9 +136,9 @@ class ProductFilters extends Component {
           attributes={this.props.attributes}
           onFilterChange={(msg)=>{
             if(msg.value) {
-              document.cookie = "filter_"+msg.type+"_"+msg.name+"=true; path=/";
+              setSessionSetting(`filter_${msg.type}_${msg.name}`, 'true');
             } else {
-              document.cookie = "filter_"+msg.type+"_"+msg.name+"=false; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+              removeSessionSetting(`filter_${msg.type}_${msg.name}`);
             }
             this.props.onFilterChange();
           }}
@@ -173,13 +174,7 @@ class ProductFilters extends Component {
             
             if(msg.resetAll) {
               localStorage.removeItem('filter_availability');
-              const cookies = document.cookie.split(';');
-              for(const cookie of cookies) {
-                const [name, ] = cookie.split('=');
-                const trimmedName = name.trim();
-                console.log('trimmedName',trimmedName);
-                if(trimmedName.startsWith('filter_')) document.cookie = trimmedName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
-              }
+              clearAllSessionSettings();
               this.props.onFilterChange();
               return;
             }
@@ -187,14 +182,14 @@ class ProductFilters extends Component {
             if(!msg.value) {
               console.log('msg',msg);
               if(msg.name == '1') localStorage.setItem('filter_availability', msg.name);
-              if(msg.name == '2') document.cookie = "filter_"+msg.type+"_"+msg.name+"=false; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/"
+              if(msg.name == '2') removeSessionSetting(`filter_${msg.type}_${msg.name}`);
               //this.props.navigate({
               //  pathname: this.props.location.pathname,
               //  search: `?inStock=${msg.name}`
               //}); 
             } else {
               if(msg.name == '1') localStorage.removeItem('filter_availability');
-              if(msg.name == '2') document.cookie = "filter_"+msg.type+"_"+msg.name+"=true; path=/";
+              if(msg.name == '2') setSessionSetting(`filter_${msg.type}_${msg.name}`, 'true');
               console.log('msg',msg);
               //this.props.navigate({
               //  pathname: this.props.location.pathname,
@@ -219,9 +214,9 @@ class ProductFilters extends Component {
           attributes={this.props.attributes}
           onFilterChange={(msg)=>{ 
             if(msg.value) {
-              document.cookie = "filter_"+msg.type+"_"+msg.name+"=true";
+              setSessionSetting(`filter_${msg.type}_${msg.name}`, 'true');
             } else {
-              document.cookie = "filter_"+msg.type+"_"+msg.name+"=false; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+              removeSessionSetting(`filter_${msg.type}_${msg.name}`);
             }
             this.props.onFilterChange();
           }}
