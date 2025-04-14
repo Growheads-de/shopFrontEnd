@@ -113,8 +113,8 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
     }
   });
 
-  const uniqueAttributes = [...new Set(attributes.map(attr => attr.kMerkmalWert.toString()))];
-  const uniqueManufacturers = [...new Set(unfilteredProducts.filter(product => product.manufacturerId).map(product => product.manufacturerId.toString()))];
+  const uniqueAttributes = [...new Set((attributes || []).map(attr => attr.kMerkmalWert ? attr.kMerkmalWert.toString() : ''))];
+  const uniqueManufacturers = [...new Set((unfilteredProducts || []).filter(product => product.manufacturerId).map(product => product.manufacturerId ? product.manufacturerId.toString() : ''))];
   const activeAttributeFilters = attributeFilters.filter(filter => uniqueAttributes.includes(filter));
   const activeManufacturerFilters = manufacturerFilters.filter(filter => uniqueManufacturers.includes(filter)); 
   const attributeFiltersByGroup = {};
@@ -128,7 +128,7 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
     }
   }
   
-  let filteredProducts = unfilteredProducts.filter(product => {
+  let filteredProducts = (unfilteredProducts || []).filter(product => {
     const availabilityFilter = localStorage.getItem('filter_availability');
     const inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
     const isNewMatch = availabilityFilters.includes('2') ?  isNew(product.neu) : true;
@@ -143,7 +143,7 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
     const attributeMatch = Object.entries(attributeFiltersByGroup).every(([groupName, groupFilters]) => {
       const productGroupAttributes = productAttributes
         .filter(attr => attr.cName === groupName)
-        .map(attr => attr.kMerkmalWert.toString());
+        .map(attr => attr.kMerkmalWert ? attr.kMerkmalWert.toString() : '');
       return groupFilters.some(filter => productGroupAttributes.includes(filter));
     });
     return manufacturerMatch && attributeMatch && inStockMatch && isNewMatch;
@@ -233,7 +233,7 @@ class Content extends Component {
     if (!window.individualProductCache) {
       window.individualProductCache = {};
     }
-    unfilteredProducts.forEach(product => {
+    if(unfilteredProducts) unfilteredProducts.forEach(product => {
       window.individualProductCache[product.id] = {
         data: product,
         timestamp: Date.now()
@@ -312,8 +312,8 @@ class Content extends Component {
           <Box>
             <ProductList
               socket={this.props.socket}
-              totalProductCount={this.state.unfilteredProducts.length}
-              products={this.state.filteredProducts}
+              totalProductCount={(this.state.unfilteredProducts || []).length}
+              products={this.state.filteredProducts || []}
             />
           </Box>
         </Box>
