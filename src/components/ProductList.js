@@ -210,6 +210,7 @@ class ProductList extends Component {
                 massEinheit={product.massEinheit}
                 incoming={product.incoming}
                 neu={product.neu}
+                thc={product.thc}
                 socket={this.props.socket}
                 pictureList={product.pictureList}
               />

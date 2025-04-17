@@ -47,9 +47,16 @@ class Product extends Component {
   }
 
   render() {
-    const { id, name, price, available, manufacturer, currency, vat, massMenge, massEinheit,/* incoming,*/ neu } = this.props;
+    const { id, name, price, available, manufacturer, currency, vat, massMenge, massEinheit, thc,/* incoming,*/ neu } = this.props;
     
     const isNew = neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
+    const showThcBadge = thc > 0;
+    let thcBadgeColor = '#4caf50'; // Green default
+    if (thc > 30) {
+      thcBadgeColor = '#f44336'; // Red for > 30
+    } else if (thc > 25) {
+      thcBadgeColor = '#ffeb3b'; // Yellow for > 25
+    }
     
     return (
       <Box sx={{ position: 'relative', height: '100%' }}>
@@ -134,6 +141,7 @@ class Product extends Component {
             </div>
           </div>
         )}
+        
         <Card 
           sx={{ 
             width: '250px',
@@ -142,7 +150,7 @@ class Product extends Component {
             flexDirection: 'column',
             transition: 'transform 0.3s ease, box-shadow 0.3s ease',
             position: 'relative',
-            overflow: 'visible',
+            overflow: 'hidden',
             borderRadius: '8px',
             '&:hover': {
               transform: 'translateY(-5px)',
@@ -150,6 +158,29 @@ class Product extends Component {
             }
           }}
         >
+          {showThcBadge && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                backgroundColor: thcBadgeColor,
+                color: thc > 25 && thc <= 30 ? '#000000' : '#ffffff',
+                fontWeight: 'bold',
+                padding: '2px 0',
+                width: '80px',
+                textAlign: 'center',
+                zIndex: 999,
+                fontSize: '12px',
+                boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
+                transform: 'rotate(-45deg) translateX(-40px) translateY(15px)',
+                transformOrigin: 'top left'
+              }}
+            >
+              {thc}%
+            </div>
+          )}
+          
           <Box
             component={Link}
             to={`/product/${id}`}
@@ -232,7 +263,7 @@ class Product extends Component {
                 sx={{ mt: 'auto', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
                 <span>{new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price)}</span>
-                <small style={{ color: '#77aa77', fontSize: '0.6em' }}>(incl. {vat}% USt.,*)</small>
+                <small style={{ color: '#77aa77', fontSize: '0.6em' }}>(incl. {vat}% USt.,* {thc})</small>
                 
 
            
