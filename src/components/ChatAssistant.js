@@ -10,7 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from '@mui/material/Avatar';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
-
+import parse from 'html-react-parser';
 // Initialize window object for storing messages
 if (!window.chatMessages) {
   window.chatMessages = [];
@@ -103,7 +103,7 @@ const ChatAssistant = ({ open, onClose, socket }) => {
         position: 'fixed',
         bottom: 80,
         right: 16,
-        width: 350,
+        width: 550,
         height: 500,
         bgcolor: 'background.paper',
         borderRadius: 2,
@@ -168,7 +168,7 @@ const ChatAssistant = ({ open, onClose, socket }) => {
                 maxWidth: '75%',
               }}
             >
-              <Typography variant="body2">{message.text}</Typography>
+              <Typography variant="body2">{parse(message.text)}</Typography>
             </Paper>
             {message.sender === 'user' && (
               <Avatar sx={{ bgcolor: 'secondary.main', width: 30, height: 30 }}>
