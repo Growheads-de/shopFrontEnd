@@ -263,7 +263,7 @@ class Product extends Component {
                 sx={{ mt: 'auto', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
                 <span>{new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price)}</span>
-                <small style={{ color: '#77aa77', fontSize: '0.6em' }}>(incl. {vat}% USt.,* {thc})</small>
+                <small style={{ color: '#77aa77', fontSize: '0.6em' }}>(incl. {vat}% USt.,*)</small>
                 
 
            
