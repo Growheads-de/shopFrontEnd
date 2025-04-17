@@ -159,7 +159,7 @@ class Product extends Component {
           }}
         >
           {showThcBadge && (
-            <div
+            <div aria-label={`THC Anteil: ${thc}%`}
               style={{
                 position: 'absolute',
                 top: 0,
