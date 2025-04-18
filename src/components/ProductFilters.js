@@ -99,7 +99,7 @@ class ProductFilters extends Component {
 
   _getAttributeGroups = (attributes) => {
     const attributeGroups = {};
-    for(const attribute of attributes) {
+    if(attributes) for(const attribute of attributes) {
       if(!attributeGroups[attribute.cName]) attributeGroups[attribute.cName] = {name:attribute.cName, values:{}};
       attributeGroups[attribute.cName].values[attribute.kMerkmalWert] = {id:attribute.kMerkmalWert, name:attribute.cWert};
     }

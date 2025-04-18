@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Box, Typography, Grid, Stack, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, Typography, Grid, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Product from './Product.js';
 
 class ProductList extends Component {
@@ -62,22 +62,23 @@ class ProductList extends Component {
 
   renderPagination = (pages, page) => {
     return (
-      ((this.state.itemsPerPage==='all')||(this.props.products.length<this.state.itemsPerPage))?null:<Stack spacing={2} sx={{ my: 2 }}>
-        <Pagination 
-          count={pages} 
-          page={page} 
-          onChange={this.handlePageChange} 
-          color="primary" 
-          sx={{ mx: 'auto' }}
-          size="large"
-          siblingCount={1}
-          boundaryCount={1}
-          hideNextButton={false}
-          hidePrevButton={false}
-          showFirstButton={true}
-          showLastButton={true}
-        />
-      </Stack>
+      <Box sx={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'left' }}>
+        {((this.state.itemsPerPage==='all')||(this.props.products.length<this.state.itemsPerPage))?null:
+          <Pagination 
+            count={pages} 
+            page={page} 
+            onChange={this.handlePageChange} 
+            color="primary"
+            size="large"
+            siblingCount={1}
+            boundaryCount={1}
+            hideNextButton={false}
+            hidePrevButton={false}
+            showFirstButton={true}
+            showLastButton={true}
+          />
+        }
+      </Box>
     );
   }
 
@@ -97,8 +98,7 @@ class ProductList extends Component {
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center',
-          mb: 2
+          alignItems: 'center'
         }}>
             <Typography variant="body2" color="text.secondary">
               {
@@ -183,7 +183,7 @@ class ProductList extends Component {
 
         { this.renderPagination(Math.ceil(this.props.products.length / this.state.itemsPerPage), this.state.page) }
 
-        <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid container spacing={2}>
           {products.map((product) => (
             <Grid 
               item 
