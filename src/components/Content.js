@@ -181,53 +181,52 @@ function setCachedCategoryData(categoryId, data) {
 class Content extends Component {
   constructor(props) {
     super(props);
-    // Check if there's a global search query
-    const initialSearchQuery = window.currentSearchQuery || '';
-    
+
     this.state = {
       loaded: false,
       categoryName: null, 
       unfilteredProducts: [],
       filteredProducts: [],
-      attributes: [],
-      isMounted: false,
-      searchQuery: initialSearchQuery
+      attributes: []
     };
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    if(!this.state.isMounted) return true;
-    if(nextState.loaded && !this.state.loaded) return true;
-    if((this.props.params.categoryId !== nextProps.params.categoryId) && (nextState.loaded == this.state.loaded)) {
-      this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
-        this.fetchCategoryData(nextProps.params.categoryId);
-      });
-      return false;
-    }
-    if(this.state.filteredProducts !== nextState.filteredProducts) return true;
-    return this.props.params.categoryId !== nextProps.params.categoryId;
-  }
-
   componentDidMount() {
-    this.setState({ isMounted: true, loaded: false },()=>{this.fetchCategoryData(this.props.params.categoryId)});
-    
-    // Add event listener for search queries
+    if(this.props.params.categoryId) {this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
+      this.fetchCategoryData(this.props.params.categoryId);
+    })}
+    else if (this.props.searchParams?.get('q')) {
+      this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
+        this.fetchSearchData(this.props.searchParams?.get('q'));
+      })
+    }
     this.handleSearchQuery = (event) => {
       const query = event.detail.query;
       this.setState({ searchQuery: query }, () => {
         this.filterProducts();
       });
     };
-    
     window.addEventListener('search-query-change', this.handleSearchQuery);
   }
-  
+
+  componentDidUpdate(prevProps) {
+    if(this.props.params.categoryId && (prevProps.params.categoryId !== this.props.params.categoryId)) {
+        this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
+        this.fetchCategoryData(this.props.params.categoryId);
+      }); 
+    } 
+    else if (this.props.searchParams?.get('q') && (prevProps.searchParams?.get('q') !== this.props.searchParams?.get('q'))) {
+      this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
+        this.fetchSearchData(this.props.searchParams?.get('q'));
+      })
+    }
+  }
+
   componentWillUnmount() {
-    // Remove event listener when component unmounts
     window.removeEventListener('search-query-change', this.handleSearchQuery);
   }
 
-  processCategoryData(response) {
+  processData(response) {
     const unfilteredProducts = response.products;
     
     if (!window.individualProductCache) {
@@ -256,7 +255,7 @@ class Content extends Component {
   fetchCategoryData(categoryId) {
     const cachedData = getCachedCategoryData(categoryId);
     if (cachedData) {
-      this.processCategoryData(cachedData);
+      this.processData(cachedData);
       return;
     }
 
@@ -264,9 +263,21 @@ class Content extends Component {
       (response) => {
         setCachedCategoryData(categoryId, response);
         if (response && response.products) {
-          this.processCategoryData(response);
+          this.processData(response);
         } else {
           console.log("fetchCategoryData in Content failed", response);
+        }
+      }
+    );
+  }
+
+  fetchSearchData(query) {
+    this.props.socket.emit("getSearchProducts", { query },
+      (response) => {
+        if (response && response.products) {
+          this.processData(response);
+        } else {
+          console.log("fetchSearchData in Content failed", response);
         }
       }
     );
@@ -283,9 +294,6 @@ class Content extends Component {
   }
 
   render() {
-    if (!this.state.isMounted) {
-      return <div></div>;
-    }
     return (
       <Container maxWidth="lg" sx={{ py: 4, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
 

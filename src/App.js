@@ -15,7 +15,6 @@ import config from './config.js';
 import Header from './components/Header.js';
 import Footer from './components/Footer.js';
 import Home from './pages/Home.js';
-
 // Import the new ChatAssistant component
 import ChatAssistant from './components/ChatAssistant.js';
 
@@ -81,7 +80,7 @@ const App = () => {
                     path="/category/:categoryId" 
                     element={
                         <SocketContext.Consumer>
-                          {socket => <Content someProp="someValue" socket={socket} />}
+                          {socket => <Content socket={socket} />}
                         </SocketContext.Consumer>
                     }
                   />
@@ -91,6 +90,15 @@ const App = () => {
                   {/* Cart page */}
                   <Route path="/cart" element={<Cart />} />
 
+                  {/* Search page - Render Content in parallel */}
+                  <Route 
+                    path="/search" 
+                    element={
+                        <SocketContext.Consumer>
+                          {socket => <Content socket={socket} />}
+                        </SocketContext.Consumer>
+                    }
+                  />
                   {/* Checkout page */}
                   <Route path="/checkout" element={<Checkout />} />
 
