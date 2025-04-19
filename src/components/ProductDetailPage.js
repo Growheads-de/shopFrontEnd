@@ -1,6 +1,6 @@
 /* eslint-env browser */
 /* global Intl */
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { 
   Box, 
   Typography,
@@ -118,14 +118,41 @@ class ProductDetailPage extends Component {
   constructor(props) {
     super(props);
 
-
     if(window.productDetailCache && window.productDetailCache[this.props.productId]){
-      this.state = { product: window.productDetailCache[this.props.productId], loading: false, error: null, imageDialogOpen: false };
+      this.state = { 
+        product: window.productDetailCache[this.props.productId], 
+        loading: false, 
+        error: null, 
+        imageDialogOpen: false,
+        isScrolled: false 
+      };
     }else{
-      this.state = { product: null, loading: true, error: null, imageDialogOpen: false };
+      this.state = { 
+        product: null, 
+        loading: true, 
+        error: null, 
+        imageDialogOpen: false,
+        isScrolled: false 
+      };
     }
     this.loadProductData();
   }
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
+  }
+
+  handleScroll = () => {
+    // Change state when scroll position is more than 20px
+    const isScrolled = window.scrollY > 20;
+    if (isScrolled !== this.state.isScrolled) {
+      this.setState({ isScrolled });
+    }
+  };
 
   componentDidUpdate(prevProps) {
     if (prevProps.productId !== this.props.productId)
@@ -153,7 +180,7 @@ class ProductDetailPage extends Component {
   }
 
   render() {
-    const { product, loading, error } = this.state;
+    const { product, loading, error, isScrolled } = this.state;
     
     if (loading) {
       return (
@@ -212,15 +239,40 @@ class ProductDetailPage extends Component {
     
     
     return (
-      <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: '1400px', mx: 'auto' }}>
+      <Box sx={{ p: { xs: 2, md: 2 },pb: { xs: 4, md: 8 },maxWidth: '1400px', mx: 'auto' }}>
 
         {/* Breadcrumbs */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="body2" color="text.secondary">
-            <Link to="/" onClick={() => this.props.navigate(-1)} style={{ textDecoration: 'none', color: 'inherit' }}>
-              Zurück
-            </Link> 
-          </Typography>
+        <Box sx={{ 
+          mb: 2, 
+          position: ['-webkit-sticky','sticky'], // Provide both prefixed and standard
+          top: { xs: '64px', sm: '64px', md: '110px',lg: '110px' }, /* Offset to sit below the header */
+          left: 0,
+          width: '100%',
+          display: 'flex',
+          zIndex: (theme) => theme.zIndex.appBar - 1, /* Just below the AppBar */
+          py: 0,px:2
+        }}>
+          <Box 
+            sx={{ 
+              ml: { xs: 0, md: 0 },
+              display: 'inline-flex',
+              px: 0,
+              py: 1,
+              borderRadius: 1,
+              transition: 'all 0.3s ease',...(isScrolled && {
+                bgcolor: '#c8e6c9',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                border: '1px solid rgb(100, 117, 100)',
+                 backdropFilter: 'blur(8px)'
+              })
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              <Link to="/" onClick={() => this.props.navigate(-1)} style={{ paddingLeft:16, paddingRight:16,paddingTop:8,paddingBottom:8, textDecoration: 'none', color: 'inherit' }}>
+                Zurück
+              </Link> 
+            </Typography>
+          </Box>
         </Box>
       
        <Box sx={{ 
@@ -229,8 +281,7 @@ class ProductDetailPage extends Component {
           gap: 4,
           background: '#fff',
           borderRadius: 2,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          overflow: 'hidden'
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
         }}>
          
           <Box sx={{ 
@@ -345,75 +396,7 @@ class ProductDetailPage extends Component {
               {parse(product.description)} 
             </Box>
           </Box>
-        )}
-
-        {/* Product attributes table */}
-        <Box sx={{ 
-          mt: 4, 
-          p: 4, 
-          background: '#fff',
-          borderRadius: 2,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        }}>
-          <Box sx={{
-            display: 'table',
-            width: '100%',
-            borderCollapse: 'collapse',
-          }}>
-            {/* Weight row - only show if weight > 0 */}
-            {product.fGewicht > 0 && (
-              <Box sx={{
-                display: 'table-row',
-                '&:nth-of-type(odd)': {
-                  backgroundColor: '#f9f9f9',
-                },
-              }}>
-                <Box sx={{
-                  display: 'table-cell',
-                  padding: '12px 16px',
-                  borderBottom: '1px solid #eee',
-                  fontWeight: 600,
-                  width: '40%'
-                }}>
-                  Gewicht
-                </Box>
-                <Box sx={{
-                  display: 'table-cell',
-                  padding: '12px 16px',
-                  borderBottom: '1px solid #eee'
-                }}>
-                  {product.fGewicht} g
-                </Box>
-              </Box>
-            )}
-            
-            {/* Attribute rows */}
-            {product.attributes && Array.isArray(product.attributes) &&  product.attributes.map((attr, index) => (
-              <Box key={index} sx={{
-                display: 'table-row',
-                '&:nth-of-type(odd)': {
-                  backgroundColor: '#f9f9f9',
-                },
-              }}>
-                <Box sx={{
-                  display: 'table-cell',
-                  padding: '12px 16px',
-                  borderBottom: '1px solid #eee',
-                  fontWeight: 600
-                }}>
-                  {attr.cName}
-                </Box>
-                <Box sx={{
-                  display: 'table-cell',
-                  padding: '12px 16px',
-                  borderBottom: '1px solid #eee'
-                }}>
-                  {attr.cWert}
-                </Box>
-              </Box>
-            ))}
-          </Box>
-        </Box>
+        )} 
       </Box>
     );
   }
