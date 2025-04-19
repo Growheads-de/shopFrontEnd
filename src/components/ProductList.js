@@ -24,19 +24,12 @@ class ProductList extends Component {
     window.productListPage = value;
   }
 
-  shouldComponentUpdate(nextProps) {
-    if (this.props.products !== nextProps.products) {
-      const currentPageCapacity = this.state.page * (this.state.itemsPerPage === 'all' ? Infinity : this.state.itemsPerPage);
-      const newProductsCount = nextProps.products.length;
-      
-      // Only reset to page 1 if we don't have enough products to fill the current page
-      if (newProductsCount < currentPageCapacity && this.state.page > 1) {
-        this.setState({ page: 1 });
-        window.productListPage = 1;
-        return false;
-      }
+  componentDidUpdate() {
+    const currentPageCapacity = this.state.itemsPerPage === 'all' ? Infinity : this.state.itemsPerPage;
+    if(this.props.products.length > 0 ) if (this.props.products.length < (currentPageCapacity * (this.state.page-1)) ) {
+      if(this.state.page != 1) this.setState({ page: 1 });
+      window.productListPage = 1;
     }
-    return true;
   }
 
   handleProductsPerPageChange = (event) => {

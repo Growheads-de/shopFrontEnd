@@ -32,32 +32,71 @@ const ProductDetailWithSocket = () => {
 class Images extends Component {
   constructor(props) {
     super(props);
-    if (!window.smallPicCache) window.smallPicCache = {};
-    if (!window.mediumPicCache) window.mediumPicCache = {};
-
-    if(this.props.pictureList && this.props.pictureList.length > 0 && this.props.pictureList.split(',').length > 0) {
-      const bildId = this.props.pictureList.split(',')[0];
-      if(window.mediumPicCache[bildId]){
-        this.state = { mainImage: window.mediumPicCache[bildId],isSmall:false }; 
-      }else if(window.smallPicCache[bildId]){
-        this.state = { mainImage: window.smallPicCache[bildId],isSmall:true }; 
-        this.loadMainPic(bildId);
-      }else{
-        this.state = { mainImage: null, isSmall:false };
-        this.loadMainPic(bildId);//<CardMedia component="img" height="400" sx={{ objectFit: 'contain'}} image={this.state.mainImage}/>
-      }      
-    }else{
-      this.state = { mainImage: null ,isSmall:false};
-    }
+    this.state = { mainPic:0,pics:[]};
 
     console.log('Images constructor',props);
   }
 
-  loadMainPic = (bildId) => {
-    this.props.socket.emit('getPic', { bildId, size:'medium' }, (res) => {
+  componentDidMount  () {
+    this.updatePics();
+  }
+  componentDidUpdate(prevProps) {
+    if (prevProps.mainPic !== this.props.mainPic) {
+      this.updatePics();
+    }
+  }
+
+  updatePics = () => {
+    if (!window.tinyPicCache) window.tinyPicCache = {}; 
+    if (!window.smallPicCache) window.smallPicCache = {};
+    if (!window.mediumPicCache) window.mediumPicCache = {};
+    if (!window.largePicCache) window.largePicCache = {};
+
+    if(this.props.pictureList && this.props.pictureList.length > 0){
+      const bildIds = this.props.pictureList.split(',');
+
+      const pics = [];
+      const mainPicId = bildIds[this.state.mainPic];
+
+      for(const bildId of bildIds){
+        if(bildId == mainPicId){
+        
+          if(window.mediumPicCache[bildId]){
+            pics.push(window.mediumPicCache[bildId]); 
+          }else if(window.smallPicCache[bildId]){
+            pics.push(window.smallPicCache[bildId]);
+            this.loadPic('medium',bildId,this.state.mainPic);
+          }else{
+            pics.push(null);
+            this.loadPic('medium',bildId,this.state.mainPic);
+          }  
+        }else{
+          if(window.tinyPicCache[bildId]){
+            pics.push(window.tinyPicCache[bildId]);
+          }else{
+            pics.push(null);
+            this.loadPic('tiny',bildId,pics.length-1);
+          }
+        }
+      }
+      this.setState({ pics });
+    }else{
+      if(this.state.pics.length > 0) this.setState({ pics:[] });
+    }
+  }
+
+  loadPic = (size,bildId,index) => {
+    this.props.socket.emit('getPic', { bildId, size }, (res) => {
       if(res.success){
-        window.mediumPicCache[bildId] = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
-        this.setState({ mainImage: URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' })),isSmall:false}); 
+        const url = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
+
+        if(size === 'medium') window.mediumPicCache[bildId] = url;
+        if(size === 'small') window.smallPicCache[bildId] = url;
+        if(size === 'tiny') window.tinyPicCache[bildId] = url;
+        if(size === 'large') window.largePicCache[bildId] = url;
+        const pics = this.state.pics;
+        pics[index] = url
+        this.setState({ pics });
       }
     })
   }
@@ -65,8 +104,8 @@ class Images extends Component {
   render() {
     return (
       <>
-        {this.state.mainImage && (
-          <CardMedia component="img" height="400" sx={{ objectFit: 'contain'}} image={this.state.mainImage}/>
+        {this.state.pics[this.state.mainPic] && (
+          <CardMedia component="img" height="400" sx={{ objectFit: 'contain'}} image={this.state.pics[this.state.mainPic]}/>
         )}
 
       </>
@@ -81,7 +120,6 @@ class ProductDetailPage extends Component {
 
 
     if(window.productDetailCache && window.productDetailCache[this.props.productId]){
-      console.log('ProductDetailPage constructor preload',window.productDetailCache[this.props.productId]);
       this.state = { product: window.productDetailCache[this.props.productId], loading: false, error: null, imageDialogOpen: false };
     }else{
       this.state = { product: null, loading: true, error: null, imageDialogOpen: false };
