@@ -14,6 +14,6 @@ try {
   console.log('Local configuration loaded');
 } catch (error) {
   // Local config doesn't exist, using default config
-  console.log('Using default configuration');
+  console.log('Using default configuration',error);
 }
 export default config;

@@ -1,5 +1,3 @@
-/* eslint-env browser */
-/* global Intl */
 import React, { Component } from 'react';
 import { 
   Box, 

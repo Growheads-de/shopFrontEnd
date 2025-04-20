@@ -6,17 +6,14 @@ import {
   Typography, 
   Box, 
   TextField, 
-  InputAdornment, 
-  Badge, 
-  Popover,
+  InputAdornment,
   Container
 } from '@mui/material';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import SearchIcon from '@mui/icons-material/Search';
-import CartDropdown from './CartDropdown.js';
 import SocketContext from '../contexts/SocketContext.js';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import LoginComponent from './LoginComponent.js';
 
 // Logo Subcomponent
 const Logo = () => {
@@ -145,122 +142,15 @@ const SearchBar = () => {
   );
 }
 
-// CartButton Subcomponent
-class CartButton extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-    };
-  }
-
-  handleCartClick = (event) => {
-    this.setState({ anchorEl: event.currentTarget });
-  };
-
-  handleCartClose = () => {
-    this.setState({ anchorEl: null });
-  };
-  
-  handleGoToCart = () => {
-    this.setState({ anchorEl: null });
-    // Navigation will be handled by Link component
-  };
-
-  render() {
-    const { anchorEl } = this.state;
-    const { cartItems, onQuantityChange, onRemoveItem } = this.props;
-    const open = Boolean(anchorEl);
-    
-    // Calculate total items in cart
-    const itemCount = cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
-
-    // Debug cart items
-    console.log('CartButton render:', { cartItems, itemCount });
-
-    return (
-      <Box sx={{ position: 'relative' }}>
-        <Button 
-          color="inherit" 
-          startIcon={
-            <Badge badgeContent={itemCount} color="secondary" 
-              sx={{ '& .MuiBadge-badge': { fontWeight: 'bold', fontSize: 10 } }}
-            >
-              <ShoppingCartIcon />
-            </Badge>
-          }
-          onClick={this.handleCartClick}
-          sx={{ 
-            borderRadius: 2,
-            fontWeight: 'bold',
-            border: '1px solid rgba(255,255,255,0.5)',
-            '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
-          }}
-        >
-          Warenkorb
-        </Button>
-        
-        <Popover
-          open={open}
-          anchorEl={anchorEl}
-          onClose={this.handleCartClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          PaperProps={{
-            sx: { 
-              width: { xs: '100%', sm: 400 },
-              mt: 0.5,
-              boxShadow: 5,
-              borderRadius: 2,
-              overflow: 'hidden'
-            }
-          }}
-          disableScrollLock={true}
-          keepMounted
-          slotProps={{
-            backdrop: {
-              invisible: false,
-              sx: { 
-                bgcolor: 'rgba(0, 0, 0, 0.4)', 
-                backdropFilter: 'blur(2px)'
-              }
-            }
-          }}
-          transitionDuration={{ enter: 225, exit: 0 }}
-        >
-          {open && (
-            <CartDropdown 
-              cartItems={cartItems}
-              onClose={this.handleCartClose}
-              onQuantityChange={onQuantityChange}
-              onRemoveItem={onRemoveItem}
-              onGoToCart={this.handleGoToCart}
-            />
-          )}
-        </Popover>
-      </Box>
-    );
-  }
-}
-
 // ButtonGroup Subcomponent
 class ButtonGroup extends Component {
   render() {
-    const { cartItems, onCartQuantityChange, onCartRemoveItem } = this.props;
+    const { socket } = this.props;
     
     return (
       <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 } }}>
-        <CartButton 
-          cartItems={cartItems}
-          onQuantityChange={onCartQuantityChange}
-          onRemoveItem={onCartRemoveItem}
-        />
+        <LoginComponent socket={socket} />
+
       </Box>
     );
   }
@@ -463,11 +353,12 @@ class Header extends Component {
           <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
             <Logo />
             <SearchBarWithRouter />
-            {/*<ButtonGroup 
-              cartItems={cartItems}
+            <ButtonGroup 
+              cartItems={this.state.cartItems}
               onCartQuantityChange={this.handleCartQuantityChange}
               onCartRemoveItem={this.handleCartRemoveItem}
-            />*/}
+              socket={socket}
+            />
           </Container>
         </Toolbar>
         <CategoryList socket={socket} />
