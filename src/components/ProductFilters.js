@@ -162,7 +162,8 @@ class ProductFilters extends Component {
           flexDirection: 'column'
         }}
       >
-        <Filter 
+        {this.props.products.length > 0 && (
+          <><Filter 
           title="Verfügbarkeit"
           options={this.state.availabilityValues}
           searchParams={this.props.searchParams}
@@ -221,6 +222,7 @@ class ProductFilters extends Component {
             this.props.onFilterChange();
           }}
         />
+        </>)}
       </Paper>
     );
   }

@@ -50,6 +50,7 @@ const SearchBar = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
+    delete window.currentSearchQuery;
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
     }

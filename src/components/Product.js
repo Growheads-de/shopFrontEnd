@@ -171,13 +171,13 @@ class Product extends Component {
                 width: '80px',
                 textAlign: 'center',
                 zIndex: 999,
-                fontSize: '12px',
+                fontSize: '9px',
                 boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
                 transform: 'rotate(-45deg) translateX(-40px) translateY(15px)',
                 transformOrigin: 'top left'
               }}
             >
-              {thc}%
+              THC {thc}%
             </div>
           )}
           

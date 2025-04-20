@@ -231,7 +231,7 @@ class Filter extends Component {
         <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
           {title}
           {/* Only show reset button on Availability filter */}
-          {title === "Verfügbarkeit" && (
+          {title === "VerfügbarkeitDISABLED" && (
             <button 
               style={resetButtonStyle} 
               onClick={this.resetFilters}

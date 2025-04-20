@@ -1,6 +1,56 @@
 import React, { Component } from 'react';
-import { Box, Typography, Grid, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, Typography, Grid, Pagination, FormControl, InputLabel, Select, MenuItem, Chip, Stack } from '@mui/material';
 import Product from './Product.js';
+import { removeSessionSetting } from '../utils/sessionStorage.js';
+
+// Sort products by fuzzy similarity to their name/description
+function sortProductsByFuzzySimilarity(products, searchTerm) {
+  console.log('sortProductsByFuzzySimilarity',products,searchTerm);
+  // Create an array that preserves the product object and its searchable text
+  const productsWithText = products.map(product => {
+    const searchableText = `${product.name || ''} ${product.description || ''}`;
+    return { product, searchableText };
+  });
+  
+  // Sort products based on their searchable text similarity
+  productsWithText.sort((a, b) => {
+    const scoreA = getFuzzySimilarityScore(a.searchableText, searchTerm);
+    const scoreB = getFuzzySimilarityScore(b.searchableText, searchTerm);
+    return scoreB - scoreA; // Higher scores first
+  });
+  
+  // Return just the sorted product objects
+  return productsWithText.map(item => item.product);
+}
+
+// Calculate a similarity score between text and search term
+function getFuzzySimilarityScore(text, searchTerm) {
+  const searchWords = searchTerm.toLowerCase().split(/\W+/).filter(Boolean);
+  const textWords = text.toLowerCase().split(/\W+/).filter(Boolean);
+  
+  let totalScore = 0;
+  for (let searchWord of searchWords) {
+    // Exact matches get highest priority
+    if (textWords.includes(searchWord)) {
+      totalScore += 2;
+      continue;
+    }
+    
+    // Partial matches get scored based on similarity
+    let bestMatch = 0;
+    for (let textWord of textWords) {
+      if (textWord.includes(searchWord) || searchWord.includes(textWord)) {
+        const similarity = Math.min(searchWord.length, textWord.length) / 
+                           Math.max(searchWord.length, textWord.length);
+        if (similarity > bestMatch) bestMatch = similarity;
+      }
+    }
+    totalScore += bestMatch;
+  }
+  
+  return totalScore;
+}
+
 
 class ProductList extends Component {
   constructor(props) {
@@ -10,8 +60,18 @@ class ProductList extends Component {
       products:[],
       page: window.productListPage || 1,
       itemsPerPage: window.productListItemsPerPage || 20,
-      sortBy: window.productListSortBy || 'name'
+      sortBy: window.currentSearchQuery ? 'searchField' : 'name'
     };
+  }
+  componentDidMount() { 
+    this.handleSearchQuery = () => {
+      this.setState({ sortBy: window.currentSearchQuery ? 'searchField' : 'name' });
+    };
+    window.addEventListener('search-query-change', this.handleSearchQuery);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('search-query-change', this.handleSearchQuery);
   }
 
   handleViewModeChange = (viewMode) => {
@@ -50,7 +110,6 @@ class ProductList extends Component {
   handleSortChange = (event) => {
     const sortBy = event.target.value;
     this.setState({ sortBy });
-    window.productListSortBy = sortBy;
   }
 
   renderPagination = (pages, page) => {
@@ -76,8 +135,9 @@ class ProductList extends Component {
   }
 
   render() {
-    const unsortedProducts = this.state.itemsPerPage==='all'?[...this.props.products]:this.props.products.slice((this.state.page - 1) * this.state.itemsPerPage , this.state.page * this.state.itemsPerPage);
-    const products = this.state.sortBy==='name'?unsortedProducts:unsortedProducts.sort((a,b)=>{
+    console.log('products',this.props.activeAttributeFilters,this.props.activeManufacturerFilters,window.currentSearchQuery,this.state.sortBy);
+    
+    const filteredProducts = (this.state.sortBy==='searchField')&&(window.currentSearchQuery)?sortProductsByFuzzySimilarity(this.props.products, window.currentSearchQuery):this.state.sortBy==='name'?this.props.products:this.props.products.sort((a,b)=>{
       if(this.state.sortBy==='price-low-high'){
         return a.price-b.price;
       }
@@ -85,6 +145,7 @@ class ProductList extends Component {
         return b.price-a.price;
       }
     });
+    const products = this.state.itemsPerPage==='all'?[...filteredProducts]:filteredProducts.slice((this.state.page - 1) * this.state.itemsPerPage , this.state.page * this.state.itemsPerPage);
 
     return (
       <Box sx={{ height: '100%' }}>
@@ -93,22 +154,28 @@ class ProductList extends Component {
           justifyContent: 'space-between', 
           alignItems: 'center'
         }}>
-            <Typography variant="body2" color="text.secondary">
-              {
-                this.props.totalProductCount==this.props.products.length && this.props.totalProductCount>0 ?
-              `${this.props.totalProductCount} Produkte`
-              :
-              `${this.props.products.length} von ${this.props.totalProductCount} Produkten`
-              }
-            </Typography>
+
+
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+              {this.props.activeAttributeFilters.map((filter,index) => (
+                <Chip size="small" key={index} label={filter.value} onDelete={() => {
+                  removeSessionSetting(`filter_attribute_${filter.id}`);
+                  this.props.onFilterChange();
+                }} />
+              ))}
+              {this.props.activeManufacturerFilters.map((filter,index) => (
+                <Chip size="small" key={index} label={filter.name} onDelete={() => this.props.onDeleteManufacturerFilter && this.props.onDeleteManufacturerFilter(filter)} />
+              ))}
+            </Box>
 
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               {/* Sort Dropdown */}
               <FormControl variant="outlined" size="small" sx={{ minWidth: 140 }}>
                 <InputLabel id="sort-by-label">Sortierung</InputLabel>
                 <Select
+                  size="small"
                   labelId="sort-by-label"
-                  value={this.state.sortBy}
+                  value={(this.state.sortBy==='searchField')&&(window.currentSearchQuery)?this.state.sortBy:this.state.sortBy==='price-low-high'?this.state.sortBy:this.state.sortBy==='price-low-high'?this.state.sortBy:'name'}
                   onChange={this.handleSortChange}
                   label="Sortierung"
                   MenuProps={{
@@ -131,6 +198,7 @@ class ProductList extends Component {
                   }}
                 >
                   <MenuItem value="name">Name</MenuItem>
+                  {window.currentSearchQuery && <MenuItem value="searchField">Suchbegriff</MenuItem>}
                   <MenuItem value="price-low-high">Preis: Niedrig zu Hoch</MenuItem>
                   <MenuItem value="price-high-low">Preis: Hoch zu Niedrig</MenuItem>
                 </Select>
@@ -173,8 +241,28 @@ class ProductList extends Component {
               </FormControl>
             </Box>
         </Box>
-
+ 
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center'
+        }}>
         { this.renderPagination(Math.ceil(this.props.products.length / this.state.itemsPerPage), this.state.page) }
+        <Stack direction="row" spacing={2}>
+          <Typography variant="body2" color="text.secondary">
+                {this.props.dataType == 'category' && (<>Kategorie: {this.props.dataParam}</>)}
+                {this.props.dataType == 'search' && (<>Suchergebnisse für: "{this.props.dataParam}"</>)}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+                {
+                  this.props.totalProductCount==this.props.products.length && this.props.totalProductCount>0 ?
+                `${this.props.totalProductCount} Produkte`
+                :
+                `${this.props.products.length} von ${this.props.totalProductCount} Produkte`
+                }
+          </Typography>
+        </Stack>
+        </Box>
 
         <Grid container spacing={2}>
           {products.map((product) => (
@@ -182,10 +270,11 @@ class ProductList extends Component {
               item 
               key={product.id} 
               xs={6} 
-              sm={this.state.viewMode === 'list' ? 12 : 6} 
-              md={this.state.viewMode === 'list' ? 12 : 4}
-              lg={this.state.viewMode === 'list' ? 12 : 3}
-              sx={{ 
+              sm={6} 
+              md={4}
+              lg={3}
+              xl={3}
+              sx={{
                 display: 'flex', 
                 justifyContent: 'center',
                 mb: 1

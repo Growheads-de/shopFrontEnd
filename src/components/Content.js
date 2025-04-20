@@ -40,54 +40,9 @@ function getCachedCategoryData(categoryId) {
   return null;
 }
 
-// Sort products by fuzzy similarity to their name/description
-function sortProductsByFuzzySimilarity(products, searchTerm) {
-  // Create an array that preserves the product object and its searchable text
-  const productsWithText = products.map(product => {
-    const searchableText = `${product.name || ''} ${product.description || ''}`;
-    return { product, searchableText };
-  });
-  
-  // Sort products based on their searchable text similarity
-  productsWithText.sort((a, b) => {
-    const scoreA = getFuzzySimilarityScore(a.searchableText, searchTerm);
-    const scoreB = getFuzzySimilarityScore(b.searchableText, searchTerm);
-    return scoreB - scoreA; // Higher scores first
-  });
-  
-  // Return just the sorted product objects
-  return productsWithText.map(item => item.product);
-}
 
-// Calculate a similarity score between text and search term
-function getFuzzySimilarityScore(text, searchTerm) {
-  const searchWords = searchTerm.toLowerCase().split(/\W+/).filter(Boolean);
-  const textWords = text.toLowerCase().split(/\W+/).filter(Boolean);
-  
-  let totalScore = 0;
-  for (let searchWord of searchWords) {
-    // Exact matches get highest priority
-    if (textWords.includes(searchWord)) {
-      totalScore += 2;
-      continue;
-    }
-    
-    // Partial matches get scored based on similarity
-    let bestMatch = 0;
-    for (let textWord of textWords) {
-      if (textWord.includes(searchWord) || searchWord.includes(textWord)) {
-        const similarity = Math.min(searchWord.length, textWord.length) / 
-                           Math.max(searchWord.length, textWord.length);
-        if (similarity > bestMatch) bestMatch = similarity;
-      }
-    }
-    totalScore += bestMatch;
-  }
-  
-  return totalScore;
-}
 
-function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
+function getFilteredProducts(unfilteredProducts, attributes) {
   const attributeSettings = getAllSettingsWithPrefix('filter_attribute_');
   const manufacturerSettings = getAllSettingsWithPrefix('filter_manufacturer_');
   const availabilitySettings = getAllSettingsWithPrefix('filter_availability_');
@@ -115,6 +70,7 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
 
   const uniqueAttributes = [...new Set((attributes || []).map(attr => attr.kMerkmalWert ? attr.kMerkmalWert.toString() : ''))];
   const uniqueManufacturers = [...new Set((unfilteredProducts || []).filter(product => product.manufacturerId).map(product => product.manufacturerId ? product.manufacturerId.toString() : ''))];
+  const uniqueManufacturersWithName = [...new Set((unfilteredProducts || []).filter(product => product.manufacturerId).map(product => ({id:product.manufacturerId ? product.manufacturerId.toString() : '',value:product.manufacturer})))];
   const activeAttributeFilters = attributeFilters.filter(filter => uniqueAttributes.includes(filter));
   const activeManufacturerFilters = manufacturerFilters.filter(filter => uniqueManufacturers.includes(filter)); 
   const attributeFiltersByGroup = {};
@@ -149,12 +105,16 @@ function getFilteredProducts(unfilteredProducts, attributes, searchQuery = '') {
     return manufacturerMatch && attributeMatch && inStockMatch && isNewMatch;
   });
   
-  // Sort products by fuzzy similarity to search query instead of filtering them out
-  if (searchQuery && searchQuery.trim() !== '') {
-    filteredProducts = sortProductsByFuzzySimilarity(filteredProducts, searchQuery);
-  }
-  
-  return filteredProducts;
+
+  const activeAttributeFiltersWithNames = activeAttributeFilters.map(filter => {
+    const attribute = attributes.find(attr => attr.kMerkmalWert.toString() === filter);
+    return {name: attribute.cName, value: attribute.cWert, id: attribute.kMerkmalWert};
+  });
+  const activeManufacturerFiltersWithNames = activeManufacturerFilters.map(filter => {
+    const manufacturer = uniqueManufacturersWithName.find(manufacturer => manufacturer.id === filter);
+    return {name: manufacturer.value, value: manufacturer.id};
+  });
+  return {filteredProducts,activeAttributeFilters:activeAttributeFiltersWithNames,activeManufacturerFilters:activeManufacturerFiltersWithNames};
 }
 function setCachedCategoryData(categoryId, data) {
   if (!window.productCache) {
@@ -200,17 +160,11 @@ class Content extends Component {
         this.fetchSearchData(this.props.searchParams?.get('q'));
       })
     }
-    this.handleSearchQuery = (event) => {
-      const query = event.detail.query;
-      this.setState({ searchQuery: query }, () => {
-        this.filterProducts();
-      });
-    };
-    window.addEventListener('search-query-change', this.handleSearchQuery);
   }
 
   componentDidUpdate(prevProps) {
     if(this.props.params.categoryId && (prevProps.params.categoryId !== this.props.params.categoryId)) {
+        window.currentSearchQuery = null;
         this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
         this.fetchCategoryData(this.props.params.categoryId);
       }); 
@@ -220,10 +174,6 @@ class Content extends Component {
         this.fetchSearchData(this.props.searchParams?.get('q'));
       })
     }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('search-query-change', this.handleSearchQuery);
   }
 
   processData(response) {
@@ -242,13 +192,13 @@ class Content extends Component {
 
     this.setState({
       unfilteredProducts: unfilteredProducts,
-      filteredProducts: getFilteredProducts(
+      ...getFilteredProducts(
         unfilteredProducts,
-        response.attributes,
-        this.state.searchQuery || ''
+        response.attributes
       ),
+      dataType: response.dataType,
+      dataParam: response.dataParam,
       attributes: response.attributes,
-      categoryName: response.categoryName,
       loaded: true
     });
   }
@@ -286,21 +236,20 @@ class Content extends Component {
 
   filterProducts() {
     this.setState({ 
-      filteredProducts: getFilteredProducts(
+      ...getFilteredProducts(
         this.state.unfilteredProducts,
-        this.state.attributes,
-        this.state.searchQuery || ''
-      ) 
+        this.state.attributes
+      )
     });
   }
 
   render() {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
+      <Container maxWidth="xl" sx={{ py: 4, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
 
         <Box sx={{ 
           display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', md: '1fr 3fr' }, 
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 2fr', md: '1fr 3fr', lg: '1fr 4fr', xl: '1fr 4fr' }, 
           gap: 3
         }}>
 
@@ -323,6 +272,11 @@ class Content extends Component {
               socket={this.props.socket}
               totalProductCount={(this.state.unfilteredProducts || []).length}
               products={this.state.filteredProducts || []}
+              activeAttributeFilters={this.state.activeAttributeFilters || []}
+              activeManufacturerFilters={this.state.activeManufacturerFilters || []}
+              onFilterChange={()=>{this.filterProducts()}}
+              dataType={this.state.dataType}
+              dataParam={this.state.dataParam}
             />
           </Box>
         </Box>

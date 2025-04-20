@@ -31,6 +31,7 @@ export default {
   entry: {
     main: './src/index.js'
   },
+  target: 'web',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: isDevelopment ? 'js/[name].[contenthash].bundle.js' : 'js/[name].[contenthash].js',
