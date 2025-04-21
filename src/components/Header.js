@@ -152,14 +152,43 @@ const SearchBar = () => {
   );
 }
 
+function getBadgeNumber() {
+  let count = 0;
+  if(window.cart) for(const item of Object.values(window.cart)){
+    if(item.quantity) count += item.quantity;
+  }
+  return count;
+}
+
 // ButtonGroup Subcomponent
 class ButtonGroup extends Component {
   constructor(props) {
     super(props);
+    console.log("cart", window.cart, getBadgeNumber());
     this.state = {
-      isCartOpen: false
+      isCartOpen: false,
+      badgeNumber: getBadgeNumber()
     };
   }
+
+  componentDidMount() { 
+    this.cart = () => {
+      console.log("cart", window.cart, getBadgeNumber());
+
+      this.setState({
+        badgeNumber: getBadgeNumber()
+      });
+    };
+    window.addEventListener('cart', this.cart);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('cart', this.cart);
+  }
+
+
+
+
 
   toggleCart = () => {
     this.setState(prevState => ({
@@ -168,23 +197,26 @@ class ButtonGroup extends Component {
   }
 
   render() {
-    const { socket, cartItems = [], onCartRemoveItem } = this.props;
+    const { socket } = this.props;
     const { isCartOpen } = this.state;
-    
+    const cartItems = window.cart || {};
+    console.log("badgeNumber", this.state.badgeNumber, cartItems);
     return (
       <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 } }}>
+        
+        
+        <LoginComponent socket={socket} />
+                
         <IconButton 
           color="inherit" 
           onClick={this.toggleCart}
           sx={{ ml: 1 }}
         >
-          <Badge badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0) || 0} color="error">
+          <Badge badgeContent={this.state.badgeNumber} color="error">
             <ShoppingCartIcon />
           </Badge>
         </IconButton>
         
-        <LoginComponent socket={socket} />
-
         <Drawer
           anchor="right"
           open={isCartOpen}
@@ -197,17 +229,17 @@ class ButtonGroup extends Component {
             {cartItems && cartItems.length > 0 ? (
               <>
                 <List>
-                  {cartItems.map(item => (
+                  {cartItems.forEach(item => (
                     <ListItem key={item.id} divider>
                       <ListItemText
                         primary={item.name}
-                        secondary={`${item.price.toFixed(2)} € x ${item.quantity}`}
+                        secondary={`xx € x ${item.quantity}`}
                       />
                       <ListItemSecondaryAction>
                         <IconButton 
                           edge="end" 
                           aria-label="delete"
-                          onClick={() => onCartRemoveItem(item.id)}
+                          
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -438,11 +470,7 @@ class Header extends Component {
           <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
             <Logo />
             <SearchBarWithRouter />
-            <ButtonGroup 
-              cartItems={this.state.cartItems}
-              onCartRemoveItem={this.handleCartRemoveItem}
-              socket={socket}
-            />
+            <ButtonGroup socket={socket}/>
           </Container>
         </Toolbar>
         <CategoryList socket={socket} />

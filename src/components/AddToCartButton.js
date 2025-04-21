@@ -11,68 +11,64 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 class AddToCartButton extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      quantity: this.props.initialQuantity || 0,
-      addedToCart: false,
+      quantity: window.cart && window.cart[this.props.id] ? window.cart[this.props.id].quantity : 0,
       isEditing: false,
       editValue: ''
     };
   }
+  
+  componentDidMount() { 
+    this.cart = () => {
+      const newQuantity = window.cart && window.cart[this.props.id] ? window.cart[this.props.id].quantity : 0;
+      if(this.state.quantity != newQuantity) this.setState({quantity:  newQuantity});
+    };
+    window.addEventListener('cart', this.cart);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('cart', this.cart);
+  }
+
 
   handleIncrement = () => {
-    this.setState(
-      prevState => ({ 
-        quantity: prevState.quantity + 1,
-        addedToCart: true
-      }),
-      () => {
-        if (this.props.onQuantityChange) {
-          this.props.onQuantityChange(this.state.quantity);
-        }
-      }
-    );
+    if(!window.cart) window.cart = {}; 
+
+    if(!window.cart[this.props.id]){
+      window.cart[this.props.id] = {name:this.props.name, price:this.props.price, quantity:1};
+    }else{
+      window.cart[this.props.id].quantity++;
+    }
+    window.dispatchEvent(new CustomEvent('cart'));
   };
 
   handleDecrement = () => {
-    if (this.state.quantity > 0) {
-      this.setState(
-        prevState => ({ 
-          quantity: prevState.quantity - 1,
-          addedToCart: prevState.quantity - 1 > 0
-        }),
-        () => {
-          if (this.props.onQuantityChange) {
-            this.props.onQuantityChange(this.state.quantity);
-          }
-        }
-      );
+    if(!window.cart) window.cart = {};
+    
+    if(window.cart[this.props.id] && window.cart[this.props.id].quantity > 1){
+      window.cart[this.props.id].quantity--;
+    }else{
+      delete window.cart[this.props.id];
     }
+
+    window.dispatchEvent(new CustomEvent('cart'));
   };
 
   handleClearCart = () => {
-    this.setState(
-      { 
-        quantity: 0,
-        addedToCart: false
-      },
-      () => {
-        if (this.props.onQuantityChange) {
-          this.props.onQuantityChange(0);
-        }
-      }
-    );
+    if(!window.cart) window.cart = {};
+    delete window.cart[this.props.id];
+    window.dispatchEvent(new CustomEvent('cart'));
   };
 
   handleEditStart = () => {
     this.setState({ 
       isEditing: true, 
-      editValue: this.state.quantity.toString()
+      editValue: this.state.quantity>0?this.state.quantity.toString():''
     });
   };
 
@@ -89,19 +85,10 @@ class AddToCartButton extends Component {
     if (isNaN(newQuantity) || newQuantity < 0) {
       newQuantity = 0;
     }
-    
-    this.setState(
-      { 
-        quantity: newQuantity,
-        addedToCart: newQuantity > 0,
-        isEditing: false
-      },
-      () => {
-        if (this.props.onQuantityChange) {
-          this.props.onQuantityChange(this.state.quantity);
-        }
-      }
-    );
+    if(!window.cart) window.cart = {};
+    window.cart[this.props.id] = newQuantity;
+    window.dispatchEvent(new CustomEvent('cart', { detail: {id:this.props.id, quantity:newQuantity} }));
+    this.setState({ isEditing: false });
   };
 
   handleKeyPress = (event) => {
@@ -111,7 +98,7 @@ class AddToCartButton extends Component {
   };
 
   render() {
-    const { quantity, addedToCart, isEditing, editValue } = this.state;
+    const { quantity, isEditing, editValue } = this.state;
     const { available, size } = this.props;
     
     // Button is disabled if product is not available
@@ -197,6 +184,7 @@ class AddToCartButton extends Component {
                 onChange={this.handleEditChange}
                 onBlur={this.handleEditComplete}
                 onKeyPress={this.handleKeyPress}
+                onFocus={(e) => e.target.select()}
                 size="small"
                 variant="standard"
                 inputProps={{ 
@@ -204,8 +192,7 @@ class AddToCartButton extends Component {
                     textAlign: 'center', 
                     width: '30px',
                     padding: '2px',
-                    fontWeight: 'bold',
-                    color: 'white'
+                    fontWeight: 'bold'
                   },
                   'aria-label': 'quantity' 
                 }}
@@ -217,25 +204,7 @@ class AddToCartButton extends Component {
               </Typography>
             )}
             
-            <Tooltip title="Added to cart!" placement="top" arrow>
-              <CheckCircleIcon 
-                sx={{ 
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  color: 'secondary.light',
-                  backgroundColor: 'white',
-                  borderRadius: '50%',
-                  fontSize: 16,
-                  animation: addedToCart ? 'pulse 1.5s infinite' : 'none',
-                  '@keyframes pulse': {
-                    '0%': { transform: 'scale(1)' },
-                    '50%': { transform: 'scale(1.2)' },
-                    '100%': { transform: 'scale(1)' }
-                  }
-                }} 
-              />
-            </Tooltip>
+
           </Box>
           
           <IconButton 

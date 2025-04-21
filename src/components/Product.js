@@ -275,9 +275,7 @@ class Product extends Component {
           </Box>
           
           <Box sx={{ p: 2, pt: 0 }}>
-            <AddToCartButton 
-              available={available}
-            />
+            <AddToCartButton available={available} id={id} price={price} name={name}/>
           </Box>
         </Card>
       </Box>
