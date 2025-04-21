@@ -114,15 +114,16 @@ const App = () => {
               {/* Chat AI Assistant FAB */}
               <Fab 
                 color="primary" 
-                aria-label="chat" 
+                aria-label="chat"
+                size="small" 
                 sx={{ 
                   position: 'fixed', 
-                  bottom: 16, 
-                  right: 16 
+                  bottom: 15, 
+                  right: 15 
                 }}
                 onClick={handleChatToggle} // Attach toggle handler
               >
-                <SmartToyIcon />
+                <SmartToyIcon sx={{ fontSize: '1.2rem' }} />
               </Fab>
               {/* Conditionally render the Chat Assistant */}
               <SocketContext.Consumer>

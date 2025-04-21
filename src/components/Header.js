@@ -21,6 +21,7 @@ import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 import SocketContext from '../contexts/SocketContext.js';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import LoginComponent from './LoginComponent.js';
@@ -186,10 +187,6 @@ class ButtonGroup extends Component {
     window.removeEventListener('cart', this.cart);
   }
 
-
-
-
-
   toggleCart = () => {
     this.setState(prevState => ({
       isCartOpen: !prevState.isCartOpen
@@ -221,9 +218,32 @@ class ButtonGroup extends Component {
           anchor="right"
           open={isCartOpen}
           onClose={this.toggleCart}
+          disableScrollLock={true}
         >
           <Box sx={{ width: 320, p: 2 }}>
-            <Typography variant="h6" gutterBottom>Warenkorb</Typography>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                mb: 1
+              }}
+            >
+              <IconButton 
+                onClick={this.toggleCart} 
+                size="small"
+                sx={{ 
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                  }
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+              <Typography variant="h6">Warenkorb</Typography>
+            </Box>
             <Divider sx={{ mb: 2 }} />
             
             {cartItems && cartItems.length > 0 ? (

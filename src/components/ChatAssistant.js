@@ -10,12 +10,30 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from '@mui/material/Avatar';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
-import parse from 'html-react-parser';
+import parse, { domToReact } from 'html-react-parser';
+import { Link } from 'react-router-dom';
 // Initialize window object for storing messages
 if (!window.chatMessages) {
   window.chatMessages = [];
 }
 
+// Custom parser options to convert <a> tags to <Link> components
+const parseOptions = {
+  replace: (domNode) => {
+    if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
+      const href = domNode.attribs.href;
+      
+      // Only convert internal links (not external URLs)
+      if (!href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('//')) {
+        return (
+          <Link to={href} style={{ color: 'inherit', textDecoration: 'underline' }}>
+            {domToReact(domNode.children, parseOptions)}
+          </Link>
+        );
+      }
+    }
+  }
+};
 
 const ChatAssistant = ({ open, onClose, socket }) => {
   const [messages, setMessages] = useState(window.chatMessages);
@@ -103,8 +121,8 @@ const ChatAssistant = ({ open, onClose, socket }) => {
         position: 'fixed',
         bottom: 80,
         right: 16,
-        width: 550,
-        height: 500,
+        width: 750,
+        height: 700,
         bgcolor: 'background.paper',
         borderRadius: 2,
         display: 'flex',
@@ -169,7 +187,7 @@ const ChatAssistant = ({ open, onClose, socket }) => {
                 fontSize: '0.8em'
               }}
             >
-              {message.text?parse(message.text):''}
+              {message.text ? parse(message.text, parseOptions) : ''}
             </Paper>
             {message.sender === 'user' && (
               <Avatar sx={{ bgcolor: 'secondary.main', width: 30, height: 30 }}>
@@ -203,7 +221,11 @@ const ChatAssistant = ({ open, onClose, socket }) => {
         <TextField 
           fullWidth 
           variant="outlined" 
-          size="small" 
+          size="small"
+          autoComplete="off"
+          autoFocus
+          autoCapitalize="off"
+          autoCorrect="off"
           placeholder="Type your message..." 
           value={inputValue}
           onChange={handleInputChange}
