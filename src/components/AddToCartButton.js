@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-//import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -25,7 +25,7 @@ class AddToCartButton extends Component {
     };
   }
 
-  /*handleIncrement = () => {
+  handleIncrement = () => {
     this.setState(
       prevState => ({ 
         quantity: prevState.quantity + 1,
@@ -37,7 +37,7 @@ class AddToCartButton extends Component {
         }
       }
     );
-  };*/
+  };
 
   handleDecrement = () => {
     if (this.state.quantity > 0) {
@@ -132,7 +132,7 @@ class AddToCartButton extends Component {
       );
     }
     
-    // If no items in cart, show simple "Add to Cart" button   onClick={/*this.handleIncrement startIcon={<ShoppingCartIcon />}*/}
+    // If no items in cart, show simple "Add to Cart" button
     if (quantity === 0) {
       return (
         <Button 
@@ -140,8 +140,8 @@ class AddToCartButton extends Component {
           variant="contained" 
           color="primary"
           size={size || "medium"}
-          
-        
+          onClick={this.handleIncrement}
+          startIcon={<ShoppingCartIcon />}
           sx={{ 
             borderRadius: 2,
             fontWeight: 'bold',
@@ -150,7 +150,7 @@ class AddToCartButton extends Component {
             }
           }}
         >
-          Im Regal
+          In den Korb
         </Button>
       );
     }
