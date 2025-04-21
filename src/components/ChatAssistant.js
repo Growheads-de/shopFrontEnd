@@ -17,9 +17,18 @@ if (!window.chatMessages) {
   window.chatMessages = [];
 }
 
-// Custom parser options to convert <a> tags to <Link> components
+// Function to convert markdown code blocks to HTML
+const formatMarkdown = (text) => {
+  // Replace code blocks with formatted HTML
+  return text.replace(/```(.*?)\n([\s\S]*?)```/g, (match, language, code) => {
+    return `<pre class="code-block" data-language="${language.trim()}"><code>${code.trim()}</code></pre>`;
+  });
+};
+
+// Custom parser options to convert <a> tags to <Link> components and style code blocks
 const parseOptions = {
   replace: (domNode) => {
+    // Convert <a> tags to React Router Links
     if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
       const href = domNode.attribs.href;
       
@@ -31,6 +40,26 @@ const parseOptions = {
           </Link>
         );
       }
+    }
+    
+    // Style pre/code blocks
+    if (domNode.name === 'pre' && domNode.attribs && domNode.attribs.class === 'code-block') {
+      const language = domNode.attribs['data-language'] || '';
+      return (
+        <pre style={{ 
+          backgroundColor: '#c0f5c0', 
+          padding: '8px', 
+          borderRadius: '4px',
+          overflowX: 'auto',
+          fontFamily: 'monospace',
+          fontSize: '0.9em',
+          whiteSpace: 'pre-wrap',
+          margin: '8px 0'
+        }}>
+          {language && <div style={{ marginBottom: '4px', color: '#666' }}>{language}</div>}
+          {domToReact(domNode.children, parseOptions)}
+        </pre>
+      );
     }
   }
 };
@@ -202,7 +231,7 @@ class ChatAssistant extends Component {
                   fontSize: '0.8em'
                 }}
               >
-                {message.text ? parse(message.text, parseOptions) : ''}
+                {message.text ? parse(formatMarkdown(message.text), parseOptions) : ''}
               </Paper>
               {message.sender === 'user' && (
                 <Avatar sx={{ bgcolor: 'secondary.main', width: 30, height: 30 }}>
