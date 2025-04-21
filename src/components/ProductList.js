@@ -164,7 +164,10 @@ class ProductList extends Component {
                 }} />
               ))}
               {this.props.activeManufacturerFilters.map((filter,index) => (
-                <Chip size="small" key={index} label={filter.name} onDelete={() => this.props.onDeleteManufacturerFilter && this.props.onDeleteManufacturerFilter(filter)} />
+                <Chip size="small" key={index} label={filter.name} onDelete={() => {
+                  removeSessionSetting(`filter_manufacturer_${filter.value}`);
+                  this.props.onFilterChange();
+                }} />
               ))}
             </Box>
 

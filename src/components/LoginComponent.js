@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
+import { Link } from 'react-router-dom';
 
 const LoginComponent = ({ socket }) => {
   const [open, setOpen] = useState(false);
@@ -173,6 +174,7 @@ const LoginComponent = ({ socket }) => {
             {user?.email?.split('@')[0] || 'Benutzer'}
           </Button>
           <Menu
+            disableScrollLock={true}
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleUserMenuClose}
@@ -185,6 +187,7 @@ const LoginComponent = ({ socket }) => {
               horizontal: 'right',
             }}
           >
+            <MenuItem component={Link} to="/profile" onClick={handleUserMenuClose}>Profil</MenuItem>
             <MenuItem onClick={handleLogout}>Abmelden</MenuItem>
           </Menu>
         </>
@@ -202,6 +205,7 @@ const LoginComponent = ({ socket }) => {
       <Dialog 
         open={open} 
         onClose={handleClose}
+        disableScrollLock
         maxWidth="xs"
         fullWidth
       >

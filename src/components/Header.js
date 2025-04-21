@@ -7,10 +7,20 @@ import {
   Box, 
   TextField, 
   InputAdornment,
-  Container
+  Container,
+  Badge,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Divider
 } from '@mui/material';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import SearchIcon from '@mui/icons-material/Search';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import DeleteIcon from '@mui/icons-material/Delete';
 import SocketContext from '../contexts/SocketContext.js';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import LoginComponent from './LoginComponent.js';
@@ -144,18 +154,93 @@ const SearchBar = () => {
 
 // ButtonGroup Subcomponent
 class ButtonGroup extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isCartOpen: false
+    };
+  }
+
+  toggleCart = () => {
+    this.setState(prevState => ({
+      isCartOpen: !prevState.isCartOpen
+    }));
+  }
+
   render() {
-    const { socket } = this.props;
+    const { socket, cartItems = [], onCartRemoveItem } = this.props;
+    const { isCartOpen } = this.state;
     
     return (
       <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 } }}>
+        <IconButton 
+          color="inherit" 
+          onClick={this.toggleCart}
+          sx={{ ml: 1 }}
+        >
+          <Badge badgeContent={cartItems.reduce((total, item) => total + item.quantity, 0) || 0} color="error">
+            <ShoppingCartIcon />
+          </Badge>
+        </IconButton>
+        
         <LoginComponent socket={socket} />
 
+        <Drawer
+          anchor="right"
+          open={isCartOpen}
+          onClose={this.toggleCart}
+        >
+          <Box sx={{ width: 320, p: 2 }}>
+            <Typography variant="h6" gutterBottom>Warenkorb</Typography>
+            <Divider sx={{ mb: 2 }} />
+            
+            {cartItems && cartItems.length > 0 ? (
+              <>
+                <List>
+                  {cartItems.map(item => (
+                    <ListItem key={item.id} divider>
+                      <ListItemText
+                        primary={item.name}
+                        secondary={`${item.price.toFixed(2)} € x ${item.quantity}`}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="delete"
+                          onClick={() => onCartRemoveItem(item.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+                
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="subtitle1">
+                    Total: {cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)} €
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    color="primary"
+                    component={Link}
+                    to="/checkout"
+                  >
+                    Zur Kasse
+                  </Button>
+                </Box>
+              </>
+            ) : (
+              <Typography variant="body1" align="center" sx={{ py: 4 }}>
+                Ihr Warenkorb ist leer
+              </Typography>
+            )}
+          </Box>
+        </Drawer>
       </Box>
     );
   }
 }
-console.log(ButtonGroup,SearchBarWithRouter)
 
 // CategoryList Subcomponent
 class CategoryList extends Component {
@@ -355,7 +440,6 @@ class Header extends Component {
             <SearchBarWithRouter />
             <ButtonGroup 
               cartItems={this.state.cartItems}
-              onCartQuantityChange={this.handleCartQuantityChange}
               onCartRemoveItem={this.handleCartRemoveItem}
               socket={socket}
             />

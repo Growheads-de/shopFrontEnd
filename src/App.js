@@ -17,6 +17,7 @@ import Footer from './components/Footer.js';
 import Home from './pages/Home.js';
 // Import the new ChatAssistant component
 import ChatAssistant from './components/ChatAssistant.js';
+import ProfilePageWithSocket from './pages/ProfilePage.js';
 
 const Cart = lazy(() => import('./pages/Cart.js'));
 const Checkout = lazy(() => import('./pages/Checkout.js'));
@@ -101,6 +102,9 @@ const App = () => {
                   />
                   {/* Checkout page */}
                   <Route path="/checkout" element={<Checkout />} />
+
+                  {/* Profile page */}
+                  <Route path="/profile" element={<ProfilePageWithSocket />} />
 
                   {/* Fallback for undefined routes */}
                   <Route path="*" element={<Navigate to="/" replace />} />
