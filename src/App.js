@@ -33,6 +33,11 @@ const Loading = () => (
   </Box>
 );
 
+const deleteMessages = () => {
+  console.log('Deleting messages');
+  window.chatMessages = [];
+}
+
 // Convert App to a functional component to use hooks
 const App = () => {
   // State to manage chat visibility
@@ -40,11 +45,14 @@ const App = () => {
 
   // Handler to toggle chat visibility
   const handleChatToggle = () => {
+    if(isChatOpen) window.messageDeletionTimeout = setTimeout(deleteMessages, 1000 * 60);
+    if(!isChatOpen && window.messageDeletionTimeout) clearTimeout(window.messageDeletionTimeout);
     setChatOpen(!isChatOpen);
   };
 
   // Handler to close the chat
   const handleChatClose = () => {
+    window.messageDeletionTimeout = setTimeout(deleteMessages, 1000 * 60);
     setChatOpen(false);
   };
 
