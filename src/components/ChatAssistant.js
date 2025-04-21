@@ -166,9 +166,10 @@ const ChatAssistant = ({ open, onClose, socket }) => {
                 borderRadius: 2,
                 bgcolor: message.sender === 'user' ? 'secondary.light' : 'grey.200',
                 maxWidth: '75%',
+                fontSize: '0.8em'
               }}
             >
-              <Typography variant="body2">{parse(message.text)}</Typography>
+              {message.text?parse(message.text):''}
             </Paper>
             {message.sender === 'user' && (
               <Avatar sx={{ bgcolor: 'secondary.main', width: 30, height: 30 }}>
