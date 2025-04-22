@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { 
   Button, 
   Dialog, 
@@ -19,7 +19,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import { Link, useNavigate } from 'react-router-dom';
 import GoogleLoginButton from './GoogleLoginButton.js';
-import GoogleAuthProvider from '../providers/GoogleAuthProvider.js';
+
+// Lazy load GoogleAuthProvider
+const GoogleAuthProvider = lazy(() => import('../providers/GoogleAuthProvider.js'));
 
 // Function to check if user is logged in
 export const isUserLoggedIn = () => {
@@ -49,7 +51,7 @@ const LoginComponent = ({ socket }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [, setGoogleUserProfile] = useState(null);
+  const [showGoogleAuth, setShowGoogleAuth] = useState(false);
 
   const resetForm = useCallback(() => {
     setEmail('');
@@ -179,7 +181,7 @@ const LoginComponent = ({ socket }) => {
     setIsLoggedIn(false);
     setAnchorEl(null);
     // Clear Google user data
-    setGoogleUserProfile(null);
+    setShowGoogleAuth(false);
   };
 
   // Google login functionality
@@ -200,7 +202,6 @@ const LoginComponent = ({ socket }) => {
       // Store in localStorage
       localStorage.setItem('user', JSON.stringify(googleUser));
       setUser(googleUser);
-      setGoogleUserProfile(googleUser);
       setIsLoggedIn(true);
       handleClose();
       navigate('/profile');
@@ -304,17 +305,33 @@ const LoginComponent = ({ socket }) => {
 
           {/* Google Sign In Button */}
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
+            {tabValue === 0 && !showGoogleAuth && (
+              <Button
+                variant="contained"
+                startIcon={<PersonIcon />}
+                onClick={() => {
+                  // Dynamically import and initialize Google Auth when button is clicked
+                  setShowGoogleAuth(true);
+                }}
+                sx={{ width: '100%', backgroundColor: '#4285F4', color: 'white' }}
+              >
+                Mit Google anmelden
+              </Button>
+            )}
             
-     
-      <GoogleAuthProvider clientId="928121624463-jbgfdlgem22scs1k9c87ucg4ffvaik6o.apps.googleusercontent.com">
-      <GoogleLoginButton
-              onSuccess={handleGoogleLoginSuccess}
-              onError={handleGoogleLoginError}
-              text="Mit Google anmelden"
-              style={{ width: '100%', backgroundColor: '#4285F4' }}
-            />
-      </GoogleAuthProvider>
- 
+            {showGoogleAuth && (
+              <Suspense fallback={<CircularProgress size={24} />}>
+                <GoogleAuthProvider clientId="928121624463-jbgfdlgem22scs1k9c87ucg4ffvaik6o.apps.googleusercontent.com">
+                  <GoogleLoginButton
+                    onSuccess={handleGoogleLoginSuccess}
+                    onError={handleGoogleLoginError}
+                    text="Mit Google anmelden"
+                    style={{ width: '100%', backgroundColor: '#4285F4' }}
+                    autoInitiate={true}
+                  />
+                </GoogleAuthProvider>
+              </Suspense>
+            )}
           </Box>
 
           {/* OR Divider */}
