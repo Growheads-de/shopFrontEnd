@@ -18,7 +18,13 @@ import Home from './pages/Home.js';
 // Import the new ChatAssistant component
 import ChatAssistant from './components/ChatAssistant.js';
 import ProfilePageWithSocket from './pages/ProfilePage.js';
-
+// Import legal pages
+import Datenschutz from './pages/Datenschutz.js';
+import AGB from './pages/AGB.js';
+import Sitemap from './pages/Sitemap.js';
+import Impressum from './pages/Impressum.js';
+import Batteriegesetzhinweise from './pages/Batteriegesetzhinweise.js';
+import Widerrufsrecht from './pages/Widerrufsrecht.js';
 
 // Import theme from separate file to reduce main bundle size
 import theme from './theme.js';
@@ -105,6 +111,14 @@ const App = () => {
 
                   {/* Profile page */}
                   <Route path="/profile" element={<ProfilePageWithSocket />} />
+                  
+                  {/* Legal pages */}
+                  <Route path="/datenschutz" element={<Datenschutz />} />
+                  <Route path="/agb" element={<AGB />} />
+                  <Route path="/sitemap" element={<Sitemap />} />
+                  <Route path="/impressum" element={<Impressum />} />
+                  <Route path="/batteriegesetzhinweise" element={<Batteriegesetzhinweise />} />
+                  <Route path="/widerrufsrecht" element={<Widerrufsrecht />} />
                   
                   {/* Fallback for undefined routes */}
                   <Route path="*" element={<Navigate to="/" replace />} />
