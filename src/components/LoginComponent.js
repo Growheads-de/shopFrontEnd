@@ -17,9 +17,9 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
-import { Link } from 'react-router-dom';
-
+import { Link, useNavigate } from 'react-router-dom';
 const LoginComponent = ({ socket }) => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [email, setEmail] = useState('');
@@ -49,6 +49,7 @@ const LoginComponent = ({ socket }) => {
 
   const handleOpen = () => {
     setOpen(true);
+    setLoading(false);
     resetForm();
   };
 
@@ -92,18 +93,16 @@ const LoginComponent = ({ socket }) => {
 
     // Call verifyUser socket endpoint
     socket.emit('verifyUser', { email, password }, (response) => {
-      setLoading(false);
+      
       if (response.success) {
-        setSuccess('Erfolgreich angemeldet');
         // Store user info in localStorage
         localStorage.setItem('user', JSON.stringify(response.user));
         setUser(response.user);
         setIsLoggedIn(true);
-        // Close dialog after a short delay
-        setTimeout(() => {
-          handleClose();
-        }, 1000);
+        handleClose(); // Close the dialog after successful login
+        navigate('/profile'); // Navigate programmatically
       } else {
+        setLoading(false);
         setError(response.message || 'Anmeldung fehlgeschlagen');
       }
     });

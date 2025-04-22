@@ -191,7 +191,7 @@ class ChatAssistant extends Component {
           }}
         >
           <Typography variant="h6" component="div">
-            Assistent
+            Assistent - BETA
           </Typography>
           <IconButton onClick={onClose} size="small" sx={{ color: 'primary.contrastText' }}>
             <CloseIcon />
