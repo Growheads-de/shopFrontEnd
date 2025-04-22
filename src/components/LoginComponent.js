@@ -18,6 +18,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import { Link, useNavigate } from 'react-router-dom';
+import GoogleLoginButton from './GoogleLoginButton.js';
+
 const LoginComponent = ({ socket }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -31,6 +33,7 @@ const LoginComponent = ({ socket }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [, setGoogleUserProfile] = useState(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -157,6 +160,38 @@ const LoginComponent = ({ socket }) => {
     setUser(null);
     setIsLoggedIn(false);
     setAnchorEl(null);
+    // Clear Google user data
+    setGoogleUserProfile(null);
+  };
+
+  // Google login functionality
+  const handleGoogleLoginSuccess = (credentialResponse) => {
+    console.log('Google Login Success:', credentialResponse);
+    
+    // Decode the credential to get basic user info
+    if (credentialResponse.credential) {
+      const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
+      
+      const googleUser = {
+        email: decoded.email,
+        name: decoded.name,
+        picture: decoded.picture,
+        googleId: decoded.sub
+      };
+      
+      // Store in localStorage
+      localStorage.setItem('user', JSON.stringify(googleUser));
+      setUser(googleUser);
+      setGoogleUserProfile(googleUser);
+      setIsLoggedIn(true);
+      handleClose();
+      navigate('/profile');
+    }
+  };
+
+  const handleGoogleLoginError = (error) => {
+    console.error('Google Login Error:', error);
+    setError('Google-Anmeldung fehlgeschlagen');
   };
 
   return (
@@ -170,7 +205,7 @@ const LoginComponent = ({ socket }) => {
             startIcon={<PersonIcon />}
             sx={{ my: 1, mx: 1.5 }}
           >
-            {user?.email?.split('@')[0] || 'Benutzer'}
+            {user?.name || user?.email?.split('@')[0] || 'Benutzer'}
           </Button>
           <Menu
             disableScrollLock={true}
@@ -191,8 +226,8 @@ const LoginComponent = ({ socket }) => {
           </Menu>
         </>
       ) : (
-        <Button 
-          variant="outlined" 
+        <Button
+          variant="outlined"
           color="inherit" 
           onClick={handleOpen}
           sx={{ my: 1, mx: 1.5 }}
@@ -205,8 +240,8 @@ const LoginComponent = ({ socket }) => {
         open={open} 
         onClose={handleClose}
         disableScrollLock
-        maxWidth="xs"
         fullWidth
+        maxWidth="xs"
       >
         <DialogTitle sx={{ bgcolor: 'white', pb: 0 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -248,6 +283,23 @@ const LoginComponent = ({ socket }) => {
 
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+          {/* Google Sign In Button */}
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
+            <GoogleLoginButton
+              onSuccess={handleGoogleLoginSuccess}
+              onError={handleGoogleLoginError}
+              text="Mit Google anmelden"
+              style={{ width: '100%', backgroundColor: '#4285F4' }}
+            />
+          </Box>
+
+          {/* OR Divider */}
+          <Box sx={{ display: 'flex', alignItems: 'center', my: 2 }}>
+            <Box sx={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }} />
+            <Typography variant="body2" sx={{ px: 2, color: '#757575' }}>ODER</Typography>
+            <Box sx={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }} />
+          </Box>
           
           <Box sx={{ py: 1 }}>
             <TextField
@@ -293,7 +345,7 @@ const LoginComponent = ({ socket }) => {
               <Button 
                 variant="contained" 
                 color="primary" 
-                fullWidth 
+                fullWidth
                 onClick={tabValue === 0 ? handleLogin : handleRegister}
                 sx={{ mt: 2, bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
               >
@@ -301,7 +353,6 @@ const LoginComponent = ({ socket }) => {
               </Button>
             )}
           </Box>
-          
         </DialogContent>
       </Dialog>
     </>

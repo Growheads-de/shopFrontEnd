@@ -18,6 +18,8 @@ import Home from './pages/Home.js';
 // Import the new ChatAssistant component
 import ChatAssistant from './components/ChatAssistant.js';
 import ProfilePageWithSocket from './pages/ProfilePage.js';
+// Import Google Auth Test component
+import GoogleAuthTest from './components/GoogleAuthTest.js';
 
 const Cart = lazy(() => import('./pages/Cart.js'));
 const Checkout = lazy(() => import('./pages/Checkout.js'));
@@ -113,6 +115,9 @@ const App = () => {
 
                   {/* Profile page */}
                   <Route path="/profile" element={<ProfilePageWithSocket />} />
+                  
+                  {/* Google Auth Test Page */}
+                  <Route path="/auth-test" element={<GoogleAuthTest />} />
 
                   {/* Fallback for undefined routes */}
                   <Route path="*" element={<Navigate to="/" replace />} />
