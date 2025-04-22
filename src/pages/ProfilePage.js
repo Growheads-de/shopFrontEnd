@@ -26,7 +26,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CartDropdown from '../components/CartDropdown.js';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, IbanElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // Orders Tab Content Component
 class OrdersTab extends Component {
@@ -426,7 +426,7 @@ const CheckoutForm = (props) => {
       if (response.success) {
         const result = await stripe.confirmCardPayment(response.clientSecret, {
           payment_method: {
-            card: elements.getElement(CardElement),
+            card: elements.getElement(IbanElement),
             billing_details: {
               email: props.userEmail || '',
             },
@@ -471,8 +471,10 @@ const CheckoutForm = (props) => {
       </Typography>
       
       <Box sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1, mb: 3 }}>
-        <CardElement 
-          options={{
+        <IbanElement 
+          supportedCountries={['SEPA']} options={{
+            supportedCountries: ['SEPA'],
+            placeholderCountry: 'DE',
             style: {
               base: {
                 fontSize: '16px',
