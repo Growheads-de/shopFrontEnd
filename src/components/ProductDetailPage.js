@@ -7,6 +7,7 @@ import {
 import { Link, useParams, useNavigate, useLocation} from 'react-router-dom';
 import SocketContext from '../contexts/SocketContext.js';
 import parse from 'html-react-parser';
+import AddToCartButton from './AddToCartButton.js';
 //import CircleIcon from '@mui/icons-material/Circle';
 //import CloseIcon from '@mui/icons-material/Close';
 
@@ -361,14 +362,10 @@ class ProductDetailPage extends Component {
                 </Typography>
               </Box>
               
-             {/* <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Chip 
-                  label={'dummy'} 
-                  color={'primary'}
-                  sx={{ fontWeight: 'medium', mb: 1 }}
-                />
-                
-              </Box>*/}
+              <Box sx={{ p: 2, pt: 0 }}>
+                <AddToCartButton available={product.available} id={product.id} price={product.price} name={product.name}/>
+              </Box>
+
             </Box>
           </Box>
         </Box>
