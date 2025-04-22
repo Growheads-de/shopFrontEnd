@@ -250,7 +250,7 @@ class ButtonGroup extends Component {
             <CartDropdown cartItems={cartItems} onClose={this.toggleCart} onCheckout={()=>{
               /*open the Drawer inside <LoginComponent */ 
               
-              if (isUserLoggedIn()) {
+              if (isUserLoggedIn().isLoggedIn) {
                 this.toggleCart(); // Close the cart drawer
                 navigate('/profile');
               } else if (window.openLoginDrawer) {
