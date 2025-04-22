@@ -320,7 +320,15 @@ const LoginComponent = ({ socket }) => {
             )}
             
             {showGoogleAuth && (
-              <Suspense fallback={<CircularProgress size={24} />}>
+              <Suspense fallback={
+                <Button
+                  variant="contained"
+                  startIcon={<PersonIcon />}
+                  sx={{ width: '100%', backgroundColor: '#4285F4', color: 'white' }}
+                >
+                  Mit Google anmelden
+                </Button>
+              }>
                 <GoogleAuthProvider clientId="928121624463-jbgfdlgem22scs1k9c87ucg4ffvaik6o.apps.googleusercontent.com">
                   <GoogleLoginButton
                     onSuccess={handleGoogleLoginSuccess}
