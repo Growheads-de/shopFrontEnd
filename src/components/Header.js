@@ -11,21 +11,16 @@ import {
   Badge,
   Drawer,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
   Divider
 } from '@mui/material';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import SocketContext from '../contexts/SocketContext.js';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import LoginComponent from './LoginComponent.js';
-
+import CartDropdown from './CartDropdown.js';
 // Logo Subcomponent
 const Logo = () => {
   return (
@@ -215,12 +210,12 @@ class ButtonGroup extends Component {
         </IconButton>
         
         <Drawer
-          anchor="right"
+          anchor="left"
           open={isCartOpen}
           onClose={this.toggleCart}
           disableScrollLock={true}
         >
-          <Box sx={{ width: 320, p: 2 }}>
+          <Box sx={{ width: 420, p: 2 }}>
             <Box 
               sx={{ 
                 display: 'flex', 
@@ -246,47 +241,8 @@ class ButtonGroup extends Component {
             </Box>
             <Divider sx={{ mb: 2 }} />
             
-            {cartItems && cartItems.length > 0 ? (
-              <>
-                <List>
-                  {cartItems.forEach(item => (
-                    <ListItem key={item.id} divider>
-                      <ListItemText
-                        primary={item.name}
-                        secondary={`xx € x ${item.quantity}`}
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton 
-                          edge="end" 
-                          aria-label="delete"
-                          
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
-                </List>
-                
-                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="subtitle1">
-                    Total: {cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)} €
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    color="primary"
-                    component={Link}
-                    to="/checkout"
-                  >
-                    Zur Kasse
-                  </Button>
-                </Box>
-              </>
-            ) : (
-              <Typography variant="body1" align="center" sx={{ py: 4 }}>
-                Ihr Warenkorb ist leer
-              </Typography>
-            )}
+            <CartDropdown cartItems={cartItems} onClose={this.toggleCart}/>
+
           </Box>
         </Drawer>
       </Box>

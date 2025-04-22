@@ -24,6 +24,7 @@ import { Navigate } from 'react-router-dom';
 import SocketContext from '../contexts/SocketContext.js';
 import SearchIcon from '@mui/icons-material/Search';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import CartDropdown from '../components/CartDropdown.js';
 
 // Orders Tab Content Component
 class OrdersTab extends Component {
@@ -88,10 +89,9 @@ class OrdersTab extends Component {
   render() {
     return (
       <Box sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>Meine Bestellungen</Typography>
-        
+
         {this.mockOrders.length > 0 ? (
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -151,7 +151,7 @@ class OrdersTab extends Component {
             </Table>
           </TableContainer>
         ) : (
-          <Alert severity="info" sx={{ mt: 2 }}>
+          <Alert severity="info">
             Sie haben noch keine Bestellungen aufgegeben.
           </Alert>
         )}
@@ -297,9 +297,7 @@ class SettingsTab extends Component {
   render() {
     return (
       <Box sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>Kontoeinstellungen</Typography>
-        
-        <Paper sx={{ p: 3, mt: 3 }}>
+        <Paper sx={{ p: 3}}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
             Passwort ändern
           </Typography>
@@ -392,6 +390,17 @@ class SettingsTab extends Component {
             </Button>
           </Box>
         </Paper>
+      </Box>
+    );
+  }
+}
+
+// Cart Tab Content Component
+class CartTab extends Component {
+  render() {
+    return (
+      <Box sx={{ p: 3 }}>
+        <CartDropdown cartItems={window.cart || {}}/>
       </Box>
     );
   }
@@ -496,23 +505,33 @@ class ProfilePage extends Component {
               }}
             >
               <Tab 
-                label="Bestellungen" 
+                label="Warenkorb" 
                 sx={{ 
                   color: this.state.tabValue === 0 ? '#2e7d32' : 'inherit',
+                  fontWeight: 'bold'
+                }}
+              />
+               <Tab 
+                label="Bestellungen" 
+                sx={{ 
+                  color: this.state.tabValue === 1 ? '#2e7d32' : 'inherit',
                   fontWeight: 'bold'
                 }}
               />
               <Tab 
                 label="Einstellungen" 
                 sx={{ 
-                  color: this.state.tabValue === 1 ? '#2e7d32' : 'inherit',
+                  color: this.state.tabValue === 2 ? '#2e7d32' : 'inherit',
                   fontWeight: 'bold'
                 }}
               />
+ 
             </Tabs>
-            
-            {this.state.tabValue === 0 && <OrdersTab />}
-            {this.state.tabValue === 1 && <SettingsTab socket={this.props.socket} />}
+
+            {this.state.tabValue === 0 && <CartTab />}
+            {this.state.tabValue === 1 && <OrdersTab />}
+            {this.state.tabValue === 2 && <SettingsTab socket={this.props.socket} />}
+
           </Box>
         </Paper>
       </Container>

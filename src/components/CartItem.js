@@ -2,16 +2,11 @@ import React, { Component } from 'react';
 import { 
   ListItem, 
   ListItemAvatar, 
-  Avatar, 
-  IconButton, 
+  Avatar,
   Typography, 
-  Box,
-  ButtonGroup,
-  Divider
+  Box
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import DeleteIcon from '@mui/icons-material/Delete';
+import AddToCartButton from './AddToCartButton.js';
 
 class CartItem extends Component {
   handleIncrement = () => {
@@ -27,13 +22,14 @@ class CartItem extends Component {
   };
 
   render() {
-    const { item, onRemove } = this.props;
-    
+    const { item } = this.props;
+
+    console.log('item', item,this.props.key);
     return (
       <>
         <ListItem 
           alignItems="flex-start"
-          sx={{ py: 2 }}
+          sx={{ py: 2, width: '100%' }}
         >
           <ListItemAvatar>
             <Avatar 
@@ -43,16 +39,16 @@ class CartItem extends Component {
               sx={{ 
                 width: 60, 
                 height: 60, 
-                mr: 1,
+                mr: 2,
                 bgcolor: 'primary.light',
                 color: 'white'
               }}
             >
-              {item.name.charAt(0)}
+              
             </Avatar>
           </ListItemAvatar>
           
-          <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, mr: 6 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, width: '100%' }}>
             <Typography 
               variant="subtitle1" 
               component="div" 
@@ -67,7 +63,7 @@ class CartItem extends Component {
                 color="text.secondary"
                 component="div"
               >
-                ${item.price.toFixed(2)} x {item.quantity}
+                {new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(item.price)} x {item.quantity}
               </Typography>
               <Typography 
                 variant="body2" 
@@ -75,58 +71,14 @@ class CartItem extends Component {
                 fontWeight="bold"
                 component="div"
               >
-                ${(item.price * item.quantity).toFixed(2)}
+                {new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(item.price * item.quantity)}
               </Typography>
-            </Box>
-            
-            <ButtonGroup size="small" sx={{ mt: 0.5 }}>
-              <IconButton 
-                size="small" 
-                onClick={this.handleDecrement}
-                disabled={item.quantity <= 1}
-              >
-                <RemoveIcon fontSize="small" />
-              </IconButton>
-              <Box 
-                sx={{ 
-                  px: 1, 
-                  display: 'flex', 
-                  alignItems: 'center',
-                  border: '1px solid',
-                  borderColor: 'divider'
-                }}
-              >
-                <Typography 
-                  variant="body2"
-                  component="div"
-                >
-                  {item.quantity}
-                </Typography>
-              </Box>
-              <IconButton 
-                size="small" 
-                onClick={this.handleIncrement}
-              >
-                <AddIcon fontSize="small" />
-              </IconButton>
-            </ButtonGroup>
-          </Box>
-          
-          <IconButton 
-            edge="end" 
-            onClick={onRemove}
-            size="small"
-            sx={{ 
-              color: 'error.main',
-              position: 'absolute',
-              right: 16,
-              top: 16
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+            </Box> 
+            <Box sx={{ width: '250px'}}>
+              <AddToCartButton available={1} id={this.props.id} price={item.price} name={item.name}/>
+            </Box>          
+          </Box>         
         </ListItem>
-        <Divider variant="inset" component="li" />
       </>
     );
   }

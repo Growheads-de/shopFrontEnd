@@ -2,6 +2,7 @@ import React from 'react';
 import { Container, Typography, Box, Paper, Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
 
+
 const Home = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
