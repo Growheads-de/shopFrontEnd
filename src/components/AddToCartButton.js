@@ -97,6 +97,11 @@ class AddToCartButton extends Component {
     }
   };
 
+  toggleCart = () => {
+    // Dispatch an event that Header.js can listen for to toggle the cart
+    window.dispatchEvent(new CustomEvent('toggle-cart'));
+  };
+
   render() {
     const { quantity, isEditing, editValue } = this.state;
     const { available, size } = this.props;
@@ -215,7 +220,7 @@ class AddToCartButton extends Component {
             <AddIcon />
           </IconButton>
           
-          <Tooltip title="Remove from cart" arrow>
+          <Tooltip title="Aus dem Warenkorb entfernen" arrow>
             <IconButton 
               color="inherit"
               onClick={this.handleClearCart}
@@ -227,6 +232,20 @@ class AddToCartButton extends Component {
               <DeleteIcon />
             </IconButton>
           </Tooltip>
+          {this.props.cartButton && (
+            <Tooltip title="Warenkorb öffnen" arrow>
+              <IconButton 
+                color="inherit"
+                onClick={this.toggleCart}
+                sx={{ 
+                  borderRadius: 0,
+                  '&:hover': { color: 'primary.light' }
+                }}
+              >
+                <ShoppingCartIcon />
+              </IconButton>
+            </Tooltip>
+          )}
         </ButtonGroup>
       </Box>
     );

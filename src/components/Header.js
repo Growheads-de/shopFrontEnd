@@ -177,10 +177,15 @@ class ButtonGroup extends Component {
       });
     };
     window.addEventListener('cart', this.cart);
+    
+    // Add event listener for the toggle-cart event from AddToCartButton
+    this.toggleCartListener = () => this.toggleCart();
+    window.addEventListener('toggle-cart', this.toggleCartListener);
   }
 
   componentWillUnmount() {
     window.removeEventListener('cart', this.cart);
+    window.removeEventListener('toggle-cart', this.toggleCartListener);
   }
 
   toggleCart = () => {

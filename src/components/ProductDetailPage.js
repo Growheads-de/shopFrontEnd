@@ -363,7 +363,7 @@ class ProductDetailPage extends Component {
               </Box>
               
               <Box sx={{ p: 2, pt: 0 }}>
-                <AddToCartButton available={product.available} id={product.id} price={product.price} name={product.name}/>
+                <AddToCartButton cartButton={true} available={product.available} id={product.id} price={product.price} name={product.name}/>
               </Box>
 
             </Box>
