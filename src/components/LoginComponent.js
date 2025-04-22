@@ -300,12 +300,10 @@ const LoginComponent = ({ socket }) => {
             />
           </Tabs>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
           {/* Google Sign In Button */}
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
-            {tabValue === 0 && !showGoogleAuth && (
+            {!showGoogleAuth && (
               <Button
                 variant="contained"
                 startIcon={<PersonIcon />}
@@ -342,12 +340,18 @@ const LoginComponent = ({ socket }) => {
             )}
           </Box>
 
+
+          
           {/* OR Divider */}
           <Box sx={{ display: 'flex', alignItems: 'center', my: 2 }}>
             <Box sx={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }} />
             <Typography variant="body2" sx={{ px: 2, color: '#757575' }}>ODER</Typography>
             <Box sx={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }} />
           </Box>
+          
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
           
           <Box sx={{ py: 1 }}>
             <TextField
