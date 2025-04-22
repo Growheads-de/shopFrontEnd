@@ -524,35 +524,16 @@ class CartTab extends Component {
   };
   
   render() {
-    const { isCheckingOut, cartItems } = this.state;
-    const totalAmount = Object.values(cartItems).reduce(
-      (total, item) => total + (item.price * item.quantity), 
-      0
-    );
+    const { cartItems } = this.state;
+ 
     
     return (
       <Box sx={{ p: 3 }}>
         <CartDropdown 
           cartItems={cartItems}
-          onCheckout={Object.keys(cartItems).length > 0 ? this.handleCheckout : null}
         />
         
-        {isCheckingOut && (
-          <Paper sx={{ p: 3, mt: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Bezahlen
-            </Typography>
-            
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" fontWeight="bold">
-                Bestellübersicht
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {Object.values(cartItems).length} {Object.values(cartItems).length === 1 ? 'Artikel' : 'Artikel'} - Gesamtsumme: {
-                  new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(totalAmount)
-                }
-              </Typography>
-            </Box>
+
             
             <Elements stripe={stripePromise}>
               <CheckoutForm 
@@ -561,17 +542,7 @@ class CartTab extends Component {
               />
             </Elements>
             
-            <Button 
-              variant="outlined" 
-              color="primary" 
-              fullWidth 
-              onClick={this.handleContinueShopping}
-              sx={{ mt: 2 }}
-            >
-              Zurück zum Warenkorb
-            </Button>
-          </Paper>
-        )}
+
       </Box>
     );
   }
