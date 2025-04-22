@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Button, 
   Dialog, 
@@ -35,7 +35,25 @@ const LoginComponent = ({ socket }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [, setGoogleUserProfile] = useState(null);
 
+  const resetForm = useCallback(() => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setError('');
+    setSuccess('');
+    setLoading(false);
+  }, []);
+
+  const handleOpen = useCallback(() => {
+    setOpen(true);
+    setLoading(false);
+    resetForm();
+  }, [resetForm]);
+
   useEffect(() => {
+    // Make the open function available globally
+    window.openLoginDrawer = handleOpen;
+    
     // Check if user is logged in
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -48,26 +66,16 @@ const LoginComponent = ({ socket }) => {
         localStorage.removeItem('user');
       }
     }
-  }, []);
-
-  const handleOpen = () => {
-    setOpen(true);
-    setLoading(false);
-    resetForm();
-  };
+    
+    // Cleanup function to remove global reference when component unmounts
+    return () => {
+      window.openLoginDrawer = undefined;
+    };
+  }, [handleOpen]);
 
   const handleClose = () => {
     setOpen(false);
     resetForm();
-  };
-
-  const resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setError('');
-    setSuccess('');
-    setLoading(false);
   };
 
   const handleTabChange = (event, newValue) => {

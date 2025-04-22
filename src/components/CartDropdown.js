@@ -11,7 +11,7 @@ import CartItem from './CartItem.js';
 class CartDropdown extends Component {
 
   render() {
-    const { cartItems = [], onClose } = this.props;
+    const { cartItems = [], onClose, onCheckout } = this.props;
     console.log('cartItems', cartItems);
 
     return (
@@ -41,7 +41,19 @@ class CartDropdown extends Component {
                 fullWidth
                 onClick={onClose}
               >
-                Continue Shopping
+                Weiter einkaufen
+              </Button>
+            )}
+
+            {onCheckout && Object.values(cartItems).length > 0 && (
+              <Button 
+                variant="contained" 
+                color="secondary" 
+                fullWidth
+                sx={{ mt: 2 }}
+                onClick={onCheckout}
+              >
+                Weiter zur Kasse
               </Button>
             )}
           </>

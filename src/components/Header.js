@@ -241,7 +241,15 @@ class ButtonGroup extends Component {
             </Box>
             <Divider sx={{ mb: 2 }} />
             
-            <CartDropdown cartItems={cartItems} onClose={this.toggleCart}/>
+            <CartDropdown cartItems={cartItems} onClose={this.toggleCart} onCheckout={()=>{
+              /*open the Drawer inside <LoginComponent */ 
+              if (window.openLoginDrawer) {
+                window.openLoginDrawer(); // Call global function to open login drawer
+                this.toggleCart(); // Close the cart drawer
+              } else {
+                console.error('openLoginDrawer function not available');
+              }
+            }}/>
 
           </Box>
         </Drawer>

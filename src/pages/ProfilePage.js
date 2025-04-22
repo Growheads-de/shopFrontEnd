@@ -25,6 +25,8 @@ import SocketContext from '../contexts/SocketContext.js';
 import SearchIcon from '@mui/icons-material/Search';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CartDropdown from '../components/CartDropdown.js';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 // Orders Tab Content Component
 class OrdersTab extends Component {
@@ -395,16 +397,188 @@ class SettingsTab extends Component {
   }
 }
 
+// Stripe Checkout Form Component
+const CheckoutForm = (props) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState('');
+  
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    
+    if (!stripe || !elements) {
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    const cartItems = window.cart || {};
+    const totalAmount = Object.values(cartItems).reduce(
+      (total, item) => total + (item.price * item.quantity), 
+      0
+    );
+    
+    // Create payment intent via your backend
+    props.socket.emit('createPaymentIntent', { amount: totalAmount }, async (response) => {
+      if (response.success) {
+        const result = await stripe.confirmCardPayment(response.clientSecret, {
+          payment_method: {
+            card: elements.getElement(CardElement),
+            billing_details: {
+              email: props.userEmail || '',
+            },
+          }
+        });
+        
+        if (result.error) {
+          setError(result.error.message || 'Ein Fehler ist aufgetreten');
+        } else {
+          if (result.paymentIntent.status === 'succeeded') {
+            // Payment successful, create order
+            props.socket.emit('createOrder', { cartItems }, (orderResponse) => {
+              if (orderResponse.success) {
+                setSuccess('Zahlung erfolgreich. Ihre Bestellung wurde aufgegeben!');
+                // Clear cart
+                window.cart = {};
+                localStorage.setItem('cart', JSON.stringify({}));
+                setTimeout(() => {
+                  // Force a refresh to update the UI
+                  window.location.reload();
+                }, 2000);
+              } else {
+                setError('Zahlung erfolgreich, aber es gab ein Problem bei der Bestellerstellung');
+              }
+            });
+          }
+        }
+      } else {
+        setError(response.message || 'Es gab ein Problem bei der Zahlung');
+      }
+      setLoading(false);
+    });
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+      
+      <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+        Zahlungsinformationen
+      </Typography>
+      
+      <Box sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1, mb: 3 }}>
+        <CardElement 
+          options={{
+            style: {
+              base: {
+                fontSize: '16px',
+                color: '#424770',
+                '::placeholder': {
+                  color: '#aab7c4',
+                },
+              },
+              invalid: {
+                color: '#9e2146',
+              },
+            },
+          }}
+        />
+      </Box>
+      
+      <Button 
+        type="submit" 
+        variant="contained" 
+        fullWidth
+        disabled={!stripe || loading}
+        sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
+      >
+        {loading ? <CircularProgress size={24} /> : 'Jetzt bezahlen'}
+      </Button>
+    </form>
+  );
+};
+
+// Stripe promise
+const stripePromise = loadStripe('pk_test_51R7lltRtpe3h1vwJzIrDb5bcEigTLBHrtqj9SiPX7FOEATSuD6oJmKc8xpNp49ShpGJZb2GShHIUqj4zlSIz4olj00ipOuOAnu');
+
 // Cart Tab Content Component
 class CartTab extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isCheckingOut: false,
+      cartItems: window.cart || {}
+    };
+  }
+  
+  handleCheckout = () => {
+    this.setState({ isCheckingOut: true });
+  };
+  
+  handleContinueShopping = () => {
+    this.setState({ isCheckingOut: false });
+  };
+  
   render() {
+    const { isCheckingOut, cartItems } = this.state;
+    const totalAmount = Object.values(cartItems).reduce(
+      (total, item) => total + (item.price * item.quantity), 
+      0
+    );
+    
     return (
       <Box sx={{ p: 3 }}>
-        <CartDropdown cartItems={window.cart || {}}/>
+        <CartDropdown 
+          cartItems={cartItems}
+          onCheckout={Object.keys(cartItems).length > 0 ? this.handleCheckout : null}
+        />
+        
+        {isCheckingOut && (
+          <Paper sx={{ p: 3, mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Bezahlen
+            </Typography>
+            
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Bestellübersicht
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {Object.values(cartItems).length} {Object.values(cartItems).length === 1 ? 'Artikel' : 'Artikel'} - Gesamtsumme: {
+                  new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(totalAmount)
+                }
+              </Typography>
+            </Box>
+            
+            <Elements stripe={stripePromise}>
+              <CheckoutForm 
+                socket={this.context}
+                userEmail={localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).email : ''}
+              />
+            </Elements>
+            
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              fullWidth 
+              onClick={this.handleContinueShopping}
+              sx={{ mt: 2 }}
+            >
+              Zurück zum Warenkorb
+            </Button>
+          </Paper>
+        )}
       </Box>
     );
   }
 }
+
+// Set static contextType to access the socket
+CartTab.contextType = SocketContext;
 
 // Main Profile Page Component
 class ProfilePage extends Component {

@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material/styles';
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -18,11 +18,6 @@ import Home from './pages/Home.js';
 // Import the new ChatAssistant component
 import ChatAssistant from './components/ChatAssistant.js';
 import ProfilePageWithSocket from './pages/ProfilePage.js';
-// Import Google Auth Test component
-import GoogleAuthTest from './components/GoogleAuthTest.js';
-
-const Cart = lazy(() => import('./pages/Cart.js'));
-const Checkout = lazy(() => import('./pages/Checkout.js'));
 
 
 // Import theme from separate file to reduce main bundle size
@@ -98,9 +93,6 @@ const App = () => {
                   {/* Single product page */}
                   <Route path="/product/:productId" element={<ProductDetailWithSocket />} />
 
-                  {/* Cart page */}
-                  <Route path="/cart" element={<Cart />} />
-
                   {/* Search page - Render Content in parallel */}
                   <Route 
                     path="/search" 
@@ -110,15 +102,10 @@ const App = () => {
                         </SocketContext.Consumer>
                     }
                   />
-                  {/* Checkout page */}
-                  <Route path="/checkout" element={<Checkout />} />
 
                   {/* Profile page */}
                   <Route path="/profile" element={<ProfilePageWithSocket />} />
                   
-                  {/* Google Auth Test Page */}
-                  <Route path="/auth-test" element={<GoogleAuthTest />} />
-
                   {/* Fallback for undefined routes */}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

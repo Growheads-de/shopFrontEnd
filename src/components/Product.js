@@ -14,6 +14,8 @@ class Product extends Component {
   constructor(props) {
     super(props);
     
+    this._isMounted = false;
+    
     if (!window.smallPicCache) {
       window.smallPicCache = {};
     }
@@ -27,16 +29,34 @@ class Product extends Component {
         this.props.socket.emit('getPic', { bildId, size:'small' }, (res) => {
           if(res.success){
             window.smallPicCache[bildId] = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
-            this.setState({image: window.smallPicCache[bildId],loading: false});
+            if (this._isMounted) {
+              this.setState({image: window.smallPicCache[bildId], loading: false});
+            } else {
+              this.state.image = window.smallPicCache[bildId];
+              this.state.loading = false;
+            }
           }else{
             console.log('Fehler beim Laden des Bildes:', res);
-            this.setState({error:true,loading: false});
+            if (this._isMounted) {
+              this.setState({error: true, loading: false});
+            } else {
+              this.state.error = true;
+              this.state.loading = false;
+            }
           }
         })
       }
     }else{
       this.state = {image: null, loading: false, error: false};
     }
+  }
+  
+  componentDidMount() {
+    this._isMounted = true;
+  }
+  
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   handleQuantityChange = (quantity) => {
