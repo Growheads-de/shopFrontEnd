@@ -21,6 +21,7 @@ import SocketContext from '../contexts/SocketContext.js';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import LoginComponent from './LoginComponent.js';
 import CartDropdown from './CartDropdown.js';
+import { isUserLoggedIn } from './LoginComponent.js';
 // Logo Subcomponent
 const Logo = () => {
   return (
@@ -189,7 +190,7 @@ class ButtonGroup extends Component {
   }
 
   render() {
-    const { socket } = this.props;
+    const { socket, navigate } = this.props;
     const { isCartOpen } = this.state;
     const cartItems = window.cart || {};
     console.log("badgeNumber", this.state.badgeNumber, cartItems);
@@ -243,7 +244,11 @@ class ButtonGroup extends Component {
             
             <CartDropdown cartItems={cartItems} onClose={this.toggleCart} onCheckout={()=>{
               /*open the Drawer inside <LoginComponent */ 
-              if (window.openLoginDrawer) {
+              
+              if (isUserLoggedIn()) {
+                this.toggleCart(); // Close the cart drawer
+                navigate('/profile');
+              } else if (window.openLoginDrawer) {
                 window.openLoginDrawer(); // Call global function to open login drawer
                 this.toggleCart(); // Close the cart drawer
               } else {
@@ -257,6 +262,12 @@ class ButtonGroup extends Component {
     );
   }
 }
+
+// Wrapper for ButtonGroup to provide navigate function
+const ButtonGroupWithRouter = (props) => {
+  const navigate = useNavigate();
+  return <ButtonGroup {...props} navigate={navigate} />;
+};
 
 // CategoryList Subcomponent
 class CategoryList extends Component {
@@ -454,7 +465,7 @@ class Header extends Component {
           <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
             <Logo />
             <SearchBarWithRouter />
-            <ButtonGroup socket={socket}/>
+            <ButtonGroupWithRouter socket={socket}/>
           </Container>
         </Toolbar>
         <CategoryList socket={socket} />

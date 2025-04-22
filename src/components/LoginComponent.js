@@ -20,6 +20,21 @@ import PersonIcon from '@mui/icons-material/Person';
 import { Link, useNavigate } from 'react-router-dom';
 import GoogleLoginButton from './GoogleLoginButton.js';
 
+// Function to check if user is logged in
+export const isUserLoggedIn = () => {
+  const storedUser = localStorage.getItem('user');
+  if (storedUser) {
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      return { isLoggedIn: true, user: parsedUser };
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      localStorage.removeItem('user');
+    }
+  }
+  return { isLoggedIn: false, user: null };
+};
+
 const LoginComponent = ({ socket }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -55,16 +70,10 @@ const LoginComponent = ({ socket }) => {
     window.openLoginDrawer = handleOpen;
     
     // Check if user is logged in
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setIsLoggedIn(true);
-      } catch (error) {
-        console.error('Error parsing user from localStorage:', error);
-        localStorage.removeItem('user');
-      }
+    const { isLoggedIn: userIsLoggedIn, user: storedUser } = isUserLoggedIn();
+    if (userIsLoggedIn) {
+      setUser(storedUser);
+      setIsLoggedIn(true);
     }
     
     // Cleanup function to remove global reference when component unmounts

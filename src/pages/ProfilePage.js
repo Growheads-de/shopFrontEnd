@@ -467,7 +467,7 @@ const CheckoutForm = (props) => {
       {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
       
       <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-        Zahlungsinformationen
+        Lastschrift
       </Typography>
       
       <Box sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1, mb: 3 }}>
