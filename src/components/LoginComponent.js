@@ -19,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import { Link, useNavigate } from 'react-router-dom';
 import GoogleLoginButton from './GoogleLoginButton.js';
+import GoogleAuthProvider from '../providers/GoogleAuthProvider.js';
 
 // Function to check if user is logged in
 export const isUserLoggedIn = () => {
@@ -303,12 +304,17 @@ const LoginComponent = ({ socket }) => {
 
           {/* Google Sign In Button */}
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <GoogleLoginButton
+            
+     
+      <GoogleAuthProvider clientId="928121624463-jbgfdlgem22scs1k9c87ucg4ffvaik6o.apps.googleusercontent.com">
+      <GoogleLoginButton
               onSuccess={handleGoogleLoginSuccess}
               onError={handleGoogleLoginError}
               text="Mit Google anmelden"
               style={{ width: '100%', backgroundColor: '#4285F4' }}
             />
+      </GoogleAuthProvider>
+ 
           </Box>
 
           {/* OR Divider */}
