@@ -28,6 +28,7 @@ class CartDropdown extends Component {
               {Object.keys(cartItems).map((item) => (
                 <CartItem
                   key={item}
+                  socket={this.props.socket}
                   item={cartItems[item]}
                   id={item}
                 />

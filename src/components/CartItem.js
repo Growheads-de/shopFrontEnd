@@ -6,9 +6,31 @@ import {
   Typography, 
   Box
 } from '@mui/material';
+import { Link } from 'react-router-dom';
 import AddToCartButton from './AddToCartButton.js';
 
 class CartItem extends Component {
+
+  componentDidMount() {
+    if (!window.tinyPicCache) {
+      window.tinyPicCache = {};
+    }
+    if(this.props.item && this.props.item.pictureList && this.props.item.pictureList.split(',').length > 0) {
+      const picid = this.props.item.pictureList.split(',')[0];
+      if(window.tinyPicCache[picid]){
+        this.setState({image:window.tinyPicCache[picid],loading:false, error: false})
+      }else{
+        this.setState({image: null, loading: true, error: false});
+        this.props.socket.emit('getPic', { bildId:picid, size:'tiny' }, (res) => {
+          if(res.success){
+            window.tinyPicCache[picid] = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
+            this.setState({image: window.tinyPicCache[picid], loading: false});
+          }
+        })
+      }
+    }
+  }
+
   handleIncrement = () => {
     const { item, onQuantityChange } = this.props;
     onQuantityChange(item.quantity + 1);
@@ -24,7 +46,7 @@ class CartItem extends Component {
   render() {
     const { item } = this.props;
 
-    console.log('item', item,this.props.key);
+    console.log('item pictureList', item.pictureList);
     return (
       <>
         <ListItem 
@@ -35,7 +57,7 @@ class CartItem extends Component {
             <Avatar 
               variant="rounded" 
               alt={item.name} 
-              src={item.image} 
+              src={this.state?.image} 
               sx={{ 
                 width: 60, 
                 height: 60, 
@@ -54,7 +76,9 @@ class CartItem extends Component {
               component="div" 
               sx={{ fontWeight: 'bold', mb: 0.5 }}
             >
-              {item.name}
+              <Link to={`/product/${this.props.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                {item.name}
+              </Link>
             </Typography>
             
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, mt: 1 }}>

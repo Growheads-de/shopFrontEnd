@@ -70,6 +70,8 @@ class OrdersTab extends Component {
     };
   }
 
+
+
   getStatusEmoji = (status) => {
     return this.statusEmojis[status] || '❓';
   }
@@ -516,7 +518,16 @@ class CartTab extends Component {
       cartItems: window.cart || {}
     };
   }
-  
+  componentDidMount() { 
+    this.cart = () => {
+      this.setState({cartItems: window.cart || {}});
+    };
+    window.addEventListener('cart', this.cart);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('cart', this.cart);
+  }
   handleCheckout = () => {
     this.setState({ isCheckingOut: true });
   };

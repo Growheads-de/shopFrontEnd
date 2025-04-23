@@ -247,7 +247,7 @@ class ButtonGroup extends Component {
             </Box>
             <Divider sx={{ mb: 2 }} />
             
-            <CartDropdown cartItems={cartItems} onClose={this.toggleCart} onCheckout={()=>{
+            <CartDropdown cartItems={cartItems} socket={socket} onClose={this.toggleCart} onCheckout={()=>{
               /*open the Drawer inside <LoginComponent */ 
               
               if (isUserLoggedIn().isLoggedIn) {

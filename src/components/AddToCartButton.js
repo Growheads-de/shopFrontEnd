@@ -40,7 +40,7 @@ class AddToCartButton extends Component {
     if(!window.cart) window.cart = {}; 
 
     if(!window.cart[this.props.id]){
-      window.cart[this.props.id] = {name:this.props.name, price:this.props.price, quantity:1};
+      window.cart[this.props.id] = {name:this.props.name, pictureList:this.props.pictureList, price:this.props.price, quantity:1};
     }else{
       window.cart[this.props.id].quantity++;
     }
@@ -86,7 +86,7 @@ class AddToCartButton extends Component {
       newQuantity = 0;
     }
     if(!window.cart) window.cart = {};
-    window.cart[this.props.id] = newQuantity;
+    window.cart[this.props.id].quantity = newQuantity;
     window.dispatchEvent(new CustomEvent('cart', { detail: {id:this.props.id, quantity:newQuantity} }));
     this.setState({ isEditing: false });
   };
@@ -105,6 +105,7 @@ class AddToCartButton extends Component {
   render() {
     const { quantity, isEditing, editValue } = this.state;
     const { available, size } = this.props;
+    console.log('this.props', this.props);
     
     // Button is disabled if product is not available
     if (!available) {
