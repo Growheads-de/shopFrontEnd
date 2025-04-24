@@ -10,6 +10,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Avatar from '@mui/material/Avatar';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
+import MicIcon from '@mui/icons-material/Mic';
+import StopIcon from '@mui/icons-material/Stop';
 import parse, { domToReact } from 'html-react-parser';
 import { Link } from 'react-router-dom';
 // Initialize window object for storing messages
@@ -70,10 +72,15 @@ class ChatAssistant extends Component {
     this.state = {
       messages: window.chatMessages,
       inputValue: '',
-      isTyping: false
+      isTyping: false,
+      isRecording: false,
+      recordingTime: 0,
+      mediaRecorder: null,
+      audioChunks: []
     };
     
     this.messagesEndRef = React.createRef();
+    this.recordingTimer = null;
   }
   
   componentDidMount() {
@@ -90,6 +97,10 @@ class ChatAssistant extends Component {
   componentWillUnmount() {
     // Clean up the event listener
     this.props.socket.off('aiassyResponse', this.handleBotResponse);
+    this.stopRecording();
+    if (this.recordingTimer) {
+      clearInterval(this.recordingTimer);
+    }
   }
   
   handleBotResponse = (response) => {
@@ -150,9 +161,116 @@ class ChatAssistant extends Component {
     }
   }
   
+  startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      const audioChunks = [];
+      
+      mediaRecorder.addEventListener("dataavailable", event => {
+        audioChunks.push(event.data);
+      });
+      
+      mediaRecorder.addEventListener("stop", () => {
+        if (audioChunks.length > 0) {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          this.sendAudioMessage(audioBlob);
+        }
+        
+        // Stop all tracks on the stream to release the microphone
+        stream.getTracks().forEach(track => track.stop());
+      });
+      
+      // Start recording
+      mediaRecorder.start();
+      
+      // Set up timer - limit to 60 seconds
+      this.recordingTimer = setInterval(() => {
+        this.setState(prevState => {
+          const newTime = prevState.recordingTime + 1;
+          
+          // Auto-stop after 60 seconds
+          if (newTime >= 60) {
+            this.stopRecording();
+          }
+          
+          return { recordingTime: newTime };
+        });
+      }, 1000);
+      
+      this.setState({
+        isRecording: true,
+        mediaRecorder,
+        audioChunks,
+        recordingTime: 0
+      });
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("Could not access microphone. Please check your browser permissions.");
+    }
+  };
+  
+  stopRecording = () => {
+    const { mediaRecorder, isRecording } = this.state;
+    
+    if (this.recordingTimer) {
+      clearInterval(this.recordingTimer);
+    }
+    
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      this.setState({
+        isRecording: false,
+        recordingTime: 0
+      });
+    }
+  };
+  
+  sendAudioMessage = async (audioBlob) => {
+    // Create a URL for the audio blob
+    const audioUrl = URL.createObjectURL(audioBlob);
+    
+    // Create a user message with audio content
+    const newUserMessage = {
+      id: Date.now(),
+      sender: 'user',
+      text: `<audio controls src="${audioUrl}"></audio>`,
+      isAudio: true
+    };
+    
+    // Update UI with the audio message
+    this.setState(prevState => {
+      const updatedMessages = [...prevState.messages, newUserMessage];
+      // Store in window object
+      window.chatMessages = updatedMessages;
+      return {
+        messages: updatedMessages,
+        isTyping: true
+      };
+    });
+    
+    // Convert audio to base64 for sending to server
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    reader.onloadend = () => {
+      const base64Audio = reader.result.split(',')[1];
+      // Send audio data to server
+      this.props.socket.emit('aiassyAudioMessage', { 
+        audio: base64Audio,
+        format: 'wav'
+      });
+    };
+  };
+  
+  formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+  
   render() {
     const { open, onClose } = this.props;
-    const { messages, inputValue, isTyping } = this.state;
+    const { messages, inputValue, isTyping, isRecording, recordingTime } = this.state;
     
     if (!open) {
       return null;
@@ -270,19 +388,47 @@ class ChatAssistant extends Component {
             autoFocus
             autoCapitalize="off"
             autoCorrect="off"
-            placeholder="Nachricht eingeben..." 
+            placeholder={isRecording ? "Aufnahme läuft..." : "Nachricht eingeben..."} 
             value={inputValue}
             onChange={this.handleInputChange}
             onKeyDown={this.handleKeyDown}
+            disabled={isRecording}
             slotProps={{
               input: { maxLength: 300 }
             }}
+            InputProps={{
+              endAdornment: isRecording && (
+                <Typography variant="caption" color="primary" sx={{ mr: 1 }}>
+                  {this.formatTime(recordingTime)}
+                </Typography>
+              )
+            }}
           />
+          
+          {isRecording ? (
+            <IconButton 
+              color="error"
+              onClick={this.stopRecording}
+              sx={{ ml: 1 }}
+            >
+              <StopIcon />
+            </IconButton>
+          ) : (
+            <IconButton 
+              color="primary"
+              onClick={this.startRecording}
+              sx={{ ml: 1 }}
+              disabled={isTyping}
+            >
+              <MicIcon />
+            </IconButton>
+          )}
+          
           <Button 
             variant="contained" 
             sx={{ ml: 1 }} 
             onClick={this.handleSendMessage}
-            disabled={isTyping || !inputValue.trim()}
+            disabled={isTyping || !inputValue.trim() || isRecording}
           >
             Senden
           </Button>
