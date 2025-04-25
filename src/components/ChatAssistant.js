@@ -396,14 +396,11 @@ class ChatAssistant extends Component {
             onKeyDown={this.handleKeyDown}
             disabled={isRecording}
             slotProps={{
-              input: { maxLength: 300 }
-            }}
-            InputProps={{
-              endAdornment: isRecording && (
+              input: { maxLength: 300 , endAdornment: isRecording && (
                 <Typography variant="caption" color="primary" sx={{ mr: 1 }}>
                   {this.formatTime(recordingTime)}
                 </Typography>
-              )
+              )}
             }}
           />
           
