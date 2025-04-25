@@ -189,8 +189,8 @@ class ChatAssistant extends Component {
         this.setState(prevState => {
           const newTime = prevState.recordingTime + 1;
           
-          // Auto-stop after 60 seconds
-          if (newTime >= 60) {
+          // Auto-stop after 10 seconds
+          if (newTime >= 10) {
             this.stopRecording();
           }
           
@@ -275,6 +275,8 @@ class ChatAssistant extends Component {
     if (!open) {
       return null;
     }
+
+    console.log(this.formatTime(recordingTime));
 
     return (
       <Paper 
