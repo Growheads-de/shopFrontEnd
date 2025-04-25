@@ -151,7 +151,7 @@ class ChatAssistant extends Component {
       };
     }, () => {
       // Emit message to socket server after state is updated
-      this.props.socket.emit('aiassyMessage', userMessage);
+      if (userMessage.trim()) this.props.socket.emit('aiassyMessage', userMessage);
     });
   }
   
@@ -427,7 +427,7 @@ class ChatAssistant extends Component {
             variant="contained" 
             sx={{ ml: 1 }} 
             onClick={this.handleSendMessage}
-            disabled={isTyping || !inputValue.trim() || isRecording}
+            disabled={isTyping || isRecording}
           >
             Senden
           </Button>
