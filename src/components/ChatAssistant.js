@@ -398,7 +398,7 @@ class ChatAssistant extends Component {
             slotProps={{
               input: { maxLength: 300 , endAdornment: isRecording && (
                 <Typography variant="caption" color="primary" sx={{ mr: 1 }}>
-                  {this.formatTime(recordingTime)}
+                  {this.formatTime(recordingTime)}jlkjlkj
                 </Typography>
               )}
             }}
