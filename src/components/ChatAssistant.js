@@ -390,7 +390,7 @@ class ChatAssistant extends Component {
             autoFocus
             autoCapitalize="off"
             autoCorrect="off"
-            placeholder={isRecording ? "Aufnahme läuft..." : "Nachricht eingeben..."} 
+            placeholder={isRecording ? "Aufnahme läuft..." : "Du kannst mich nach Cannabissorten fragen..."} 
             value={inputValue}
             onChange={this.handleInputChange}
             onKeyDown={this.handleKeyDown}
