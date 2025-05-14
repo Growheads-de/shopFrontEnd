@@ -122,36 +122,18 @@ class ProductDetailPage extends Component {
         product: window.productDetailCache[this.props.productId], 
         loading: false, 
         error: null, 
-        imageDialogOpen: false,
-        isScrolled: false 
+        imageDialogOpen: false
       };
     }else{
       this.state = { 
         product: null, 
         loading: true, 
         error: null, 
-        imageDialogOpen: false,
-        isScrolled: false 
+        imageDialogOpen: false
       };
     }
     this.loadProductData();
   }
-
-  componentDidMount() {
-    window.addEventListener('scroll', this.handleScroll);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll);
-  }
-
-  handleScroll = () => {
-    // Change state when scroll position is more than 20px
-    const isScrolled = window.scrollY > 20;
-    if (isScrolled !== this.state.isScrolled) {
-      this.setState({ isScrolled });
-    }
-  };
 
   componentDidUpdate(prevProps) {
     if (prevProps.productId !== this.props.productId)
@@ -179,7 +161,7 @@ class ProductDetailPage extends Component {
   }
 
   render() {
-    const { product, loading, error, isScrolled } = this.state;
+    const { product, loading, error } = this.state;
     
     if (loading) {
       return (
@@ -244,7 +226,7 @@ class ProductDetailPage extends Component {
         <Box sx={{ 
           mb: 2, 
           position: ['-webkit-sticky','sticky'], // Provide both prefixed and standard
-          top: { xs: '64px', sm: '64px', md: '110px',lg: '110px' }, /* Offset to sit below the header */
+          top: { xs: '80px', sm: '80px', md: '120px',lg: '120px' }, /* Offset to sit below the header */
           left: 0,
           width: '100%',
           display: 'flex',
@@ -257,17 +239,12 @@ class ProductDetailPage extends Component {
               display: 'inline-flex',
               px: 0,
               py: 1,
-              borderRadius: 1,
-              transition: 'all 0.3s ease',...(isScrolled && {
-                bgcolor: '#c8e6c9',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                border: '1px solid rgb(100, 117, 100)',
-                 backdropFilter: 'blur(8px)'
-              })
+              backgroundColor: '#2e7d32', //primary dark green             
+              borderRadius: 1
             }}
           >
             <Typography variant="body2" color="text.secondary">
-              <Link to="/" onClick={() => this.props.navigate(-1)} style={{ paddingLeft:16, paddingRight:16,paddingTop:8,paddingBottom:8, textDecoration: 'none', color: 'inherit' }}>
+              <Link to="/" onClick={() => this.props.navigate(-1)} style={{ paddingLeft:16, paddingRight:16,paddingTop:8,paddingBottom:8, textDecoration: 'none', color: '#fff', fontWeight: 'bold' }}>
                 Zurück
               </Link> 
             </Typography>
