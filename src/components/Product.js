@@ -66,7 +66,6 @@ class Product extends Component {
 
   render() {
     const { id, name, price, available, manufacturer, currency, vat, massMenge, massEinheit, thc,/* incoming,*/ neu } = this.props;
-    
     const isNew = neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
     const showThcBadge = thc > 0;
     let thcBadgeColor = '#4caf50'; // Green default
