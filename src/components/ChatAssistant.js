@@ -103,15 +103,31 @@ class ChatAssistant extends Component {
     }
   }
   
-  handleBotResponse = (response) => {
-    const newBotMessage = {
-      id: Date.now(),
-      sender: 'bot',
-      text: response.content,
-    };
-    
+  handleBotResponse = (msgId,response) => {
     this.setState(prevState => {
-      const updatedMessages = [...prevState.messages, newBotMessage];
+      // Check if a message with this msgId already exists
+      const existingMessageIndex = prevState.messages.findIndex(msg => msg.msgId === msgId);
+      
+      let updatedMessages;
+      
+      if (existingMessageIndex !== -1 && msgId) {
+        // If message with this msgId exists, append the response
+        updatedMessages = [...prevState.messages];
+        updatedMessages[existingMessageIndex] = {
+          ...updatedMessages[existingMessageIndex],
+          text: updatedMessages[existingMessageIndex].text + response.content
+        };
+      } else {
+        // Create a new message
+        const newBotMessage = {
+          id: Date.now(),
+          msgId: msgId,
+          sender: 'bot',
+          text: response.content,
+        };
+        updatedMessages = [...prevState.messages, newBotMessage];
+      }
+      
       // Store in window object
       window.chatMessages = updatedMessages;
       return { 
