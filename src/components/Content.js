@@ -88,11 +88,12 @@ function getFilteredProducts(unfilteredProducts, attributes) {
     const availabilityFilter = localStorage.getItem('filter_availability');
     const inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
     const isNewMatch = availabilityFilters.includes('2') ?  isNew(product.neu) : true;
+    const soonMatch = availabilityFilters.includes('3') ? !product.available && product.incoming : true;
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
 
       (product.manufacturerId && activeManufacturerFilters.includes(product.manufacturerId.toString()));
     if (Object.keys(attributeFiltersByGroup).length === 0) {
-      return manufacturerMatch && inStockMatch && isNewMatch;
+      return manufacturerMatch && inStockMatch && isNewMatch && soonMatch;
     }
     const productAttributes = attributes
       .filter(attr => attr.kArtikel === product.id);
@@ -102,7 +103,7 @@ function getFilteredProducts(unfilteredProducts, attributes) {
         .map(attr => attr.kMerkmalWert ? attr.kMerkmalWert.toString() : '');
       return groupFilters.some(filter => productGroupAttributes.includes(filter));
     });
-    return manufacturerMatch && attributeMatch && inStockMatch && isNewMatch;
+    return manufacturerMatch && attributeMatch && inStockMatch && isNewMatch && soonMatch;
   });
   
 

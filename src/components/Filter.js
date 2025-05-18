@@ -27,6 +27,7 @@ class Filter extends Component {
       if(products) for(const product of products){
         if(product.available) counts[1] = (counts[1] || 0) + 1;
         if(isNew(product.neu)) counts[2] = (counts[2] || 0) + 1;
+        if(!product.available && product.incoming) counts[3] = (counts[3] || 0) + 1;
       }
     }
     if(props.filterType === 'manufacturer'){
@@ -97,11 +98,13 @@ class Filter extends Component {
     if(props.filterType === 'availability'){
       const availabilityFilter = localStorage.getItem('filter_availability');
       const newFilters = [];
+      const soonFilters = [];
       const availabilitySettings = getAllSettingsWithPrefix('filter_availability_');
       
       Object.keys(availabilitySettings).forEach(key => {
         if (availabilitySettings[key] === 'true') {
-          newFilters.push(key.split('_')[2]);
+          if(key.split('_')[2] == '2') newFilters.push(key.split('_')[2]);
+          if(key.split('_')[2] == '3') soonFilters.push(key.split('_')[2]);
         }
       });
       
@@ -109,6 +112,7 @@ class Filter extends Component {
       const optionsState = {};
       if(!availabilityFilter) optionsState['1'] = true;
       if(newFilters.length > 0) optionsState['2'] = true;
+      if(soonFilters.length > 0) optionsState['3'] = true;
 
       const inStock = props.searchParams?.get('inStock');
       if(inStock) optionsState[inStock] = true;

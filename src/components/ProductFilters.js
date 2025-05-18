@@ -89,12 +89,17 @@ class ProductFilters extends Component {
   }
 
   _getAvailabilityValues = (products) => {
+    const filters = [{id:1,name:'auf Lager'}];
+    
     for(const product of products){
       if(isNew(product.neu)){
-        return [{id:1,name:'auf Lager'},{id:2,name:'Neu'}]
+        if(!filters.find(filter => filter.id == 2)) filters.push({id:2,name:'Neu'});
+      }
+      if(!product.available && product.incomingDate){
+        if(!filters.find(filter => filter.id == 3)) filters.push({id:3,name:'Bald verfügbar'});       
       }
     }
-    return [{id:1,name:'auf Lager'}]
+    return filters
   }
 
   _getAttributeGroups = (attributes) => {
@@ -183,14 +188,14 @@ class ProductFilters extends Component {
             if(!msg.value) {
               console.log('msg',msg);
               if(msg.name == '1') localStorage.setItem('filter_availability', msg.name);
-              if(msg.name == '2') removeSessionSetting(`filter_${msg.type}_${msg.name}`);
+              if(msg.name != '1') removeSessionSetting(`filter_${msg.type}_${msg.name}`);
               //this.props.navigate({
               //  pathname: this.props.location.pathname,
               //  search: `?inStock=${msg.name}`
               //}); 
             } else {
               if(msg.name == '1') localStorage.removeItem('filter_availability');
-              if(msg.name == '2') setSessionSetting(`filter_${msg.type}_${msg.name}`, 'true');
+              if(msg.name != '1') setSessionSetting(`filter_${msg.type}_${msg.name}`, 'true');
               console.log('msg',msg);
               //this.props.navigate({
               //  pathname: this.props.location.pathname,
