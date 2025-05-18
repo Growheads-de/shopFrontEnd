@@ -368,7 +368,7 @@ class ChatAssistant extends Component {
               <Paper 
                 elevation={1}
                 sx={{
-                  p: 1,
+                  py: 1,px: 3,
                   borderRadius: 2,
                   bgcolor: message.sender === 'user' ? 'secondary.light' : 'grey.200',
                   maxWidth: '75%',
@@ -390,8 +390,7 @@ class ChatAssistant extends Component {
                   <SmartToyIcon fontSize="small" />
                 </Avatar>
               <Paper elevation={1} sx={{ p: 1, borderRadius: 2, bgcolor: 'grey.200', display: 'inline-flex', alignItems: 'center' }}>
-                <CircularProgress size={16} sx={{ mr: 1 }} />
-                <Typography variant="body2" color="text.secondary">Typing...</Typography>
+                <CircularProgress size={16} sx={{ mx: 1 }} />
               </Paper>
             </Box>
           )}
