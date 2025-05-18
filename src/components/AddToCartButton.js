@@ -105,7 +105,6 @@ class AddToCartButton extends Component {
   render() {
     const { quantity, isEditing, editValue } = this.state;
     const { available, size, incoming } = this.props;
-    console.log('this.props', this.props);
     
     // Button is disabled if product is not available
     if (!available) {

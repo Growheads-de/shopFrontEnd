@@ -161,7 +161,7 @@ function getBadgeNumber() {
 class ButtonGroup extends Component {
   constructor(props) {
     super(props);
-    console.log("cart", window.cart, getBadgeNumber());
+    //console.log("cart", window.cart, getBadgeNumber());
     this.state = {
       isCartOpen: false,
       badgeNumber: getBadgeNumber()
@@ -198,7 +198,7 @@ class ButtonGroup extends Component {
     const { socket, navigate } = this.props;
     const { isCartOpen } = this.state;
     const cartItems = window.cart || {};
-    console.log("badgeNumber", this.state.badgeNumber, cartItems);
+    //console.log("badgeNumber", this.state.badgeNumber, cartItems);
     return (
       <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 } }}>
         
@@ -323,7 +323,7 @@ class CategoryList extends Component {
         
         // If cache is less than 10 minutes old, use it
         if (cacheAge < tenMinutes && Array.isArray(categories)) {
-          console.log('Using cached categories, age:', Math.round(cacheAge/1000), 'seconds');
+          //console.log('Using cached categories, age:', Math.round(cacheAge/1000), 'seconds');
           this.setState({ 
             categories,
             fetchedCategories: true 
@@ -335,11 +335,11 @@ class CategoryList extends Component {
       console.error('Error reading from cache:', err);
     }
     
-    console.log('CategoryList: Fetching categories from socket');
+    //console.log('CategoryList: Fetching categories from socket');
     socket.emit('categoryList', {}, (response) => {
-      console.log('CategoryList response:', response);
+      //console.log('CategoryList response:', response);
       if (response && response.categories) {
-        console.log('Categories received:', response.categories.length);
+        //console.log('Categories received:', response.categories.length);
         
         // Store in global cache with timestamp
         try {
@@ -356,7 +356,7 @@ class CategoryList extends Component {
           categories: response.categories,
           fetchedCategories: true 
         }, () => {
-          console.log('Categories in state:', this.state.categories);
+          //console.log('Categories in state:', this.state.categories);
         });
       } else {
         console.error('No categories in response:', response);
@@ -366,14 +366,7 @@ class CategoryList extends Component {
   
   render() {
     const { categories } = this.state;
-    console.log('CategoryList render - categories:', categories);
-    
-    // Debug output to help diagnose the issue
-    if (categories && categories.length > 0) {
-      console.log('Categories should be visible, first category:', categories[0]);
-    } else {
-      console.log('Categories not visible, categories array:', categories);
-    }
+    //console.log('CategoryList render - categories:', categories);
     
     return (
       <Box 

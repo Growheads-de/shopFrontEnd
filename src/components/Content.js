@@ -182,7 +182,7 @@ class Content extends Component {
     if (!window.individualProductCache) {
       window.individualProductCache = {};
     }
-    console.log("processData", unfilteredProducts);
+    //console.log("processData", unfilteredProducts);
     if(unfilteredProducts) unfilteredProducts.forEach(product => {
       window.individualProductCache[product.id] = {
         data: product,

@@ -38,9 +38,9 @@ class Filter extends Component {
       }
     }
     if(props.filterType === 'attribute'){
-      console.log('countCaclulation for attribute filter',props.title,this.props.title);
+      //console.log('countCaclulation for attribute filter',props.title,this.props.title);
       const optionIds = props.options.map(option => option.id);
-      console.log('optionIds',optionIds);
+      //console.log('optionIds',optionIds);
       const attributeCount = {};
       for(const attribute of props.attributes){
         attributeCount[attribute.kMerkmalWert] = (attributeCount[attribute.kMerkmalWert] || 0) + 1;
@@ -105,7 +105,7 @@ class Filter extends Component {
         }
       });
       
-      console.log('newFilters',newFilters);
+      //console.log('newFilters',newFilters);
       const optionsState = {};
       if(!availabilityFilter) optionsState['1'] = true;
       if(newFilters.length > 0) optionsState['2'] = true;

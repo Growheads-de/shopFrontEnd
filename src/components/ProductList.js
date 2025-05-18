@@ -135,7 +135,7 @@ class ProductList extends Component {
   }
 
   render() {
-    console.log('products',this.props.activeAttributeFilters,this.props.activeManufacturerFilters,window.currentSearchQuery,this.state.sortBy);
+    //console.log('products',this.props.activeAttributeFilters,this.props.activeManufacturerFilters,window.currentSearchQuery,this.state.sortBy);
     
     const filteredProducts = (this.state.sortBy==='searchField')&&(window.currentSearchQuery)?sortProductsByFuzzySimilarity(this.props.products, window.currentSearchQuery):this.state.sortBy==='name'?this.props.products:this.props.products.sort((a,b)=>{
       if(this.state.sortBy==='price-low-high'){

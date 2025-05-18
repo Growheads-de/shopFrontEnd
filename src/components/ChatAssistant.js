@@ -86,6 +86,7 @@ class ChatAssistant extends Component {
   componentDidMount() {
     // Set up socket event listener
     this.props.socket.on('aiassyResponse', this.handleBotResponse);
+    this.props.socket.on('aiassyStatus', this.handleStateResponse);
   }
   
   componentDidUpdate(prevProps, prevState) {
@@ -97,6 +98,7 @@ class ChatAssistant extends Component {
   componentWillUnmount() {
     // Clean up the event listener
     this.props.socket.off('aiassyResponse', this.handleBotResponse);
+    this.props.socket.off('aiassyStatus', this.handleStateResponse);
     this.stopRecording();
     if (this.recordingTimer) {
       clearInterval(this.recordingTimer);
@@ -135,6 +137,9 @@ class ChatAssistant extends Component {
         isTyping: false
       };
     });
+  }
+  handleStateResponse = (msgId,response) => {
+    console.log('state',msgId,response);
   }
   
   scrollToBottom = () => {
@@ -291,8 +296,6 @@ class ChatAssistant extends Component {
     if (!open) {
       return null;
     }
-
-    console.log(this.formatTime(recordingTime));
 
     return (
       <Paper 
