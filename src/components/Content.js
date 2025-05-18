@@ -86,14 +86,22 @@ function getFilteredProducts(unfilteredProducts, attributes) {
   
   let filteredProducts = (unfilteredProducts || []).filter(product => {
     const availabilityFilter = localStorage.getItem('filter_availability');
-    const inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
+    let inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
     const isNewMatch = availabilityFilters.includes('2') ?  isNew(product.neu) : true;
-    const soonMatch = availabilityFilters.includes('3') ? !product.available && product.incoming : true;
+    let soonMatch = availabilityFilters.includes('3') ? !product.available && product.incoming : true;
+
+    const soon2Match = (availabilityFilter != 1)&&availabilityFilters.includes('3') ? (product.available) || (!product.available && product.incoming) : true;
+    if( (availabilityFilter != 1)&&availabilityFilters.includes('3') && ((product.available) || (!product.available && product.incoming))){
+      inStockMatch = true;
+      soonMatch = true;
+      console.log("soon2Match", product.cName);
+    }
+
     const manufacturerMatch = activeManufacturerFilters.length === 0 || 
 
       (product.manufacturerId && activeManufacturerFilters.includes(product.manufacturerId.toString()));
     if (Object.keys(attributeFiltersByGroup).length === 0) {
-      return manufacturerMatch && inStockMatch && isNewMatch && soonMatch;
+      return manufacturerMatch && soon2Match && inStockMatch && soonMatch && isNewMatch;
     }
     const productAttributes = attributes
       .filter(attr => attr.kArtikel === product.id);
@@ -103,7 +111,7 @@ function getFilteredProducts(unfilteredProducts, attributes) {
         .map(attr => attr.kMerkmalWert ? attr.kMerkmalWert.toString() : '');
       return groupFilters.some(filter => productGroupAttributes.includes(filter));
     });
-    return manufacturerMatch && attributeMatch && inStockMatch && isNewMatch && soonMatch;
+    return manufacturerMatch && attributeMatch && soon2Match && inStockMatch && soonMatch && isNewMatch;
   });
   
 
