@@ -104,11 +104,35 @@ class AddToCartButton extends Component {
 
   render() {
     const { quantity, isEditing, editValue } = this.state;
-    const { available, size } = this.props;
+    const { available, size, incoming } = this.props;
     console.log('this.props', this.props);
     
     // Button is disabled if product is not available
     if (!available) {
+      if(incoming) {
+        return (
+          <Button 
+            fullWidth
+            variant="contained" 
+            size={size || "medium"}
+            sx={{ 
+              borderRadius: 2,
+              fontWeight: 'bold',
+              backgroundColor: '#ffeb3b',
+              color: '#000000',
+              '&:hover': {
+                backgroundColor: '#fdd835',
+              }
+            }}
+          >
+            Ab {new Date(incoming).toLocaleDateString('de-DE', { 
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </Button>
+        );
+      }
       return (
         <Button 
           disabled

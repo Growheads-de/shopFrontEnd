@@ -293,7 +293,7 @@ class ProductList extends Component {
                 vat={product.vat}
                 massMenge={product.massMenge}
                 massEinheit={product.massEinheit}
-                incoming={product.incoming}
+                incoming={product.incomingDate}
                 neu={product.neu}
                 thc={product.thc}
                 socket={this.props.socket}
