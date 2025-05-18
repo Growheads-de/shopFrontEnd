@@ -76,7 +76,9 @@ class ChatAssistant extends Component {
       isRecording: false,
       recordingTime: 0,
       mediaRecorder: null,
-      audioChunks: []
+      audioChunks: [],
+      aiThink:false,
+      atDatabase:false
     };
     
     this.messagesEndRef = React.createRef();
@@ -139,7 +141,10 @@ class ChatAssistant extends Component {
     });
   }
   handleStateResponse = (msgId,response) => {
-    console.log('state',msgId,response);
+    if(response == 'think') this.setState({ aiThink: true });
+    if(response == 'nothink') this.setState({ aiThink: false });
+    if(response == 'database') this.setState({ atDatabase: true });
+    if(response == 'nodatabase') this.setState({ atDatabase: false });
   }
   
   scrollToBottom = () => {
@@ -319,7 +324,7 @@ class ChatAssistant extends Component {
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center', 
-            p: 1, 
+            px: 2,py: 1, 
             borderBottom: 1, 
             borderColor: 'divider',
             bgcolor: 'primary.main',
@@ -330,7 +335,7 @@ class ChatAssistant extends Component {
           }}
         >
           <Typography variant="h6" component="div">
-            Assistent - BETA
+            Assistent <Typography component="span" color={this.state.aiThink ? "error" : "text.disabled"} sx={{ display: 'inline' }}>🧠</Typography> <Typography component="span" color={this.state.atDatabase ? "error" : "text.disabled"} sx={{ display: 'inline' }}>🛢</Typography>
           </Typography>
           <IconButton onClick={onClose} size="small" sx={{ color: 'primary.contrastText' }}>
             <CloseIcon />
