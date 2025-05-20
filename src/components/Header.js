@@ -35,7 +35,7 @@ const Logo = () => {
         color: 'inherit'
       }}
     >
-      <img src="/assets/images/sh.png" alt="SH Logo" style={{ height: '45px' }} />
+      <img src="/assets/images/sh.png" alt="SH Logo" style={{ height: '50px' }} />
 
     </Box>
   );
