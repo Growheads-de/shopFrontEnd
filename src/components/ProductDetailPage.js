@@ -132,6 +132,10 @@ class ProductDetailPage extends Component {
         imageDialogOpen: false
       };
     }
+    
+  }
+
+  componentDidMount() {
     this.loadProductData();
   }
 

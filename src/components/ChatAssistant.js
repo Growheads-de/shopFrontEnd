@@ -145,6 +145,8 @@ class ChatAssistant extends Component {
     if(response == 'nothink') this.setState({ aiThink: false });
     if(response == 'database') this.setState({ atDatabase: true });
     if(response == 'nodatabase') this.setState({ atDatabase: false });
+    if(response == 'web') this.setState({ atWeb: true });
+    if(response == 'noweb') this.setState({ atWeb: false });
   }
   
   scrollToBottom = () => {
@@ -335,7 +337,10 @@ class ChatAssistant extends Component {
           }}
         >
           <Typography variant="h6" component="div">
-            Assistent <Typography component="span" color={this.state.aiThink ? "error" : "text.disabled"} sx={{ display: 'inline' }}>🧠</Typography> <Typography component="span" color={this.state.atDatabase ? "error" : "text.disabled"} sx={{ display: 'inline' }}>🛢</Typography>
+            Assistent
+            <Typography component="span" color={this.state.aiThink ? "error" : "text.disabled"} sx={{ display: 'inline' }}>🧠</Typography>
+            <Typography component="span" color={this.state.atDatabase ? "error" : "text.disabled"} sx={{ display: 'inline' }}>🛢</Typography>
+            <Typography component="span" color={this.state.atWeb ? "error" : "text.disabled"} sx={{ display: 'inline' }}>🌐</Typography>
           </Typography>
           <IconButton onClick={onClose} size="small" sx={{ color: 'primary.contrastText' }}>
             <CloseIcon />

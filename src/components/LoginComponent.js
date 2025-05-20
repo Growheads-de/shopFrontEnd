@@ -49,6 +49,7 @@ const LoginComponent = ({ socket }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [showGoogleAuth, setShowGoogleAuth] = useState(false);
@@ -76,6 +77,7 @@ const LoginComponent = ({ socket }) => {
     const { isLoggedIn: userIsLoggedIn, user: storedUser } = isUserLoggedIn();
     if (userIsLoggedIn) {
       setUser(storedUser);
+      setIsAdmin(!!storedUser.admin);
       setIsLoggedIn(true);
     }
     
@@ -118,10 +120,18 @@ const LoginComponent = ({ socket }) => {
     socket.emit('verifyUser', { email, password }, (response) => {
       
       if (response.success) {
+        response.user.password = password;
         // Store user info in localStorage
         localStorage.setItem('user', JSON.stringify(response.user));
         setUser(response.user);
+        try{
+          window.cart = JSON.parse(response.user.cart);
+          window.dispatchEvent(new CustomEvent('cart'));
+        }catch(error){
+          console.error('Error parsing cart  :',response.user, error);
+        }
         setIsLoggedIn(true);
+        setIsAdmin(!!response.user.admin);
         handleClose(); // Close the dialog after successful login
         navigate('/profile'); // Navigate programmatically
       } else {
@@ -179,6 +189,7 @@ const LoginComponent = ({ socket }) => {
     localStorage.removeItem('user');
     setUser(null);
     setIsLoggedIn(false);
+    setIsAdmin(false);
     setAnchorEl(null);
     // Clear Google user data
     setShowGoogleAuth(false);
@@ -203,6 +214,7 @@ const LoginComponent = ({ socket }) => {
       localStorage.setItem('user', JSON.stringify(googleUser));
       setUser(googleUser);
       setIsLoggedIn(true);
+      setIsAdmin(false);
       handleClose();
       navigate('/profile');
     }
@@ -219,9 +231,9 @@ const LoginComponent = ({ socket }) => {
         <>
           <Button
             variant="text"
-            color="inherit"
             onClick={handleUserMenuClick}
             startIcon={<PersonIcon />}
+            color={isAdmin ? 'secondary' : 'inherit'}
             sx={{ my: 1, mx: 1.5 }}
           >
             {user?.name || user?.email?.split('@')[0] || 'Benutzer'}
@@ -241,6 +253,7 @@ const LoginComponent = ({ socket }) => {
             }}
           >
             <MenuItem component={Link} to="/profile" onClick={handleUserMenuClose}>Profil</MenuItem>
+            {isAdmin ? <MenuItem component={Link} to="/admin" onClick={handleUserMenuClose}>Admin</MenuItem> : null}
             <MenuItem onClick={handleLogout}>Abmelden</MenuItem>
           </Menu>
         </>

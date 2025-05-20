@@ -172,6 +172,8 @@ class ButtonGroup extends Component {
     this.cart = () => {
       console.log("cart", window.cart, getBadgeNumber());
 
+      this.props.socket.emit('updateCart', window.cart);
+
       this.setState({
         badgeNumber: getBadgeNumber()
       });
@@ -181,12 +183,33 @@ class ButtonGroup extends Component {
     // Add event listener for the toggle-cart event from AddToCartButton
     this.toggleCartListener = () => this.toggleCart();
     window.addEventListener('toggle-cart', this.toggleCartListener);
+    this.props.socket.on('cartUpdated', this.handleCartUpdated);
   }
 
   componentWillUnmount() {
-    window.removeEventListener('cart', this.cart);
+    window.removeEventListener('cart', this.cart); 
+    this.props.socket.off('cartUpdated', this.handleCartUpdated);
     window.removeEventListener('toggle-cart', this.toggleCartListener);
   }
+v
+  handleCartUpdated = (id,user,cart) => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        if(user.email == parsedUser.email){
+          window.cart = cart;
+          this.setState({
+            badgeNumber: getBadgeNumber()
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error);
+        localStorage.removeItem('user');
+      }
+    }
+  }
+
 
   toggleCart = () => {
     this.setState(prevState => ({

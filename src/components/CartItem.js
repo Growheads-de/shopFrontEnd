@@ -21,12 +21,14 @@ class CartItem extends Component {
         this.setState({image:window.tinyPicCache[picid],loading:false, error: false})
       }else{
         this.setState({image: null, loading: true, error: false});
-        this.props.socket.emit('getPic', { bildId:picid, size:'tiny' }, (res) => {
-          if(res.success){
-            window.tinyPicCache[picid] = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
-            this.setState({image: window.tinyPicCache[picid], loading: false});
-          }
-        })
+        if(this.props.socket){
+          this.props.socket.emit('getPic', { bildId:picid, size:'tiny' }, (res) => {
+            if(res.success){
+              window.tinyPicCache[picid] = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
+              this.setState({image: window.tinyPicCache[picid], loading: false});
+            }
+          })
+        }
       }
     }
   }

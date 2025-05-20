@@ -15,6 +15,7 @@ import config from './config.js';
 import Header from './components/Header.js';
 import Footer from './components/Footer.js';
 import Home from './pages/Home.js';
+import AdminPage from './pages/AdminPage.js';
 // Import the new ChatAssistant component
 import ChatAssistant from './components/ChatAssistant.js';
 import ProfilePageWithSocket from './pages/ProfilePage.js';
@@ -25,6 +26,8 @@ import Sitemap from './pages/Sitemap.js';
 import Impressum from './pages/Impressum.js';
 import Batteriegesetzhinweise from './pages/Batteriegesetzhinweise.js';
 import Widerrufsrecht from './pages/Widerrufsrecht.js';
+
+import { isUserLoggedIn } from './components/LoginComponent.js';
 
 // Import theme from separate file to reduce main bundle size
 import theme from './theme.js';
@@ -111,7 +114,10 @@ const App = () => {
 
                   {/* Profile page */}
                   <Route path="/profile" element={<ProfilePageWithSocket />} />
-                  
+
+                  {/* Admin page */ }
+                  <Route path="/admin" element={isUserLoggedIn()?.user?.admin ? <SocketContext.Consumer>{socket =><AdminPage socket={socket}/>}</SocketContext.Consumer> : <Navigate to="/profile" replace />} />
+
                   {/* Legal pages */}
                   <Route path="/datenschutz" element={<Datenschutz />} />
                   <Route path="/agb" element={<AGB />} />
