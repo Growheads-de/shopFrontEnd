@@ -26,10 +26,9 @@ class SocketProvider extends Component {
 
     this.socket.on('connect', () => {
       const user = isUserLoggedIn();
-      console.log(user);
+    
       if(user && user.isLoggedIn && user.user.email && user.user.password) this.socket.emit('verifyUser', { email: user.user.email, password: user.user.password }, (response) => {
-        console.log(response);
-
+        
         if (response.success) {
           try{
             window.cart = JSON.parse(response.user.cart);

@@ -168,8 +168,6 @@ class ButtonGroup extends Component {
 
   componentDidMount() { 
     this.cart = () => {
-      console.log("cart", window.cart, getBadgeNumber());
-
       this.props.socket.emit('updateCart', window.cart);
 
       this.setState({
