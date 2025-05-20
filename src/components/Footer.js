@@ -81,7 +81,7 @@ class Footer extends Component {
               * Alle Preise inkl. gesetzlicher USt., zzgl. Versand
             </Typography>
             <Typography variant="body2">
-              © {new Date().getFullYear()} Growheads
+              © {new Date().getFullYear()} Seedheads
             </Typography>
           </Box>
         </Stack>
