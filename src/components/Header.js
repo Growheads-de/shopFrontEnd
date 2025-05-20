@@ -13,7 +13,7 @@ import {
   IconButton,
   Divider
 } from '@mui/material';
-import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
+
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CloseIcon from '@mui/icons-material/Close';
@@ -35,10 +35,8 @@ const Logo = () => {
         color: 'inherit'
       }}
     >
-      <LocalFloristIcon sx={{ mr: 1, fontSize: 28 }} />
-      <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', display: { xs: 'none', sm: 'block' } }}>
-        GrowBNB
-      </Typography>
+      <img src="/assets/images/sh.png" alt="SH Logo" style={{ height: '50px' }} />
+
     </Box>
   );
 }
