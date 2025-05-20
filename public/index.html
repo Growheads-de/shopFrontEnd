@@ -12,8 +12,8 @@
     // Get git commit from meta tag
     window.gitCommit = document.querySelector('meta[name="git-commit"]')?.content || 'unknown';
     console.log('Git commit:', window.gitCommit);
-    // Check for updates periodically
-    fetch('/?nocache=' + new Date().getTime())
+    function checkForUpdates() {
+      fetch('/?nocache=' + new Date().getTime())
         .then(response => response.text())
         .then(html => {
           const parser = new DOMParser();
@@ -26,6 +26,7 @@
           }
         })
         .catch(error => console.error('Update check via HTML failed:', error));
+    }
     
     // Check for updates every 5 minutes
     setInterval(checkForUpdates, 30 * 1000);
