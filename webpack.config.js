@@ -5,6 +5,59 @@ import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import ESLintPlugin from 'eslint-webpack-plugin';
 import { cpSync } from 'fs';
+import { execSync } from 'child_process';
+import webpack from 'webpack';
+import fs from 'fs';
+
+// Get git commit hash
+const getGitCommitHash = () => {
+  try {
+    return execSync('git rev-parse HEAD').toString().trim();
+  } catch (e) {
+    console.error('Failed to get git commit hash:', e);
+    return 'unknown';
+  }
+};
+
+const GIT_COMMIT_HASH = getGitCommitHash();
+
+// Create a plugin to add the git commit hash directly to the HTML
+class GitCommitPlugin {
+  apply(compiler) {
+    compiler.hooks.compilation.tap('GitCommitPlugin', (compilation) => {
+      HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync(
+        'GitCommitPlugin',
+        (data, cb) => {
+          // Add a meta tag for the git commit hash
+          const metaTag = `<meta name="git-commit" content="${GIT_COMMIT_HASH}">`;
+          data.html = data.html.replace('</head>', `${metaTag}\n</head>`);
+          cb(null, data);
+        }
+      );
+    });
+  }
+}
+
+// Plugin to generate currentHash.json file
+class GitHashJsonPlugin {
+  apply(compiler) {
+    compiler.hooks.afterEmit.tap('GitHashJsonPlugin', (compilation) => {
+      const outputPath = path.join(compiler.options.output.path, 'currentHash.json');
+      const content = JSON.stringify({
+        gitCommit: GIT_COMMIT_HASH,
+        buildTime: new Date().toISOString()
+      }, null, 2);
+      
+      try {
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+        fs.writeFileSync(outputPath, content);
+        console.log('Generated currentHash.json');
+      } catch (err) {
+        console.error('Error creating currentHash.json:', err);
+      }
+    });
+  }
+}
 
 // Custom plugin to copy assets
 const CopyAssetsPlugin = {
@@ -98,6 +151,13 @@ export default {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
+      inject: true,
+      scriptLoading: 'blocking',
+    }),
+    new GitCommitPlugin(),
+    new GitHashJsonPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.GIT_COMMIT_HASH': JSON.stringify(GIT_COMMIT_HASH)
     }),
     isDevelopment && new ReactRefreshWebpackPlugin(),
     !isDevelopment && new MiniCssExtractPlugin({
