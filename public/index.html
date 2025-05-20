@@ -13,18 +13,19 @@
     window.gitCommit = document.querySelector('meta[name="git-commit"]')?.content || 'unknown';
     console.log('Git commit:', window.gitCommit);
     // Check for updates periodically
-    function checkForUpdates() {
-      fetch('/currentHash.json?' + new Date().getTime())
-        .then(response => response.json())
-        .then(data => {
-          const latestCommit = data.gitCommit;
-          if (latestCommit && latestCommit !== window.gitCommit) {
-            console.log('New version available, refreshing...');
+    fetch('/?nocache=' + new Date().getTime())
+        .then(response => response.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const metaCommit = doc.querySelector('meta[name="git-commit"]')?.content;
+          
+          if (metaCommit && metaCommit !== window.gitCommit) {
+            console.log('New version available (from HTML meta), refreshing...');
             window.location.reload();
           }
         })
-        .catch(error => console.error('Update check failed:', error));
-    }
+        .catch(error => console.error('Update check via HTML failed:', error));
     
     // Check for updates every 5 minutes
     setInterval(checkForUpdates, 30 * 1000);
