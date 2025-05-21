@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { 
   AppBar, 
   Toolbar, 
-  Button, 
+  /*Button,*/ 
   Typography, 
   Box, 
   TextField, 
@@ -293,6 +293,7 @@ const ButtonGroupWithRouter = (props) => {
   return <ButtonGroup {...props} navigate={navigate} />;
 };
 
+/*
 // CategoryList Subcomponent
 class CategoryList extends Component {
   constructor(props) {
@@ -445,7 +446,7 @@ class CategoryList extends Component {
     );
   }
 }
-
+*/
 // Main Header Component
 class Header extends Component {
   static contextType = SocketContext;
@@ -485,7 +486,7 @@ class Header extends Component {
             <ButtonGroupWithRouter socket={socket}/>
           </Container>
         </Toolbar>
-        <CategoryList socket={socket} />
+        {/*<CategoryList socket={socket} />*/}
       </AppBar>
     );
   }
