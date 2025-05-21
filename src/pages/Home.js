@@ -6,6 +6,11 @@ import { Link } from 'react-router-dom';
 const Home = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
+
+
+<img src="/assets/images/claim.jpg" style={{ width: '100%', height: 'auto' }}/>
+
+
       <Grid container sx={{ display: 'flex', flexDirection: 'row' }}>
         {/* Seeds Category Box */}
         <Grid item xs={12} sm={6} sx={{ p:2, width: '50%' }}>
