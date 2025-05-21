@@ -2,14 +2,21 @@ import React from 'react';
 import { Container, Typography, Box, Paper, Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
 
+// Add font-face declaration at the top of the file
+const fontFaceStyle = `
+  @font-face {
+    font-family: 'SwashingtonCP';
+    src: url('/assets/fonts/SwashingtonCP.ttf') format('truetype');
+  }
+`;
 
 const Home = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
+      {/* Inject the font-face style */}
+      <style>{fontFaceStyle}</style>
 
-
-<img src="/assets/images/claim.jpg" style={{ width: '100%', height: 'auto' }}/>
-
+      <img src="/assets/images/claim.jpg" style={{ width: '100%', height: 'auto' }}/>
 
       <Grid container sx={{ display: 'flex', flexDirection: 'row' }}>
         {/* Seeds Category Box */}
@@ -27,16 +34,17 @@ const Home = () => {
               display: 'flex',
               flexDirection: 'column',
               transition: 'all 0.3s ease',
+              boxShadow: 10,
               '&:hover': {
                 transform: 'translateY(-5px)',
-                boxShadow: 6
+                boxShadow: 20
               }
             }}
           >
             {/* Image Container - Place your seeds image here */}
             <Box sx={{
               height: '100%',
-              bgcolor: '#f2e8d4',
+              bgcolor: '#e1f0d3',
               backgroundImage: 'url("/assets/images/seeds.jpg")',
               backgroundSize: 'contain',
               backgroundPosition: 'center',
@@ -49,10 +57,10 @@ const Home = () => {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                bgcolor: 'rgba(0,0,0,0.5)',
+                bgcolor: 'rgba(27, 94, 32, 0.8)',
                 p: 2,
               }}>
-                <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                <Typography sx={{ fontSize: '2rem', color: 'white', fontFamily: 'SwashingtonCP' }}>
                   Seeds
                 </Typography>
               </Box>
@@ -75,17 +83,18 @@ const Home = () => {
               height: 400,
               display: 'flex',
               flexDirection: 'column',
+              boxShadow: 10,
               transition: 'all 0.3s ease',
               '&:hover': {
                 transform: 'translateY(-5px)',
-                boxShadow: 6
+                boxShadow: 20
               }
             }}
           >
             {/* Image Container - Place your cutlings image here */}
             <Box sx={{
               height: '100%',
-              bgcolor: '#f2e8d4',
+              bgcolor: '#e8f5d6',
               backgroundImage: 'url("/assets/images/cutlings.jpg")',
               backgroundSize: 'contain',
               backgroundPosition: 'center',
@@ -98,10 +107,10 @@ const Home = () => {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                bgcolor: 'rgba(0,0,0,0.5)',
+                bgcolor: 'rgba(27, 94, 32, 0.8)',
                 p: 2,
               }}>
-                <Typography variant="h5" sx={{ color: 'white', fontWeight: 'bold' }}>
+                <Typography sx={{ fontSize: '2rem', color: 'white', fontFamily: 'SwashingtonCP' }}>
                   Stecklinge
                 </Typography>
               </Box>
