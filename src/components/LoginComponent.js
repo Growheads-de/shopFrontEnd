@@ -201,8 +201,12 @@ const LoginComponent = ({ socket }) => {
     
     // Decode the credential to get basic user info
     if (credentialResponse.credential) {
+      socket.emit('verifyGoogleUser', credentialResponse, (response) => {
+        console.log('Google Login Verify:', response);
+      });
+
       const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-      
+      console.log('Google Decode:', decoded);
       const googleUser = {
         email: decoded.email,
         name: decoded.name,

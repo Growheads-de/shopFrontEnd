@@ -176,6 +176,7 @@ export default {
     !isDevelopment && CopyAssetsPlugin,
   ].filter(Boolean),
   devServer: {
+    allowedHosts: 'all',
     headers: {
       'Cache-Control': 'public, max-age=3600',
     },
@@ -206,6 +207,8 @@ export default {
     open: false,
     historyApiFallback: true,
     client: {
+      webSocketURL: 'wss://dev.seedheads.de/ws',
+      logging: 'verbose',
       overlay: {
         errors: true,
         warnings: true,

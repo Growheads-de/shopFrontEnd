@@ -158,16 +158,36 @@ class ProductList extends Component {
 
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
               {this.props.activeAttributeFilters.map((filter,index) => (
-                <Chip size="small" key={index} label={filter.value} onDelete={() => {
-                  removeSessionSetting(`filter_attribute_${filter.id}`);
-                  this.props.onFilterChange();
-                }} />
+                <Chip 
+                  size="small" 
+                  key={index} 
+                  label={filter.value} 
+                  onClick={() => {
+                    removeSessionSetting(`filter_attribute_${filter.id}`);
+                    this.props.onFilterChange();
+                  }}
+                  onDelete={() => {
+                    removeSessionSetting(`filter_attribute_${filter.id}`);
+                    this.props.onFilterChange();
+                  }} 
+                  clickable
+                />
               ))}
               {this.props.activeManufacturerFilters.map((filter,index) => (
-                <Chip size="small" key={index} label={filter.name} onDelete={() => {
-                  removeSessionSetting(`filter_manufacturer_${filter.value}`);
-                  this.props.onFilterChange();
-                }} />
+                <Chip 
+                  size="small" 
+                  key={index} 
+                  label={filter.name} 
+                  onClick={() => {
+                    removeSessionSetting(`filter_manufacturer_${filter.value}`);
+                    this.props.onFilterChange();
+                  }}
+                  onDelete={() => {
+                    removeSessionSetting(`filter_manufacturer_${filter.value}`);
+                    this.props.onFilterChange();
+                  }} 
+                  clickable
+                />
               ))}
             </Box>
 
