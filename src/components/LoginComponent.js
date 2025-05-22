@@ -29,6 +29,7 @@ export const isUserLoggedIn = () => {
   if (storedUser) {
     try {
       const parsedUser = JSON.parse(storedUser);
+      console.log('Parsed User:', parsedUser);
       return { isLoggedIn: true, user: parsedUser };
     } catch (error) {
       console.error('Error parsing user from localStorage:', error);
@@ -203,24 +204,25 @@ const LoginComponent = ({ socket }) => {
     if (credentialResponse.credential) {
       socket.emit('verifyGoogleUser', credentialResponse, (response) => {
         console.log('Google Login Verify:', response);
-      });
 
-      const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-      console.log('Google Decode:', decoded);
-      const googleUser = {
-        email: decoded.email,
-        name: decoded.name,
-        picture: decoded.picture,
-        googleId: decoded.sub
-      };
-      
-      // Store in localStorage
-      localStorage.setItem('user', JSON.stringify(googleUser));
-      setUser(googleUser);
-      setIsLoggedIn(true);
-      setIsAdmin(false);
-      handleClose();
-      navigate('/profile');
+        const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
+        console.log('Google Decode:', decoded);
+        const googleUser = {
+          email: decoded.email,
+          name: decoded.name,
+          picture: decoded.picture,
+          googleId: decoded.sub,
+          admin: response.user.admin
+        };
+        
+        // Store in localStorage
+        localStorage.setItem('user', JSON.stringify(googleUser));
+        setUser(googleUser);
+        setIsLoggedIn(true);
+        setIsAdmin(response.user.admin);
+        handleClose();
+        navigate('/profile');
+      });
     }
   };
 
