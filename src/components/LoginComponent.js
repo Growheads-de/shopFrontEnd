@@ -138,22 +138,28 @@ class LoginComponent extends Component {
     socket.emit('verifyUser', { email, password }, (response) => {
       
       if (response.success) {
-        response.user.password = password;
         // Store user info in localStorage
         localStorage.setItem('user', JSON.stringify(response.user));
         this.setState({
           user: response.user,
           isLoggedIn: true,
           isAdmin: !!response.user.admin
+        },()=>{
+          console.log('LoginComponent', this.state)
+        
+          try{
+            window.cart = JSON.parse(response.user.cart);
+            window.dispatchEvent(new CustomEvent('cart'));
+          }catch(error){
+            console.error('Error parsing cart  :',response.user, error);
+          }
+          this.handleClose(); // Close the dialog after successful login
+          navigate('/profile'); // Navigate programmatically
+        
+        
+        
         });
-        try{
-          window.cart = JSON.parse(response.user.cart);
-          window.dispatchEvent(new CustomEvent('cart'));
-        }catch(error){
-          console.error('Error parsing cart  :',response.user, error);
-        }
-        this.handleClose(); // Close the dialog after successful login
-        navigate('/profile'); // Navigate programmatically
+
       } else {
         this.setState({
           loading: false,
