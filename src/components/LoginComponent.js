@@ -31,14 +31,15 @@ export const isUserLoggedIn = () => {
     try {
       const parsedUser = JSON.parse(storedUser);
       console.log('Parsed User:', parsedUser);
-      return { isLoggedIn: true, user: parsedUser };
+      return { isLoggedIn: true, user: parsedUser, isAdmin: !!parsedUser.admin };
+
     } catch (error) {
       console.error('Error parsing user from localStorage:', error);
       localStorage.removeItem('user');
     }
   }
   console.log('isUserLoggedIn', false);
-  return { isLoggedIn: false, user: null };
+  return { isLoggedIn: false, user: null, isAdmin: false };
 };
 
 class LoginComponent extends Component {
