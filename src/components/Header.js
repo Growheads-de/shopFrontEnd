@@ -187,7 +187,7 @@ class ButtonGroup extends Component {
     this.props.socket.off('cartUpdated', this.handleCartUpdated);
     window.removeEventListener('toggle-cart', this.toggleCartListener);
   }
-v
+
   handleCartUpdated = (id,user,cart) => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {

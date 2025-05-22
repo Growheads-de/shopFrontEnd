@@ -243,7 +243,13 @@ class LoginComponent extends Component {
           googleId: decoded.sub,
           admin: response.user.admin
         };
-        
+        try{
+          window.cart = JSON.parse(response.user.cart);
+          window.dispatchEvent(new CustomEvent('cart'));
+        }catch(error){
+          console.error('Error parsing cart  :',response.user, error);
+        }
+        window.dispatchEvent(new CustomEvent('cart'));
         // Store in localStorage
         localStorage.setItem('user', JSON.stringify(googleUser));
         this.setState({
