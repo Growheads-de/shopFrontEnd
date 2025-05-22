@@ -37,6 +37,7 @@ export const isUserLoggedIn = () => {
       localStorage.removeItem('user');
     }
   }
+  console.log('isUserLoggedIn', false);
   return { isLoggedIn: false, user: null };
 };
 
