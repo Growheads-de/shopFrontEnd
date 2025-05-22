@@ -20,7 +20,7 @@ const Home = () => {
 
       <Grid container sx={{ display: 'flex', flexDirection: 'row' }}>
         {/* Seeds Category Box */}
-        <Grid item xs={12} sm={6} sx={{ p:2, width: '50%' }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ p:2, width: '50%' }}>
           <Paper
             component={Link}
             to="/category/689"
@@ -70,7 +70,7 @@ const Home = () => {
         </Grid>
 
         {/* Cutlings Category Box */}
-        <Grid item xs={12} sm={6} sx={{ p:2,width: '50%' }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ p:2,width: '50%' }}>
           <Paper
             component={Link}
             to="/category/706"

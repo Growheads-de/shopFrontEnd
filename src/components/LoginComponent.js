@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import { 
   Button, 
   Dialog, 
@@ -17,7 +17,8 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from './withRouter.js';
 import GoogleLoginButton from './GoogleLoginButton.js';
 
 // Lazy load GoogleAuthProvider
@@ -39,83 +40,97 @@ export const isUserLoggedIn = () => {
   return { isLoggedIn: false, user: null };
 };
 
-const LoginComponent = ({ socket }) => {
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [tabValue, setTabValue] = useState(0);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [user, setUser] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [showGoogleAuth, setShowGoogleAuth] = useState(false);
+class LoginComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: false,
+      tabValue: 0,
+      email: '',
+      password: '',
+      confirmPassword: '',
+      error: '',
+      loading: false,
+      success: '',
+      isLoggedIn: false,
+      isAdmin: false,
+      user: null,
+      anchorEl: null,
+      showGoogleAuth: false
+    };
+  }
 
-  const resetForm = useCallback(() => {
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setError('');
-    setSuccess('');
-    setLoading(false);
-  }, []);
-
-  const handleOpen = useCallback(() => {
-    setOpen(true);
-    setLoading(false);
-    resetForm();
-  }, [resetForm]);
-
-  useEffect(() => {
+  componentDidMount() {
     // Make the open function available globally
-    window.openLoginDrawer = handleOpen;
+    window.openLoginDrawer = this.handleOpen;
     
     // Check if user is logged in
     const { isLoggedIn: userIsLoggedIn, user: storedUser } = isUserLoggedIn();
     if (userIsLoggedIn) {
-      setUser(storedUser);
-      setIsAdmin(!!storedUser.admin);
-      setIsLoggedIn(true);
+      this.setState({
+        user: storedUser,
+        isAdmin: !!storedUser.admin,
+        isLoggedIn: true
+      });
     }
-    
+  }
+
+  componentWillUnmount() {
     // Cleanup function to remove global reference when component unmounts
-    return () => {
-      window.openLoginDrawer = undefined;
-    };
-  }, [handleOpen]);
+    window.openLoginDrawer = undefined;
+  }
 
-  const handleClose = () => {
-    setOpen(false);
-    resetForm();
+  resetForm = () => {
+    this.setState({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      error: '',
+      success: '',
+      loading: false
+    });
   };
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-    setError('');
-    setSuccess('');
+  handleOpen = () => {
+    this.setState({
+      open: true,
+      loading: false
+    });
+    this.resetForm();
   };
 
-  const validateEmail = (email) => {
+  handleClose = () => {
+    this.setState({ open: false });
+    this.resetForm();
+  };
+
+  handleTabChange = (event, newValue) => {
+    this.setState({
+      tabValue: newValue,
+      error: '',
+      success: ''
+    });
+  };
+
+  validateEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const handleLogin = () => {
+  handleLogin = () => {
+    const { email, password } = this.state;
+    const { socket, navigate } = this.props;
+
     if (!email || !password) {
-      setError('Bitte füllen Sie alle Felder aus');
+      this.setState({ error: 'Bitte füllen Sie alle Felder aus' });
       return;
     }
 
-    if (!validateEmail(email)) {
-      setError('Bitte geben Sie eine gültige E-Mail-Adresse ein');
+    if (!this.validateEmail(email)) {
+      this.setState({ error: 'Bitte geben Sie eine gültige E-Mail-Adresse ein' });
       return;
     }
 
-    setLoading(true);
-    setError('');
+    this.setState({ loading: true, error: '' });
 
     // Call verifyUser socket endpoint
     socket.emit('verifyUser', { email, password }, (response) => {
@@ -124,80 +139,93 @@ const LoginComponent = ({ socket }) => {
         response.user.password = password;
         // Store user info in localStorage
         localStorage.setItem('user', JSON.stringify(response.user));
-        setUser(response.user);
+        this.setState({
+          user: response.user,
+          isLoggedIn: true,
+          isAdmin: !!response.user.admin
+        });
         try{
           window.cart = JSON.parse(response.user.cart);
           window.dispatchEvent(new CustomEvent('cart'));
         }catch(error){
           console.error('Error parsing cart  :',response.user, error);
         }
-        setIsLoggedIn(true);
-        setIsAdmin(!!response.user.admin);
-        handleClose(); // Close the dialog after successful login
+        this.handleClose(); // Close the dialog after successful login
         navigate('/profile'); // Navigate programmatically
       } else {
-        setLoading(false);
-        setError(response.message || 'Anmeldung fehlgeschlagen');
+        this.setState({
+          loading: false,
+          error: response.message || 'Anmeldung fehlgeschlagen'
+        });
       }
     });
   };
 
-  const handleRegister = () => {
+  handleRegister = () => {
+    const { email, password, confirmPassword } = this.state;
+    const { socket } = this.props;
+
     if (!email || !password || !confirmPassword) {
-      setError('Bitte füllen Sie alle Felder aus');
+      this.setState({ error: 'Bitte füllen Sie alle Felder aus' });
       return;
     }
 
-    if (!validateEmail(email)) {
-      setError('Bitte geben Sie eine gültige E-Mail-Adresse ein');
+    if (!this.validateEmail(email)) {
+      this.setState({ error: 'Bitte geben Sie eine gültige E-Mail-Adresse ein' });
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwörter stimmen nicht überein');
+      this.setState({ error: 'Passwörter stimmen nicht überein' });
       return;
     }
 
     if (password.length < 8) {
-      setError('Das Passwort muss mindestens 8 Zeichen lang sein');
+      this.setState({ error: 'Das Passwort muss mindestens 8 Zeichen lang sein' });
       return;
     }
 
-    setLoading(true);
-    setError('');
+    this.setState({ loading: true, error: '' });
 
     // Call createUser socket endpoint
     socket.emit('createUser', { email, password }, (response) => {
-      setLoading(false);
       if (response.success) {
-        setSuccess('Registrierung erfolgreich. Sie können sich jetzt anmelden.');
-        setTabValue(0); // Switch to login tab
+        this.setState({
+          loading: false,
+          success: 'Registrierung erfolgreich. Sie können sich jetzt anmelden.',
+          tabValue: 0 // Switch to login tab
+        });
       } else {
-        setError(response.message || 'Registrierung fehlgeschlagen');
+        this.setState({
+          loading: false,
+          error: response.message || 'Registrierung fehlgeschlagen'
+        });
       }
     });
   };
 
-  const handleUserMenuClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  handleUserMenuClick = (event) => {
+    this.setState({ anchorEl: event.currentTarget });
   };
 
-  const handleUserMenuClose = () => {
-    setAnchorEl(null);
+  handleUserMenuClose = () => {
+    this.setState({ anchorEl: null });
   };
 
-  const handleLogout = () => {
+  handleLogout = () => {
     localStorage.removeItem('user');
-    setUser(null);
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    setAnchorEl(null);
-    // Clear Google user data
-    setShowGoogleAuth(false);
+    this.setState({
+      user: null,
+      isLoggedIn: false,
+      isAdmin: false,
+      anchorEl: null,
+      showGoogleAuth: false
+    });
   };
 
   // Google login functionality
-  const handleGoogleLoginSuccess = (credentialResponse) => {
+  handleGoogleLoginSuccess = (credentialResponse) => {
+    const { socket, navigate } = this.props;
     console.log('Google Login Success:', credentialResponse);
     
     // Decode the credential to get basic user info
@@ -217,217 +245,237 @@ const LoginComponent = ({ socket }) => {
         
         // Store in localStorage
         localStorage.setItem('user', JSON.stringify(googleUser));
-        setUser(googleUser);
-        setIsLoggedIn(true);
-        setIsAdmin(response.user.admin);
-        handleClose();
+        this.setState({
+          user: googleUser,
+          isLoggedIn: true,
+          isAdmin: response.user.admin
+        });
+        this.handleClose();
         navigate('/profile');
       });
     }
   };
 
-  const handleGoogleLoginError = (error) => {
+  handleGoogleLoginError = (error) => {
     console.error('Google Login Error:', error);
-    setError('Google-Anmeldung fehlgeschlagen');
+    this.setState({ error: 'Google-Anmeldung fehlgeschlagen' });
   };
 
-  return (
-    <>
-      {isLoggedIn ? (
-        <>
+  render() {
+    const { 
+      open, 
+      tabValue, 
+      email, 
+      password, 
+      confirmPassword, 
+      error, 
+      loading, 
+      success, 
+      isLoggedIn, 
+      isAdmin, 
+      user, 
+      anchorEl, 
+      showGoogleAuth 
+    } = this.state;
+
+    return (
+      <>
+        {isLoggedIn ? (
+          <>
+            <Button
+              variant="text"
+              onClick={this.handleUserMenuClick}
+              startIcon={<PersonIcon />}
+              color={isAdmin ? 'secondary' : 'inherit'}
+              sx={{ my: 1, mx: 1.5 }}
+            >
+              {user?.name || user?.email?.split('@')[0] || 'Benutzer'}
+            </Button>
+            <Menu
+              disableScrollLock={true}
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={this.handleUserMenuClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <MenuItem component={Link} to="/profile" onClick={this.handleUserMenuClose}>Profil</MenuItem>
+              {isAdmin ? <MenuItem component={Link} to="/admin" onClick={this.handleUserMenuClose}>Admin</MenuItem> : null}
+              <MenuItem onClick={this.handleLogout}>Abmelden</MenuItem>
+            </Menu>
+          </>
+        ) : (
           <Button
-            variant="text"
-            onClick={handleUserMenuClick}
-            startIcon={<PersonIcon />}
-            color={isAdmin ? 'secondary' : 'inherit'}
+            variant="outlined"
+            color="inherit" 
+            onClick={this.handleOpen}
             sx={{ my: 1, mx: 1.5 }}
           >
-            {user?.name || user?.email?.split('@')[0] || 'Benutzer'}
+            Anmelden
           </Button>
-          <Menu
-            disableScrollLock={true}
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleUserMenuClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-          >
-            <MenuItem component={Link} to="/profile" onClick={handleUserMenuClose}>Profil</MenuItem>
-            {isAdmin ? <MenuItem component={Link} to="/admin" onClick={handleUserMenuClose}>Admin</MenuItem> : null}
-            <MenuItem onClick={handleLogout}>Abmelden</MenuItem>
-          </Menu>
-        </>
-      ) : (
-        <Button
-          variant="outlined"
-          color="inherit" 
-          onClick={handleOpen}
-          sx={{ my: 1, mx: 1.5 }}
+        )}
+
+        <Dialog 
+          open={open} 
+          onClose={this.handleClose}
+          disableScrollLock
+          fullWidth
+          maxWidth="xs"
         >
-          Anmelden
-        </Button>
-      )}
-
-      <Dialog 
-        open={open} 
-        onClose={handleClose}
-        disableScrollLock
-        fullWidth
-        maxWidth="xs"
-      >
-        <DialogTitle sx={{ bgcolor: 'white', pb: 0 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6" color="#2e7d32" fontWeight="bold">
-              {tabValue === 0 ? 'Anmelden' : 'Registrieren'}
-            </Typography>
-            <IconButton edge="end" onClick={handleClose} aria-label="close">
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        
-        <DialogContent>
-          <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
-            variant="fullWidth"
-            sx={{ mb: 2 }}
-            TabIndicatorProps={{
-              style: { backgroundColor: '#2e7d32' }
-            }}
-            textColor="inherit"
-          >
-            <Tab 
-              label="ANMELDEN" 
-              sx={{ 
-                color: tabValue === 0 ? '#2e7d32' : 'inherit',
-                fontWeight: 'bold'
+          <DialogTitle sx={{ bgcolor: 'white', pb: 0 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h6" color="#2e7d32" fontWeight="bold">
+                {tabValue === 0 ? 'Anmelden' : 'Registrieren'}
+              </Typography>
+              <IconButton edge="end" onClick={this.handleClose} aria-label="close">
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          
+          <DialogContent>
+            <Tabs 
+              value={tabValue} 
+              onChange={this.handleTabChange} 
+              variant="fullWidth"
+              sx={{ mb: 2 }}
+              TabIndicatorProps={{
+                style: { backgroundColor: '#2e7d32' }
               }}
-            />
-            <Tab 
-              label="REGISTRIEREN" 
-              sx={{ 
-                color: tabValue === 1 ? '#2e7d32' : 'inherit',
-                fontWeight: 'bold'
-              }}
-            />
-          </Tabs>
-
-
-          {/* Google Sign In Button */}
-          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
-            {!showGoogleAuth && (
-              <Button
-                variant="contained"
-                startIcon={<PersonIcon />}
-                onClick={() => {
-                  // Dynamically import and initialize Google Auth when button is clicked
-                  setShowGoogleAuth(true);
+              textColor="inherit"
+            >
+              <Tab 
+                label="ANMELDEN" 
+                sx={{ 
+                  color: tabValue === 0 ? '#2e7d32' : 'inherit',
+                  fontWeight: 'bold'
                 }}
-                sx={{ width: '100%', backgroundColor: '#4285F4', color: 'white' }}
-              >
-                Mit Google anmelden
-              </Button>
-            )}
-            
-            {showGoogleAuth && (
-              <Suspense fallback={
+              />
+              <Tab 
+                label="REGISTRIEREN" 
+                sx={{ 
+                  color: tabValue === 1 ? '#2e7d32' : 'inherit',
+                  fontWeight: 'bold'
+                }}
+              />
+            </Tabs>
+
+
+            {/* Google Sign In Button */}
+            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
+              {!showGoogleAuth && (
                 <Button
                   variant="contained"
                   startIcon={<PersonIcon />}
+                  onClick={() => {
+                    // Dynamically import and initialize Google Auth when button is clicked
+                    this.setState({ showGoogleAuth: true });
+                  }}
                   sx={{ width: '100%', backgroundColor: '#4285F4', color: 'white' }}
                 >
                   Mit Google anmelden
                 </Button>
-              }>
-                <GoogleAuthProvider clientId="928121624463-jbgfdlgem22scs1k9c87ucg4ffvaik6o.apps.googleusercontent.com">
-                  <GoogleLoginButton
-                    onSuccess={handleGoogleLoginSuccess}
-                    onError={handleGoogleLoginError}
-                    text="Mit Google anmelden"
-                    style={{ width: '100%', backgroundColor: '#4285F4' }}
-                    autoInitiate={true}
-                  />
-                </GoogleAuthProvider>
-              </Suspense>
-            )}
-          </Box>
+              )}
+              
+              {showGoogleAuth && (
+                <Suspense fallback={
+                  <Button
+                    variant="contained"
+                    startIcon={<PersonIcon />}
+                    sx={{ width: '100%', backgroundColor: '#4285F4', color: 'white' }}
+                  >
+                    Mit Google anmelden
+                  </Button>
+                }>
+                  <GoogleAuthProvider clientId="928121624463-jbgfdlgem22scs1k9c87ucg4ffvaik6o.apps.googleusercontent.com">
+                    <GoogleLoginButton
+                      onSuccess={this.handleGoogleLoginSuccess}
+                      onError={this.handleGoogleLoginError}
+                      text="Mit Google anmelden"
+                      style={{ width: '100%', backgroundColor: '#4285F4' }}
+                      autoInitiate={true}
+                    />
+                  </GoogleAuthProvider>
+                </Suspense>
+              )}
+            </Box>
 
 
-          
-          {/* OR Divider */}
-          <Box sx={{ display: 'flex', alignItems: 'center', my: 2 }}>
-            <Box sx={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }} />
-            <Typography variant="body2" sx={{ px: 2, color: '#757575' }}>ODER</Typography>
-            <Box sx={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }} />
-          </Box>
-          
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-
-          
-          <Box sx={{ py: 1 }}>
-            <TextField
-              margin="dense"
-              label="E-Mail"
-              type="email"
-              fullWidth
-              variant="outlined"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
             
-            <TextField
-              margin="dense"
-              label="Passwort"
-              type="password"
-              fullWidth
-              variant="outlined"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-            />
+            {/* OR Divider */}
+            <Box sx={{ display: 'flex', alignItems: 'center', my: 2 }}>
+              <Box sx={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }} />
+              <Typography variant="body2" sx={{ px: 2, color: '#757575' }}>ODER</Typography>
+              <Box sx={{ flex: 1, height: '1px', backgroundColor: '#e0e0e0' }} />
+            </Box>
             
-            {tabValue === 1 && (
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+            
+            <Box sx={{ py: 1 }}>
               <TextField
                 margin="dense"
-                label="Passwort bestätigen"
+                label="E-Mail"
+                type="email"
+                fullWidth
+                variant="outlined"
+                value={email}
+                onChange={(e) => this.setState({ email: e.target.value })}
+                disabled={loading}
+              />
+              
+              <TextField
+                margin="dense"
+                label="Passwort"
                 type="password"
                 fullWidth
                 variant="outlined"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={password}
+                onChange={(e) => this.setState({ password: e.target.value })}
                 disabled={loading}
               />
-            )}
+              
+              {tabValue === 1 && (
+                <TextField
+                  margin="dense"
+                  label="Passwort bestätigen"
+                  type="password"
+                  fullWidth
+                  variant="outlined"
+                  value={confirmPassword}
+                  onChange={(e) => this.setState({ confirmPassword: e.target.value })}
+                  disabled={loading}
+                />
+              )}
 
-            {loading ? (
-              <Box display="flex" justifyContent="center" mt={2}>
-                <CircularProgress size={24} />
-              </Box>
-            ) : (
-              <Button 
-                variant="contained" 
-                color="primary" 
-                fullWidth
-                onClick={tabValue === 0 ? handleLogin : handleRegister}
-                sx={{ mt: 2, bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
-              >
-                {tabValue === 0 ? 'ANMELDEN' : 'REGISTRIEREN'}
-              </Button>
-            )}
-          </Box>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-};
+              {loading ? (
+                <Box display="flex" justifyContent="center" mt={2}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : (
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  fullWidth
+                  onClick={tabValue === 0 ? this.handleLogin : this.handleRegister}
+                  sx={{ mt: 2, bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
+                >
+                  {tabValue === 0 ? 'ANMELDEN' : 'REGISTRIEREN'}
+                </Button>
+              )}
+            </Box>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+}
 
-export default LoginComponent; 
+export default withRouter(LoginComponent); 

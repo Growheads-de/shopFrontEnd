@@ -73,7 +73,7 @@ class AdminPage extends React.Component {
                 }, 0);
                 
                 return (
-                  <Grid item xs={12} md={6} key={i}>
+                  <Grid size={{ xs: 12, md: 6 }} key={i}>
                     <Card variant="outlined">
                       <CardContent>
                         <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
