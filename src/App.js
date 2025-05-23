@@ -27,8 +27,6 @@ import Impressum from './pages/Impressum.js';
 import Batteriegesetzhinweise from './pages/Batteriegesetzhinweise.js';
 import Widerrufsrecht from './pages/Widerrufsrecht.js';
 
-import { isUserLoggedIn } from './components/LoginComponent.js';
-
 // Import theme from separate file to reduce main bundle size
 import theme from './theme.js';
 
@@ -116,7 +114,7 @@ const App = () => {
                   <Route path="/profile" element={<ProfilePageWithSocket />} />
 
                   {/* Admin page */ }
-                  <Route path="/admin" element={console.log(isUserLoggedIn()) || isUserLoggedIn()?.isAdmin ? <SocketContext.Consumer>{socket =><AdminPage socket={socket}/>}</SocketContext.Consumer> : <Navigate to="/profile" replace />} />
+                  <Route path="/admin" element={<SocketContext.Consumer>{socket =><AdminPage socket={socket}/>}</SocketContext.Consumer>}/>
 
                   {/* Legal pages */}
                   <Route path="/datenschutz" element={<Datenschutz />} />
