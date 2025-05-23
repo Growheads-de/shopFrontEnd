@@ -273,7 +273,7 @@ class ProductList extends Component {
         { this.renderPagination(Math.ceil(this.props.products.length / this.state.itemsPerPage), this.state.page) }
         <Stack direction="row" spacing={2}>
           <Typography variant="body2" color="text.secondary">
-                {this.props.dataType == 'category' && (<>Kategorie: {this.props.dataParam}</>)}
+                {/*this.props.dataType == 'category' && (<>Kategorie: {this.props.dataParam}</>)}*/}
                 {this.props.dataType == 'search' && (<>Suchergebnisse für: "{this.props.dataParam}"</>)}
           </Typography>
           <Typography variant="body2" color="text.secondary">

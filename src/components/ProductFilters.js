@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Paper } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 import Filter from './Filter.js';
 import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { setSessionSetting, removeSessionSetting, clearAllSessionSettings } from '../utils/sessionStorage.js';
@@ -167,6 +167,22 @@ class ProductFilters extends Component {
           flexDirection: 'column'
         }}
       >
+
+{this.props.dataType == 'category' && (
+            <Typography 
+              variant="h3" 
+              component="h1" 
+              sx={{ 
+                mb: 4, 
+                fontFamily: 'SwashingtonCP',
+                color: 'primary.main'
+              }}
+            >
+              {this.props.dataParam}
+            </Typography>
+          )}
+
+
         {this.props.products.length > 0 && (
           <><Filter 
           title="Verfügbarkeit"

@@ -213,6 +213,7 @@ class Content extends Component {
         unfilteredProducts,
         response.attributes
       ),
+      categoryName: response.categoryName || response.name || null,
       dataType: response.dataType,
       dataParam: response.dataParam,
       attributes: response.attributes,
@@ -277,13 +278,17 @@ class Content extends Component {
             flexDirection: 'column', 
             minHeight: '100%'
           }}> 
+
           <Box >
+   
             <ProductFilters 
               products={this.state.unfilteredProducts}
               filteredProducts={this.state.filteredProducts}
               attributes={this.state.attributes}
               searchParams={this.props.searchParams}
               onFilterChange={()=>{this.filterProducts()}}
+              dataType={this.state.dataType}
+              dataParam={this.state.dataParam}
             />
           </Box>
 
