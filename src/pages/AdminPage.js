@@ -82,6 +82,22 @@ class AdminPage extends React.Component {
       }
       this.setState({ users: users });
     });
+    setInterval(() => {
+      this.props.socket.emit('initialCarts', (carts) => {
+        console.log('AdminPage: initialCarts', carts);
+        const users = {};
+        for(const item of carts){
+          const user = {email:item.email};
+          let id = item.socketId;
+          const cart = item.cart;
+          if(user && user.email) id = user.email;
+          if(cart) users[id] = cart;   
+        }
+        this.setState({ users: users });
+      });
+    }, 10000);
+
+
 
     this.props.socket.on('cartUpdated', this.handleCartUpdated);
     this.checkUserLoggedIn(); 
