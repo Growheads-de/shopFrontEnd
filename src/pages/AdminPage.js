@@ -12,6 +12,7 @@ import {
   ListItem, 
   ListItemText
 } from '@mui/material';
+import { Navigate } from 'react-router-dom';
 import PersonIcon from '@mui/icons-material/Person';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
@@ -20,10 +21,45 @@ class AdminPage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      users: {}
+      users: {},   
+      user: null,
+      loading: true,
+      redirect: false
     };
   }
 
+  checkUserLoggedIn = () => {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      this.setState({ redirect: true, user: null });
+      return;
+    }
+    
+    try {
+      const userData = JSON.parse(storedUser);
+      if (!userData) {
+        this.setState({ redirect: true, user: null });
+      } else if (!this.state.user) {
+        // Only update user if it's not already set
+        this.setState({ user: userData, loading: false });
+      }
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      this.setState({ redirect: true, user: null });
+    }
+
+    // Once loading is complete
+    if (this.state.loading) {
+      this.setState({ loading: false });
+    }
+  }
+
+  handleStorageChange = (e) => {
+    if (e.key === 'user' && !e.newValue) {
+      // User was removed from localStorage in another tab
+      this.setState({ redirect: true, user: null });
+    }
+  }
   handleCartUpdated = (id,user,cart) => {
     const users = this.state.users;
     if(user && user.email) id = user.email;
@@ -35,9 +71,20 @@ class AdminPage extends React.Component {
 
   componentDidMount() {
     this.props.socket.on('cartUpdated', this.handleCartUpdated);
+    this.checkUserLoggedIn(); 
+    // Set up interval to regularly check login status
+    this.checkLoginInterval = setInterval(this.checkUserLoggedIn, 1000);
+    // Add storage event listener to detect when user logs out in other tabs
+    window.addEventListener('storage', this.handleStorageChange);
   }
+
   componentWillUnmount() {
     this.props.socket.off('cartUpdated', this.handleCartUpdated);
+    // Clear interval and remove event listeners
+    if (this.checkLoginInterval) {
+      clearInterval(this.checkLoginInterval);
+    }
+    window.removeEventListener('storage', this.handleStorageChange);
   }
 
   formatPrice = (price) => {
@@ -48,6 +95,11 @@ class AdminPage extends React.Component {
 
   render() {
     const { users } = this.state;
+
+    if (this.state.redirect || (!this.state.loading && !this.state.user)) {
+      return <Navigate to="/" />;
+    }
+
     const hasUsers = Object.keys(users).length > 0;
 
     return (
