@@ -11,6 +11,7 @@ import ProductDetailWithSocket from './components/ProductDetailPage.js';
 import SocketProvider from './providers/SocketProvider.js';
 import SocketContext from './contexts/SocketContext.js';
 import config from './config.js';
+import ScrollToTop from './components/ScrollToTop.js';
 
 import Header from './components/Header.js';
 import Footer from './components/Footer.js';
@@ -82,6 +83,7 @@ const App = () => {
             }}
           >
             <Suspense fallback={<Loading />}>
+              <ScrollToTop />
               <Header />
               <Box sx={{ flexGrow: 1 }}>
                 <Routes>

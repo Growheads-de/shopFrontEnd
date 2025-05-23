@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Container, Box } from '@mui/material';
+import { Container, Box, Paper, Typography, Stack } from '@mui/material';
+import { Link } from 'react-router-dom';
 import ProductFilters from './ProductFilters.js';
 import ProductList from './ProductList.js';
 
@@ -7,6 +8,13 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { getAllSettingsWithPrefix } from '../utils/sessionStorage.js';
 
 const isNew = (neu) => neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
+
+const fontFaceStyle = `
+@font-face {
+  font-family: 'SwashingtonCP';
+  src: url('/assets/fonts/SwashingtonCP.ttf') format('truetype');
+}
+`;
 
 const withRouter = (ClassComponent) => {
   return (props) => {
@@ -252,9 +260,11 @@ class Content extends Component {
     });
   }
 
+
   render() {
     return (
       <Container maxWidth="xl" sx={{ py: 4, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
+        <style>{fontFaceStyle}</style>
 
         <Box sx={{ 
           display: 'grid', 
@@ -262,11 +272,12 @@ class Content extends Component {
           gap: 3
         }}>
 
-          <Box sx={{ 
+          <Stack direction="row" spacing={0} sx={{ 
             display: 'flex', 
             flexDirection: 'column', 
             minHeight: '100%'
-          }}>
+          }}> 
+          <Box >
             <ProductFilters 
               products={this.state.unfilteredProducts}
               filteredProducts={this.state.filteredProducts}
@@ -275,6 +286,98 @@ class Content extends Component {
               onFilterChange={()=>{this.filterProducts()}}
             />
           </Box>
+
+          {this.props.params.categoryId == 706 && <Paper
+            component={Link}
+            to="/category/689"
+            sx={{
+              p:0,
+              mt: 3,
+              textDecoration: 'none',
+              color: 'text.primary',
+              borderRadius: 2,
+              overflow: 'hidden',
+              height: 300,
+              transition: 'all 0.3s ease',
+              boxShadow: 10,
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: 20
+              }
+            }}
+          >
+            {/* Image Container - Place your seeds image here */}
+            <Box sx={{
+              height: '100%',
+              bgcolor: '#e1f0d3',
+              backgroundImage: 'url("/assets/images/seeds.jpg")',
+              backgroundSize: 'contain',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              position: 'relative'
+            }}>
+              {/* Overlay text - optional */}
+              <Box sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                bgcolor: 'rgba(27, 94, 32, 0.8)',
+                p: 2,
+              }}>
+                <Typography sx={{ fontSize: '1.3rem', color: 'white', fontFamily: 'SwashingtonCP' }}>
+                  Seeds
+                </Typography>
+              </Box>
+            </Box>
+            </Paper>
+          }
+
+          {this.props.params.categoryId == 689 && <Paper
+            component={Link}
+            to="/category/706"
+            sx={{
+              p: 0,
+              mt: 3,
+              textDecoration: 'none',
+              color: 'text.primary',
+              borderRadius: 2,
+              overflow: 'hidden',
+              height: 300,
+              boxShadow: 10,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: 20
+              }
+            }}
+          >
+            {/* Image Container - Place your cutlings image here */}
+            <Box sx={{
+              height: '100%',
+              bgcolor: '#e8f5d6',
+              backgroundImage: 'url("/assets/images/cutlings.jpg")',
+              backgroundSize: 'contain',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              position: 'relative'
+            }}>
+              {/* Overlay text - optional */}
+              <Box sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                bgcolor: 'rgba(27, 94, 32, 0.8)',
+                p: 2,
+              }}>
+                <Typography sx={{ fontSize: '1.3rem', color: 'white', fontFamily: 'SwashingtonCP' }}>
+                  Stecklinge
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>}
+          </Stack>
 
           <Box>
             <ProductList
