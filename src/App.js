@@ -116,7 +116,7 @@ const App = () => {
                   <Route path="/profile" element={<ProfilePageWithSocket />} />
 
                   {/* Admin page */ }
-                  <Route path="/admin" element={isUserLoggedIn()?.isAdmin ? <SocketContext.Consumer>{socket =><AdminPage socket={socket}/>}</SocketContext.Consumer> : <Navigate to="/profile" replace />} />
+                  <Route path="/admin" element={console.log(isUserLoggedIn()) || isUserLoggedIn()?.isAdmin ? <SocketContext.Consumer>{socket =><AdminPage socket={socket}/>}</SocketContext.Consumer> : <Navigate to="/profile" replace />} />
 
                   {/* Legal pages */}
                   <Route path="/datenschutz" element={<Datenschutz />} />
