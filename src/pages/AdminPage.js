@@ -70,6 +70,19 @@ class AdminPage extends React.Component {
   }
 
   componentDidMount() {
+    this.props.socket.emit('initialCarts', (carts) => {
+      console.log('AdminPage: initialCarts', carts);
+      const users = {};
+      for(const item of carts){
+        const user = {email:item.email};
+        let id = item.socketId;
+        const cart = item.cart;
+        if(user && user.email) id = user.email;
+        if(cart) users[id] = cart;   
+      }
+      this.setState({ users: users });
+    });
+
     this.props.socket.on('cartUpdated', this.handleCartUpdated);
     this.checkUserLoggedIn(); 
     // Set up interval to regularly check login status
