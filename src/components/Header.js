@@ -193,7 +193,7 @@ class ButtonGroup extends Component {
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        if(user.email == parsedUser.email){
+        if(user && parsedUser &&user.email == parsedUser.email){
           window.cart = cart;
           this.setState({
             badgeNumber: getBadgeNumber()
@@ -201,7 +201,6 @@ class ButtonGroup extends Component {
         }
       } catch (error) {
         console.error('Error parsing user from localStorage:', error);
-        localStorage.removeItem('user');
       }
     }
   }
