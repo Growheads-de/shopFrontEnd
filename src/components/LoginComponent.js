@@ -136,7 +136,7 @@ class LoginComponent extends Component {
 
     // Call verifyUser socket endpoint
     socket.emit('verifyUser', { email, password }, (response) => {
-      
+      console.log('LoginComponent: verifyUser', response);
       if (response.success) {
         // Store user info in localStorage
         localStorage.setItem('user', JSON.stringify(response.user));
@@ -248,6 +248,7 @@ class LoginComponent extends Component {
           name: decoded.name,
           picture: decoded.picture,
           googleId: decoded.sub,
+          token: response.user.token,
           admin: response.user.admin
         };
         try{
@@ -256,7 +257,6 @@ class LoginComponent extends Component {
         }catch(error){
           console.error('Error parsing cart  :',response.user, error);
         }
-        window.dispatchEvent(new CustomEvent('cart'));
         // Store in localStorage
         localStorage.setItem('user', JSON.stringify(googleUser));
         this.setState({
