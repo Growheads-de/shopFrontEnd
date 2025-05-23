@@ -16,7 +16,19 @@ const Home = () => {
       {/* Inject the font-face style */}
       <style>{fontFaceStyle}</style>
 
-      <img src="/assets/images/claim.jpg" style={{ width: '100%', height: 'auto' }}/>
+      <Box sx={{ width: '100%', paddingTop: '17.09%', position: 'relative' }}>
+        <img 
+          src="/assets/images/claim.jpg" 
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            objectFit: 'cover'
+          }}
+        />
+      </Box>
 
       <Grid container sx={{ display: 'flex', flexDirection: 'row' }}>
         {/* Seeds Category Box */}
