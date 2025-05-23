@@ -85,7 +85,7 @@ function getFilteredProducts(unfilteredProducts, attributes) {
   }
   
   let filteredProducts = (unfilteredProducts || []).filter(product => {
-    const availabilityFilter = localStorage.getItem('filter_availability');
+    const availabilityFilter = sessionStorage.getItem('filter_availability');
     let inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
     const isNewMatch = availabilityFilters.includes('2') ?  isNew(product.neu) : true;
     let soonMatch = availabilityFilters.includes('3') ? !product.available && product.incoming : true;

@@ -96,7 +96,7 @@ class Filter extends Component {
     }
 
     if(props.filterType === 'availability'){
-      const availabilityFilter = localStorage.getItem('filter_availability');
+      const availabilityFilter = sessionStorage.getItem('filter_availability');
       const newFilters = [];
       const soonFilters = [];
       const availabilitySettings = getAllSettingsWithPrefix('filter_availability_');

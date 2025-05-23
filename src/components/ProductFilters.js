@@ -179,7 +179,7 @@ class ProductFilters extends Component {
           onFilterChange={(msg)=>{
             
             if(msg.resetAll) {
-              localStorage.removeItem('filter_availability');
+              sessionStorage.removeItem('filter_availability');
               clearAllSessionSettings();
               this.props.onFilterChange();
               return;
@@ -187,14 +187,14 @@ class ProductFilters extends Component {
 
             if(!msg.value) {
               console.log('msg',msg);
-              if(msg.name == '1') localStorage.setItem('filter_availability', msg.name);
+              if(msg.name == '1') sessionStorage.setItem('filter_availability', msg.name);
               if(msg.name != '1') removeSessionSetting(`filter_${msg.type}_${msg.name}`);
               //this.props.navigate({
               //  pathname: this.props.location.pathname,
               //  search: `?inStock=${msg.name}`
               //}); 
             } else {
-              if(msg.name == '1') localStorage.removeItem('filter_availability');
+              if(msg.name == '1') sessionStorage.removeItem('filter_availability');
               if(msg.name != '1') setSessionSetting(`filter_${msg.type}_${msg.name}`, 'true');
               console.log('msg',msg);
               //this.props.navigate({

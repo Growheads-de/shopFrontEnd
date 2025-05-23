@@ -502,7 +502,7 @@ class CartTab extends Component {
             <Elements stripe={stripePromise}>
               <CheckoutForm 
                 socket={this.context}
-                userEmail={localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).email : ''}
+                userEmail={sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).email : ''}
                 deliveryMethod={deliveryMethod}
                 paymentMethod={paymentMethod}
                 total={total}

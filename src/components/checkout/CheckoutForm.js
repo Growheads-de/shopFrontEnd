@@ -73,7 +73,7 @@ const CheckoutForm = (props) => {
                 setSuccess('Zahlung erfolgreich. Ihre Bestellung wurde aufgegeben!');
                 // Clear cart
                 window.cart = {};
-                localStorage.setItem('cart', JSON.stringify({}));
+                sessionStorage.setItem('cart', JSON.stringify({}));
                 setTimeout(() => {
                   // Force a refresh to update the UI
                   window.location.reload();

@@ -26,7 +26,7 @@ const GoogleAuthProvider = lazy(() => import('../providers/GoogleAuthProvider.js
 
 // Function to check if user is logged in
 export const isUserLoggedIn = () => {
-  const storedUser = localStorage.getItem('user');
+  const storedUser = sessionStorage.getItem('user');
   if (storedUser) {
     try {
       const parsedUser = JSON.parse(storedUser);
@@ -34,8 +34,8 @@ export const isUserLoggedIn = () => {
       return { isLoggedIn: true, user: parsedUser, isAdmin: !!parsedUser.admin };
 
     } catch (error) {
-      console.error('Error parsing user from localStorage:', error);
-      localStorage.removeItem('user');
+      console.error('Error parsing user from sessionStorage:', error);
+      sessionStorage.removeItem('user');
     }
   }
   console.log('isUserLoggedIn', false);
@@ -138,8 +138,8 @@ class LoginComponent extends Component {
     socket.emit('verifyUser', { email, password }, (response) => {
       console.log('LoginComponent: verifyUser', response);
       if (response.success) {
-        // Store user info in localStorage
-        localStorage.setItem('user', JSON.stringify(response.user));
+        // Store user info in sessionStorage
+        sessionStorage.setItem('user', JSON.stringify(response.user));
         this.setState({
           user: response.user,
           isLoggedIn: true,
@@ -221,7 +221,7 @@ class LoginComponent extends Component {
   };
 
   handleLogout = () => {
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
     this.setState({
       user: null,
       isLoggedIn: false,
@@ -257,8 +257,8 @@ class LoginComponent extends Component {
         }catch(error){
           console.error('Error parsing cart  :',response.user, error);
         }
-        // Store in localStorage
-        localStorage.setItem('user', JSON.stringify(googleUser));
+        // Store in sessionStorage
+        sessionStorage.setItem('user', JSON.stringify(googleUser));
         this.setState({
           user: googleUser,
           isLoggedIn: true,

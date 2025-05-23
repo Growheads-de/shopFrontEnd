@@ -29,7 +29,7 @@ class SettingsTab extends Component {
 
   componentDidMount() {
     // Load user data
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
@@ -123,16 +123,16 @@ class SettingsTab extends Component {
             password: ''
           });
           
-          // Update user in localStorage
+          // Update user in sessionStorage
           try {
-            const storedUser = localStorage.getItem('user');
+            const storedUser = sessionStorage.getItem('user');
             if (storedUser) {
               const user = JSON.parse(storedUser);
               user.email = this.state.newEmail;
-              localStorage.setItem('user', JSON.stringify(user));
+              sessionStorage.setItem('user', JSON.stringify(user));
             }
           } catch (error) {
-            console.error('Error updating user in localStorage:', error);
+            console.error('Error updating user in sessionStorage:', error);
           }
         } else {
           this.setState({

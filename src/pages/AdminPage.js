@@ -29,7 +29,7 @@ class AdminPage extends React.Component {
   }
 
   checkUserLoggedIn = () => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
     if (!storedUser) {
       this.setState({ redirect: true, user: null });
       return;
@@ -44,7 +44,7 @@ class AdminPage extends React.Component {
         this.setState({ user: userData, loading: false });
       }
     } catch (error) {
-      console.error('Error parsing user from localStorage:', error);
+      console.error('Error parsing user from sessionStorage:', error);
       this.setState({ redirect: true, user: null });
     }
 
@@ -56,7 +56,7 @@ class AdminPage extends React.Component {
 
   handleStorageChange = (e) => {
     if (e.key === 'user' && !e.newValue) {
-      // User was removed from localStorage in another tab
+      // User was removed from sessionStorage in another tab
       this.setState({ redirect: true, user: null });
     }
   }

@@ -189,7 +189,7 @@ class ButtonGroup extends Component {
   }
 
   handleCartUpdated = (id,user,cart) => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -200,7 +200,7 @@ class ButtonGroup extends Component {
           });
         }
       } catch (error) {
-        console.error('Error parsing user from localStorage:', error);
+        console.error('Error parsing user from sessionStorage:', error);
       }
     }
   }
