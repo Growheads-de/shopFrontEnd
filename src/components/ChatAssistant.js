@@ -125,13 +125,16 @@ class ChatAssistant extends Component {
         };
       } else {
         // Create a new message
-        const newBotMessage = {
-          id: Date.now(),
-          msgId: msgId,
-          sender: 'bot',
-          text: response.content,
-        };
-        updatedMessages = [...prevState.messages, newBotMessage];
+        console.log('ChatAssistant: handleBotResponse', msgId, response);
+        if(response && response.content) {
+          const newBotMessage = {
+            id: Date.now(),
+           msgId: msgId,
+            sender: 'bot',
+            text: response.content,
+          };
+          updatedMessages = [...prevState.messages, newBotMessage];
+        }
       }
       
       // Store in window object
@@ -445,7 +448,7 @@ class ChatAssistant extends Component {
             gap: 2,
           }}
         >
-          {messages.map((message) => (
+          {messages &&messages.map((message) => (
             <Box 
               key={message.id} 
               sx={{ 
