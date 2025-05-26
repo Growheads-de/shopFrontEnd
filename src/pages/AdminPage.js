@@ -70,6 +70,9 @@ class AdminPage extends React.Component {
   }
 
   componentDidMount() {
+    this.props.socket.emit('getStats', (stats) => {
+      console.log('AdminPage: getStats', JSON.stringify(stats,null,2));
+    });
     this.props.socket.emit('initialCarts', (carts) => {
       console.log('AdminPage: initialCarts', carts);
       const users = {};

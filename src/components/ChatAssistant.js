@@ -12,6 +12,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import MicIcon from '@mui/icons-material/Mic';
 import StopIcon from '@mui/icons-material/Stop';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import parse, { domToReact } from 'html-react-parser';
 import { Link } from 'react-router-dom';
 // Initialize window object for storing messages
@@ -82,6 +83,7 @@ class ChatAssistant extends Component {
     };
     
     this.messagesEndRef = React.createRef();
+    this.fileInputRef = React.createRef();
     this.recordingTimer = null;
   }
   
@@ -290,6 +292,93 @@ class ChatAssistant extends Component {
     };
   };
   
+  handleImageUpload = () => {
+    this.fileInputRef.current?.click();
+  };
+
+  handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      this.resizeAndSendImage(file);
+    }
+    // Reset the file input
+    event.target.value = '';
+  };
+
+  resizeAndSendImage = (file) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Calculate new dimensions (max 450px width/height)
+      const maxSize = 450;
+      let { width, height } = img;
+      
+      if (width > height) {
+        if (width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        }
+      } else {
+        if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
+        }
+      }
+      
+      // Set canvas dimensions
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Draw and compress image
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // Convert to blob with compression
+      canvas.toBlob((blob) => {
+        this.sendImageMessage(blob);
+      }, 'image/jpeg', 0.8);
+    };
+    
+    img.src = URL.createObjectURL(file);
+  };
+
+  sendImageMessage = async (imageBlob) => {
+    // Create a URL for the image blob
+    const imageUrl = URL.createObjectURL(imageBlob);
+    
+    // Create a user message with image content
+    const newUserMessage = {
+      id: Date.now(),
+      sender: 'user',
+      text: `<img src="${imageUrl}" alt="Uploaded image" style="max-width: 100%; height: auto; border-radius: 8px;" />`,
+      isImage: true
+    };
+    
+    // Update UI with the image message
+    this.setState(prevState => {
+      const updatedMessages = [...prevState.messages, newUserMessage];
+      // Store in window object
+      window.chatMessages = updatedMessages;
+      return {
+        messages: updatedMessages,
+        isTyping: true
+      };
+    });
+    
+    // Convert image to base64 for sending to server
+    const reader = new FileReader();
+    reader.readAsDataURL(imageBlob);
+    reader.onloadend = () => {
+      const base64Image = reader.result.split(',')[1];
+      // Send image data to server
+      this.props.socket.emit('aiassyPicMessage', { 
+        image: base64Image,
+        format: 'jpeg'
+      });
+    };
+  };
+  
   formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -410,6 +499,13 @@ class ChatAssistant extends Component {
             flexShrink: 0,
           }}
         >
+          <input
+            type="file"
+            ref={this.fileInputRef}
+            accept="image/*"
+            onChange={this.handleFileChange}
+            style={{ display: 'none' }}
+          />
           <TextField 
             fullWidth 
             variant="outlined" 
@@ -450,6 +546,15 @@ class ChatAssistant extends Component {
               <MicIcon />
             </IconButton>
           )}
+          
+          <IconButton 
+            color="primary"
+            onClick={this.handleImageUpload}
+            sx={{ ml: 1 }}
+            disabled={isTyping || isRecording}
+          >
+            <PhotoCameraIcon />
+          </IconButton>
           
           <Button 
             variant="contained" 
