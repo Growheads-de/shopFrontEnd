@@ -15,6 +15,28 @@ import {
 import { Navigate } from 'react-router-dom';
 import PersonIcon from '@mui/icons-material/Person';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 class AdminPage extends React.Component {
 
@@ -23,6 +45,7 @@ class AdminPage extends React.Component {
     this.state = {
       users: {},   
       user: null,
+      stats: null,
       loading: true,
       redirect: false
     };
@@ -72,6 +95,7 @@ class AdminPage extends React.Component {
   componentDidMount() {
     this.props.socket.emit('getStats', (stats) => {
       console.log('AdminPage: getStats', JSON.stringify(stats,null,2));
+      this.setState({stats: stats});
     });
     this.props.socket.emit('initialCarts', (carts) => {
       console.log('AdminPage: initialCarts', carts);
@@ -125,6 +149,85 @@ class AdminPage extends React.Component {
       : price;
   }
 
+  prepareChartData = () => {
+    if (!this.state.stats || !this.state.stats.data || !this.state.stats.data.last30Days) {
+      return null;
+    }
+
+    const dailyData = this.state.stats.data.last30Days.dailyData || [];
+    
+    // Sort data by date to ensure proper chronological order
+    const sortedData = [...dailyData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    const labels = sortedData.map(item => {
+      const date = new Date(item.date);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    
+    const socketConnections = sortedData.map(item => item.socket_connections || 0);
+    const productViewCalls = sortedData.map(item => item.get_product_view_calls || 0);
+
+    return {
+      labels,
+      socketConnections,
+      productViewCalls
+    };
+  }
+
+  getSocketConnectionsChartData = () => {
+    const data = this.prepareChartData();
+    if (!data) return null;
+
+    return {
+      labels: data.labels,
+      datasets: [
+        {
+          label: 'Site Visits',
+          data: data.socketConnections,
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          tension: 0.1,
+        },
+      ],
+    };
+  }
+
+  getProductViewCallsChartData = () => {
+    const data = this.prepareChartData();
+    if (!data) return null;
+
+    return {
+      labels: data.labels,
+      datasets: [
+        {
+          label: 'Product Detail Page Visits',
+          data: data.productViewCalls,
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  }
+
+  getChartOptions = (title) => ({
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: title,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  })
+
   render() {
     const { users } = this.state;
 
@@ -134,8 +237,51 @@ class AdminPage extends React.Component {
 
     const hasUsers = Object.keys(users).length > 0;
 
+    const socketConnectionsData = this.getSocketConnectionsChartData();
+    const productViewCallsData = this.getProductViewCallsChartData();
+
     return (
       <Container maxWidth="lg" sx={{ py: 6 }}>
+        {/* Analytics Charts Section */}
+        {(socketConnectionsData || productViewCallsData) && (
+          <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+            <Typography variant="h5" color="primary" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+              <BarChartIcon sx={{ mr: 1 }} />
+              30-Day Analytics
+            </Typography>
+            
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {socketConnectionsData && (
+                <Grid size={{ xs: 12, lg: 6 }}>
+                  <Card variant="outlined">
+                    <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+                        <Line 
+                          data={socketConnectionsData}                         
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
+              
+              {productViewCallsData && (
+                <Grid size={{ xs: 12, lg: 6 }}>
+                  <Card variant="outlined">
+                    <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+                        <Line 
+                          data={productViewCallsData}                        
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        )}
+
         <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
           <Typography variant="h5" color="primary" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
             <ShoppingCartIcon sx={{ mr: 1 }} />
