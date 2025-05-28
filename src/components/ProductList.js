@@ -159,7 +159,7 @@ class ProductList extends Component {
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
               {this.props.activeAttributeFilters.map((filter,index) => (
                 <Chip 
-                  size="small" 
+                  size="medium"                
                   key={index} 
                   label={filter.value} 
                   onClick={() => {
@@ -175,7 +175,7 @@ class ProductList extends Component {
               ))}
               {this.props.activeManufacturerFilters.map((filter,index) => (
                 <Chip 
-                  size="small" 
+                  size="medium"
                   key={index} 
                   label={filter.name} 
                   onClick={() => {
