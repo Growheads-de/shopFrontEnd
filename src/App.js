@@ -94,7 +94,7 @@ const App = () => {
             sx={{
               display: 'flex',
               flexDirection: 'column',
-              minHeight: '100vh',
+              
               mb: 0,
               pb: 0,
               bgcolor: 'background.default'
@@ -103,7 +103,7 @@ const App = () => {
             <Suspense fallback={<Loading />}>
               <ScrollToTop />
               <Header />
-              <Box sx={{ flexGrow: 1 }}>
+              <Box sx={{ minHeight: '100vh',flexGrow: 1 }}>
                 <Routes>
                   {/* Home page with text only */}
                   <Route path="/" element={<Home />} />
@@ -160,7 +160,7 @@ const App = () => {
                 size="small" 
                 sx={{ 
                   position: 'fixed', 
-                  bottom: 15, 
+                  bottom: 31, 
                   right: 15 
                 }}
                 onClick={handleChatToggle} // Attach toggle handler
