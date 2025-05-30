@@ -32,7 +32,7 @@ const Home = () => {
 
       <Grid container sx={{ display: 'flex', flexDirection: 'row' }}>
         {/* Seeds Category Box */}
-        <Grid size={{ xs: 12, sm: 6 }} sx={{ p:2, width: '50%' }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ p: 2, width: '50%' }}>
           <Paper
             component={Link}
             to="/category/689"
@@ -42,7 +42,7 @@ const Home = () => {
               color: 'text.primary',
               borderRadius: 2,
               overflow: 'hidden',
-              height: 400,
+              height: { xs: 250, sm: 400 },
               display: 'flex',
               flexDirection: 'column',
               transition: 'all 0.3s ease',
@@ -82,7 +82,7 @@ const Home = () => {
         </Grid>
 
         {/* Cutlings Category Box */}
-        <Grid size={{ xs: 12, sm: 6 }} sx={{ p:2,width: '50%' }}>
+        <Grid size={{ xs: 12, sm: 6 }} sx={{ p: 2, width: '50%' }}>
           <Paper
             component={Link}
             to="/category/706"
@@ -92,7 +92,7 @@ const Home = () => {
               color: 'text.primary',
               borderRadius: 2,
               overflow: 'hidden',
-              height: 400,
+              height: { xs: 250, sm: 400 },
               display: 'flex',
               flexDirection: 'column',
               boxShadow: 10,

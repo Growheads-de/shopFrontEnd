@@ -48,6 +48,22 @@ const App = () => {
   // State to manage chat visibility
   const [isChatOpen, setChatOpen] = useState(false);
 
+  // Effect to handle body overflow when chat is open on mobile
+  React.useEffect(() => {
+    if (isChatOpen) {
+      // Prevent body scroll on mobile when chat is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore body scroll when chat is closed
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup function to restore scroll on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isChatOpen]);
+
   // Handler to toggle chat visibility
   const handleChatToggle = () => {
     if(isChatOpen) window.messageDeletionTimeout = setTimeout(deleteMessages, 1000 * 60);
@@ -79,7 +95,10 @@ const App = () => {
               display: 'flex',
               flexDirection: 'column',
               minHeight: '100vh',
+              mb: 0,
+              pb: 0,
               bgcolor: 'background.default',
+              border: "1px solid blue",
             }}
           >
             <Suspense fallback={<Loading />}>
@@ -130,7 +149,11 @@ const App = () => {
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Box>
-              <Footer />
+              {/* Conditionally render the Chat Assistant */}
+              <SocketContext.Consumer>
+                {socket => <ChatAssistant  open={isChatOpen} onClose={handleChatClose} socket={socket} />}
+              </SocketContext.Consumer>
+
               {/* Chat AI Assistant FAB */}
               <Fab 
                 color="primary" 
@@ -145,10 +168,10 @@ const App = () => {
               >
                 <SmartToyIcon sx={{ fontSize: '1.2rem' }} />
               </Fab>
-              {/* Conditionally render the Chat Assistant */}
-              <SocketContext.Consumer>
-                {socket => <ChatAssistant  open={isChatOpen} onClose={handleChatClose} socket={socket} />}
-              </SocketContext.Consumer>
+
+              <Footer />
+
+
             </Suspense>
           </Box>
         </SocketProvider>

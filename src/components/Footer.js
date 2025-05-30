@@ -23,16 +23,25 @@ class Footer extends Component {
           py: 2,
           px: 2,
           mt: 'auto',
+          mb: 0,
           backgroundColor: 'primary.dark',
           color: 'white',
         }}
       >
-         <Stack direction="row" sx={{maxWidth: 'md', margin: 'auto'}} spacing={2} justifyContent="space-between" alignItems="flex-end">
+        <Stack 
+          direction={{ xs: 'column', md: 'row' }} 
+          sx={{ maxWidth: 'md', margin: 'auto' }} 
+          spacing={{ xs: 3, md: 2 }} 
+          justifyContent="space-between" 
+          alignItems={{ xs: 'center', md: 'flex-end' }}
+        >
+          {/* Legal Links Section */}
           <Stack 
-            direction={'column'} 
-            spacing={0} 
+            direction={{ xs: 'row', md: 'column' }} 
+            spacing={{ xs: 2, md: 0 }} 
             justifyContent="center" 
-            alignItems="left"
+            alignItems={{ xs: 'center', md: 'left' }}
+            flexWrap="wrap"
           >
             <StyledRouterLink to="/datenschutz">Datenschutz</StyledRouterLink>
             <StyledRouterLink to="/agb">AGB</StyledRouterLink>
@@ -40,15 +49,18 @@ class Footer extends Component {
           </Stack>
 
           <Stack 
-            direction={'column'} 
-            spacing={0} 
+            direction={{ xs: 'row', md: 'column' }} 
+            spacing={{ xs: 2, md: 0 }} 
             justifyContent="center" 
-            alignItems="left"
+            alignItems={{ xs: 'center', md: 'left' }}
+            flexWrap="wrap"
           >
             <StyledRouterLink to="/impressum">Impressum</StyledRouterLink>
             <StyledRouterLink to="/batteriegesetzhinweise">Batteriegesetzhinweise</StyledRouterLink>
             <StyledRouterLink to="/widerrufsrecht">Widerrufsrecht</StyledRouterLink>
-          </Stack>  
+          </Stack>
+          
+          {/* Payment Methods Section */}
           <Stack 
             direction="column" 
             spacing={1}
@@ -57,30 +69,33 @@ class Footer extends Component {
           >
             <Stack 
               direction="row" 
-              spacing={2} 
+              spacing={{ xs: 1, md: 2 }} 
               justifyContent="center" 
               alignItems="center"
+              flexWrap="wrap"
             >
-              <Box component="img" src="/assets/images/cash.png" alt="Cash" sx={{ height: 30 }} />
-              <Box component="img" src="/assets/images/giropay.png" alt="Giropay" sx={{ height: 30 }} />
-              <Box component="img" src="/assets/images/mastercard.png" alt="Mastercard" sx={{ height: 30 }} />
+              <Box component="img" src="/assets/images/cash.png" alt="Cash" sx={{ height: { xs: 25, md: 30 } }} />
+              <Box component="img" src="/assets/images/giropay.png" alt="Giropay" sx={{ height: { xs: 25, md: 30 } }} />
+              <Box component="img" src="/assets/images/mastercard.png" alt="Mastercard" sx={{ height: { xs: 25, md: 30 } }} />
             </Stack>
             <Stack 
               direction="row" 
-              spacing={2} 
+              spacing={{ xs: 1, md: 2 }} 
               justifyContent="center" 
               alignItems="center"
+              flexWrap="wrap"
             >
-              <Box component="img" src="/assets/images/visa_electron.png" alt="Visa Electron" sx={{ height: 30 }} />
-              <Box component="img" src="/assets/images/maestro.png" alt="Maestro" sx={{ height: 30 }} />
+              <Box component="img" src="/assets/images/visa_electron.png" alt="Visa Electron" sx={{ height: { xs: 25, md: 30 } }} />
+              <Box component="img" src="/assets/images/maestro.png" alt="Maestro" sx={{ height: { xs: 25, md: 30 } }} />
             </Stack>
           </Stack>
           
+          {/* Copyright Section */}
           <Box sx={{ textAlign: 'center', opacity: 0.7 }}>
-            <Typography variant="body2" sx={{ mb: 1 }}>
+            <Typography variant="body2" sx={{ mb: 1, fontSize: { xs: '11px', md: '14px' } }}>
               * Alle Preise inkl. gesetzlicher USt., zzgl. Versand
             </Typography>
-            <Typography variant="body2">
+            <Typography variant="body2" sx={{ fontSize: { xs: '11px', md: '14px' } }}>
               © {new Date().getFullYear()} Seedheads
             </Typography>
           </Box>
@@ -90,4 +105,4 @@ class Footer extends Component {
   }
 }
 
-export default Footer; 
+export default Footer;

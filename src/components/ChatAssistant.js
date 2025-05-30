@@ -78,8 +78,9 @@ class ChatAssistant extends Component {
       recordingTime: 0,
       mediaRecorder: null,
       audioChunks: [],
-      aiThink:false,
-      atDatabase:false
+      aiThink: false,
+      atDatabase: false,
+      atWeb: false
     };
     
     this.messagesEndRef = React.createRef();
@@ -401,10 +402,14 @@ class ChatAssistant extends Component {
         elevation={4} 
         sx={{
           position: 'fixed',
-          bottom: 80,
-          right: 16,
-          width: 750,
-          height: 700,
+          bottom: { xs: 16, sm: 80 },
+          right: { xs: 16, sm: 16 },
+          left: { xs: 16, sm: 'auto' },
+          top: { xs: 16, sm: 'auto' },
+          width: { xs: 'calc(100vw - 32px)', sm: 450, md: 600, lg: 750 },
+          height: { xs: 'calc(100vh - 32px)', sm: 600, md: 650, lg: 700 },
+          maxWidth: { xs: 'none', sm: 450, md: 600, lg: 750 },
+          maxHeight: { xs: 'calc(100vh - 32px)', sm: 600, md: 650, lg: 700 },
           bgcolor: 'background.paper',
           borderRadius: 2,
           display: 'flex',
@@ -418,7 +423,8 @@ class ChatAssistant extends Component {
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center', 
-            px: 2,py: 1, 
+            px: 2, 
+            py: 1, 
             borderBottom: 1, 
             borderColor: 'divider',
             bgcolor: 'primary.main',
@@ -465,7 +471,8 @@ class ChatAssistant extends Component {
               <Paper 
                 elevation={1}
                 sx={{
-                  py: 1,px: 3,
+                  py: 1,
+                  px: 3,
                   borderRadius: 2,
                   bgcolor: message.sender === 'user' ? 'secondary.light' : 'grey.200',
                   maxWidth: '75%',
@@ -523,11 +530,14 @@ class ChatAssistant extends Component {
             onKeyDown={this.handleKeyDown}
             disabled={isRecording}
             slotProps={{
-              input: { maxLength: 300 , endAdornment: isRecording && (
-                <Typography variant="caption" color="primary" sx={{ mr: 1 }}>
-                  {this.formatTime(recordingTime)}
-                </Typography>
-              )}
+              input: { 
+                maxLength: 300, 
+                endAdornment: isRecording && (
+                  <Typography variant="caption" color="primary" sx={{ mr: 1 }}>
+                    {this.formatTime(recordingTime)}
+                  </Typography>
+                )
+              }
             }}
           />
           
@@ -573,4 +583,4 @@ class ChatAssistant extends Component {
   }
 }
 
-export default ChatAssistant; 
+export default ChatAssistant;
