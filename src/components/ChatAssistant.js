@@ -409,7 +409,7 @@ class ChatAssistant extends Component {
           width: { xs: 'calc(100vw - 32px)', sm: 450, md: 600, lg: 750 },
           height: { xs: 'calc(100vh - 32px)', sm: 600, md: 650, lg: 700 },
           maxWidth: { xs: 'none', sm: 450, md: 600, lg: 750 },
-          maxHeight: { xs: 'calc(100vh - 32px)', sm: 600, md: 650, lg: 700 },
+          maxHeight: { xs: 'calc(100vh - 72px)', sm: 600, md: 650, lg: 700 },
           bgcolor: 'background.paper',
           borderRadius: 2,
           display: 'flex',

@@ -48,22 +48,6 @@ const App = () => {
   // State to manage chat visibility
   const [isChatOpen, setChatOpen] = useState(false);
 
-  // Effect to handle body overflow when chat is open on mobile
-  React.useEffect(() => {
-    if (isChatOpen) {
-      // Prevent body scroll on mobile when chat is open
-      document.body.style.overflow = 'hidden';
-    } else {
-      // Restore body scroll when chat is closed
-      document.body.style.overflow = 'unset';
-    }
-
-    // Cleanup function to restore scroll on unmount
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isChatOpen]);
-
   // Handler to toggle chat visibility
   const handleChatToggle = () => {
     if(isChatOpen) window.messageDeletionTimeout = setTimeout(deleteMessages, 1000 * 60);
@@ -94,7 +78,7 @@ const App = () => {
             sx={{
               display: 'flex',
               flexDirection: 'column',
-              
+              minHeight: '100vh',
               mb: 0,
               pb: 0,
               bgcolor: 'background.default'
@@ -103,7 +87,7 @@ const App = () => {
             <Suspense fallback={<Loading />}>
               <ScrollToTop />
               <Header />
-              <Box sx={{ minHeight: '100vh',flexGrow: 1 }}>
+              <Box sx={{ flexGrow: 1 }}>
                 <Routes>
                   {/* Home page with text only */}
                   <Route path="/" element={<Home />} />
