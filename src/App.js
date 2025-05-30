@@ -97,8 +97,7 @@ const App = () => {
               minHeight: '100vh',
               mb: 0,
               pb: 0,
-              bgcolor: 'background.default',
-              border: "1px solid blue",
+              bgcolor: 'background.default'
             }}
           >
             <Suspense fallback={<Loading />}>
