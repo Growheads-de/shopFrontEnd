@@ -121,13 +121,20 @@ class ProductList extends Component {
             page={page} 
             onChange={this.handlePageChange} 
             color="primary"
-            size="large"
-            siblingCount={1}
-            boundaryCount={1}
+            size={"large"}
+            siblingCount={window.innerWidth < 600 ? 0 : 1}
+            boundaryCount={window.innerWidth < 600 ? 1 : 1}
             hideNextButton={false}
             hidePrevButton={false}
-            showFirstButton={true}
-            showLastButton={true}
+            showFirstButton={window.innerWidth >= 600}
+            showLastButton={window.innerWidth >= 600}
+            sx={{
+              '& .MuiPagination-ul': {
+                flexWrap: 'nowrap',
+                overflowX: 'auto',
+                maxWidth: '100%'
+              }
+            }}
           />
         }
       </Box>
