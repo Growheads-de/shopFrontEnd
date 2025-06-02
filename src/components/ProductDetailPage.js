@@ -230,7 +230,7 @@ class ProductDetailPage extends Component {
         <Box sx={{ 
           mb: 2, 
           position: ['-webkit-sticky','sticky'], // Provide both prefixed and standard
-          top: { xs: '80px', sm: '80px', md: '120px',lg: '120px' }, /* Offset to sit below the header */
+          top: { xs: '80px', sm: '80px', md: '80px',lg: '80px' }, /* Offset to sit below the header 120 mith menu for md and lg*/
           left: 0,
           width: '100%',
           display: 'flex',
