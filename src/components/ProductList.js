@@ -292,14 +292,14 @@ class ProductList extends Component {
             <Grid 
               item 
               key={product.id} 
-              xs={6} 
+              xs={12} 
               sm={6} 
               md={4}
               lg={3}
               xl={3}
               sx={{
                 display: 'flex', 
-                justifyContent: 'center',
+                justifyContent: { xs: 'stretch', sm: 'center' },
                 mb: 1
               }}
             > 

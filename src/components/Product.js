@@ -76,7 +76,11 @@ class Product extends Component {
     }
     
     return (
-      <Box sx={{ position: 'relative', height: '100%' }}>
+      <Box sx={{ 
+        position: 'relative', 
+        height: '100%',
+        width: { xs: '100%', sm: 'auto' }
+      }}>
         {isNew && (
           <div
             style={{
@@ -161,7 +165,8 @@ class Product extends Component {
         
         <Card 
           sx={{ 
-            width: '250px',
+            width: { xs: 'calc(100vw - 48px)', sm: '250px' },
+            minWidth: { xs: 'calc(100vw - 48px)', sm: '250px' },
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
@@ -212,7 +217,7 @@ class Product extends Component {
           >
             <Box sx={{ 
               position: 'relative', 
-              height: '180px',
+              height: { xs: '240px', sm: '180px' },
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
@@ -226,18 +231,28 @@ class Product extends Component {
               ) : this.state.image === null ? (
                 <CardMedia
                 component="img"
-                height="180"
+                height={ window.innerWidth < 600 ? "240" : "180" }
                 image="/assets/images/nopicture.jpg"
                 alt={name}
-                sx={{ objectFit: 'cover', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
+                sx={{ 
+                  objectFit: 'contain', 
+                  borderTopLeftRadius: '8px', 
+                  borderTopRightRadius: '8px',
+                  width: '100%'
+                }}
               />  
               ) : (
                 <CardMedia
                   component="img"
-                  height="180"
+                  height={ window.innerWidth < 600 ? "240" : "180" }
                   image={this.state.image}
                   alt={name}
-                  sx={{ objectFit: 'cover', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
+                  sx={{ 
+                    objectFit: 'contain', 
+                    borderTopLeftRadius: '8px', 
+                    borderTopRightRadius: '8px',
+                    width: '100%'
+                  }}
                 />
               )}
             </Box>
