@@ -292,12 +292,20 @@ class Content extends Component {
             />
           </Box>
 
+          {(this.props.params.categoryId == 706 ||this.props.params.categoryId == 689) &&
+          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+            <Typography variant="h6" sx={{mt:3}}>
+              Andere Kategorien
+            </Typography>
+          </Box>
+          }
+
           {this.props.params.categoryId == 706 && <Paper
             component={Link}
             to="/category/689"
             sx={{
               p:0,
-              mt: 3,
+              mt: 1,
               textDecoration: 'none',
               color: 'text.primary',
               borderRadius: 2,
@@ -344,7 +352,7 @@ class Content extends Component {
             to="/category/706"
             sx={{
               p: 0,
-              mt: 3,
+              mt: 1,
               textDecoration: 'none',
               color: 'text.primary',
               borderRadius: 2,
