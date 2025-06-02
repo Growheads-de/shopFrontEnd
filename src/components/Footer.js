@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Box, Typography, Stack } from '@mui/material';
+import { Box, Typography, Stack, Link } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 
@@ -12,6 +12,15 @@ const StyledRouterLink = styled(RouterLink)(({ theme }) => ({
     textDecoration: 'underline',
   },
   padding: theme.spacing(0.5),
+}));
+
+// Styled component for the domain link
+const StyledDomainLink = styled(Link)(() => ({
+  color: 'inherit',
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'none',
+  },
 }));
 
 class Footer extends Component {
@@ -96,7 +105,7 @@ class Footer extends Component {
               * Alle Preise inkl. gesetzlicher USt., zzgl. Versand
             </Typography>
             <Typography variant="body2" sx={{ fontSize: { xs: '11px', md: '14px' } }}>
-              © {new Date().getFullYear()} GrowHeads.de
+              © {new Date().getFullYear()} <StyledDomainLink href="https://growheads.de" target="_blank" rel="noopener noreferrer">GrowHeads.de</StyledDomainLink>
             </Typography>
           </Box>
         </Stack>
