@@ -276,7 +276,7 @@ class Content extends Component {
           <Stack direction="row" spacing={0} sx={{ 
             display: 'flex', 
             flexDirection: 'column', 
-            minHeight: { xs: 'auto', sm: '100%' }
+            minHeight: { xs: 'min-content', sm: '100%' }
           }}> 
 
           <Box >

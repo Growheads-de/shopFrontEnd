@@ -2,8 +2,12 @@ import React, { Component } from 'react';
 import { 
   Box, 
   Typography, 
-  Checkbox
+  Checkbox,
+  IconButton,
+  Collapse
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { getAllSettingsWithPrefix } from '../utils/sessionStorage.js';
 
 const isNew = (neu) => neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
@@ -15,7 +19,8 @@ class Filter extends Component {
     const counts = this.initializeCounts(props,options);
     this.state = {
       options,
-      counts
+      counts,
+      isCollapsed: true // Start collapsed on xs screens
     };
   }
 
@@ -172,9 +177,18 @@ class Filter extends Component {
     }
   };
 
+  toggleCollapse = () => {
+    this.setState(prevState => ({
+      isCollapsed: !prevState.isCollapsed
+    }));
+  };
+
   render() {
-    const { options, counts } = this.state;
+    const { options, counts, isCollapsed } = this.state;
     const { title, options: optionsList = [] } = this.props;
+
+    // Check if we're on xs screen size
+    const isXsScreen = window.innerWidth < 600;
 
     const tableStyle = { 
       width: '100%', 
@@ -230,56 +244,75 @@ class Filter extends Component {
       color: 'rgba(0, 0, 0, 0.7)',
       float: 'right'
     };
+
     return (  
       <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
-          {title}
-          {/* Only show reset button on Availability filter */}
-          {title === "VerfügbarkeitDISABLED" && (
-            <button 
-              style={resetButtonStyle} 
-              onClick={this.resetFilters}
-            >
-              Reset
-            </button>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            cursor: { xs: 'pointer', sm: 'default' }
+          }}
+          onClick={isXsScreen ? this.toggleCollapse : undefined}
+        >
+          <Typography variant="subtitle1" fontWeight="medium" gutterBottom={!isXsScreen}>
+            {title}
+            {/* Only show reset button on Availability filter */}
+            {title === "VerfügbarkeitDISABLED" && (
+              <button 
+                style={resetButtonStyle} 
+                onClick={this.resetFilters}
+              >
+                Reset
+              </button>
+            )}
+          </Typography>
+          {isXsScreen && (
+            <IconButton size="small" sx={{ p: 0 }}>
+              {isCollapsed ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+            </IconButton>
           )}
-        </Typography>
-        <Box sx={{ width: '100%' }}>
-          <table style={tableStyle}>
-            <tbody>
-              {optionsList.map((option) => (
-                <tr key={option.id} style={{ height: '32px' }}>
-                  <td style={checkboxCellStyle}>
-                    <Checkbox 
-                      checked={options[option.id] || false} 
-                      onChange={this.handleOptionChange} 
-                      name={option.id} 
-                      color="primary"
-                      size="small"
-                      sx={{ 
-                        padding: '0px',
-                        '& .MuiSvgIcon-root': { fontSize: 28 } 
-                      }}
-                    />
-                  </td>
-                  <td style={labelCellStyle} onClick={() => {
-                    const event = { target: { name: option.id, checked: !options[option.id] } };
-                    this.handleOptionChange(event);
-                  }}>
-                    {option.name}
-                  </td>
-                  <td style={countCellStyle}>
-                    {counts && counts[option.id] !== undefined && (
-                      <span style={countBoxStyle}>
-                        {counts[option.id]}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </Box>
+        
+        <Collapse in={!isXsScreen || !isCollapsed}>
+          <Box sx={{ width: '100%' }}>
+            <table style={tableStyle}>
+              <tbody>
+                {optionsList.map((option) => (
+                  <tr key={option.id} style={{ height: '32px' }}>
+                    <td style={checkboxCellStyle}>
+                      <Checkbox 
+                        checked={options[option.id] || false} 
+                        onChange={this.handleOptionChange} 
+                        name={option.id} 
+                        color="primary"
+                        size="small"
+                        sx={{ 
+                          padding: '0px',
+                          '& .MuiSvgIcon-root': { fontSize: 28 } 
+                        }}
+                      />
+                    </td>
+                    <td style={labelCellStyle} onClick={() => {
+                      const event = { target: { name: option.id, checked: !options[option.id] } };
+                      this.handleOptionChange(event);
+                    }}>
+                      {option.name}
+                    </td>
+                    <td style={countCellStyle}>
+                      {counts && counts[option.id] !== undefined && (
+                        <span style={countBoxStyle}>
+                          {counts[option.id]}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Box>
+        </Collapse>
       </Box>
     );
   }

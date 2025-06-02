@@ -51,6 +51,9 @@ class ProductFilters extends Component {
   }
 
   adjustPaperHeight = () => {
+    // Skip height adjustment on xs screens
+    if (window.innerWidth < 600) return;
+    
     // Get reference to our paper element
     const paperEl = document.getElementById('filters-paper');
     if (!paperEl) return;
