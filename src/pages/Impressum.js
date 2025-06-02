@@ -6,39 +6,42 @@ const Impressum = () => {
   const content = (
     <>
       <Typography variant="h6" gutterBottom>
-        Angaben gemäß § 5 TMG:
+        Betreiber und verantwortlich für die Inhalte dieses Shops ist:
       </Typography>
       <Typography variant="body1" paragraph>
-        [Firmenname]<br />
-        [Straße und Hausnummer]<br />
-        [PLZ und Ort]<br />
-        [Land]
+        Growheads<br />
+        Max Schön<br />
+        Trachenberger Straße 14<br />
+        01129 Dresden
       </Typography>
       
       <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
         Kontakt:
       </Typography>
       <Typography variant="body1" paragraph>
-        Telefon: [Telefonnummer]<br />
-        E-Mail: [E-Mail-Adresse]
+        E-Mail: service@growheads.de
       </Typography>
       
       <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
         Umsatzsteuer-ID:
       </Typography>
       <Typography variant="body1" paragraph>
-        Umsatzsteuer-Identifikationsnummer gemäß §27 a Umsatzsteuergesetz:<br />
-        [Umsatzsteuer-ID]
+        USt.-IdNr.: DE323017152
       </Typography>
       
       <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
-        Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV:
+        Haftungsausschluss:
       </Typography>
       <Typography variant="body1" paragraph>
-        [Name]<br />
-        [Straße und Hausnummer]<br />
-        [PLZ und Ort]<br />
-        [Land]
+        Für Inhalte von auf diesen Seiten verlinkten externen Internetadressen übernehmen wir keine Haftung. Für Inhalte betriebsfremder Domizile sind die jeweiligen Betreiber verantwortlich.
+      </Typography>
+      
+      <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+        Urheberrechtsklausel:
+      </Typography>
+      <Typography variant="body1" paragraph>
+        Die hier dargestellten Inhalte unterliegen grundsätzlich dem Urheberrecht und dürfen nur mit schriftlicher Genehmigung verbreitet werden.
+        Die Rechte an Foto- oder Textmaterial von anderen Parteien sind durch diese Klausel weder eingeschränkt noch aufgehoben.
       </Typography>
     </>
   );
