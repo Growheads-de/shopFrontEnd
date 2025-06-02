@@ -108,7 +108,7 @@ const SearchBar = () => {
     <Box 
       component="form" 
       onSubmit={handleSearch}
-      sx={{ flexGrow: 1, mx: { xs: 1, sm: 2, md: 4 }, display: { xs: 'none', sm: 'block' } }}
+      sx={{ flexGrow: 1, mx: { xs: 1, sm: 2, md: 4 } }}
     >
       <TextField
         placeholder="Produkte suchen..."
@@ -480,9 +480,37 @@ class Header extends Component {
       <AppBar position="sticky" color="primary" elevation={0} sx={{ zIndex: 1100 }}>
         <Toolbar sx={{ minHeight: 64 }}>
           <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
-            <Logo />
-            <SearchBarWithRouter />
-            <ButtonGroupWithRouter socket={socket}/>
+            {/* First row: Logo and ButtonGroup on xs, all items on larger screens */}
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              width: '100%',
+              flexDirection: { xs: 'column', sm: 'row' }
+            }}>
+              {/* Top row for xs, single row for larger screens */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                width: '100%',
+                justifyContent: { xs: 'space-between', sm: 'flex-start' }
+              }}>
+                <Logo />
+                {/* SearchBar visible on sm and up */}
+                <Box sx={{ display: { xs: 'none', sm: 'block' }, flexGrow: 1 }}>
+                  <SearchBarWithRouter />
+                </Box>
+                <ButtonGroupWithRouter socket={socket}/>
+              </Box>
+              
+              {/* Second row: SearchBar only on xs */}
+              <Box sx={{ 
+                display: { xs: 'block', sm: 'none' }, 
+                width: '100%',
+                mt: 1,mb: 1
+              }}>
+                <SearchBarWithRouter />
+              </Box>
+            </Box>
           </Container>
         </Toolbar>
         {/*<CategoryList socket={socket} />*/}

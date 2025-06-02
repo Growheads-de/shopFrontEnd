@@ -305,6 +305,7 @@ class Content extends Component {
               height: 300,
               transition: 'all 0.3s ease',
               boxShadow: 10,
+              display: { xs: 'none', sm: 'block' },
               '&:hover': {
                 transform: 'translateY(-5px)',
                 boxShadow: 20
@@ -351,6 +352,7 @@ class Content extends Component {
               height: 300,
               boxShadow: 10,
               transition: 'all 0.3s ease',
+              display: { xs: 'none', sm: 'block' },
               '&:hover': {
                 transform: 'translateY(-5px)',
                 boxShadow: 20
