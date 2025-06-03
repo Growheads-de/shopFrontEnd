@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { 
   AppBar, 
   Toolbar, 
-  /*Button,*/ 
+  Button, 
   Typography, 
   Box, 
   TextField, 
@@ -292,7 +292,6 @@ const ButtonGroupWithRouter = (props) => {
   return <ButtonGroup {...props} navigate={navigate} />;
 };
 
-/*
 // CategoryList Subcomponent
 class CategoryList extends Component {
   constructor(props) {
@@ -445,7 +444,7 @@ class CategoryList extends Component {
     );
   }
 }
-*/
+
 // Main Header Component
 class Header extends Component {
   static contextType = SocketContext;
@@ -475,6 +474,7 @@ class Header extends Component {
     //const { cartItems } = this.state;
     // Get socket directly from context in render method
     const socket = this.context;
+    const { isHomePage } = this.props;
 
     return (
       <AppBar position="sticky" color="primary" elevation={0} sx={{ zIndex: 1100 }}>
@@ -513,7 +513,7 @@ class Header extends Component {
             </Box>
           </Container>
         </Toolbar>
-        {/*<CategoryList socket={socket} />*/}
+        {isHomePage && <CategoryList socket={socket} />}
       </AppBar>
     );
   }
@@ -523,10 +523,15 @@ class Header extends Component {
 const SearchBarWithRouter = () => <SearchBar />;
 
 // Use a wrapper function to provide context
-const HeaderWithContext = (props) => (
-  <SocketContext.Consumer>
-    {socket => <Header {...props} socket={socket} />}
-  </SocketContext.Consumer>
-);
+const HeaderWithContext = (props) => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+  
+  return (
+    <SocketContext.Consumer>
+      {socket => <Header {...props} socket={socket} isHomePage={isHomePage} />}
+    </SocketContext.Consumer>
+  );
+};
 
 export default HeaderWithContext; 
