@@ -1,6 +1,6 @@
 import { ThemeProvider } from '@mui/material/styles';
 import React, { Suspense, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -47,6 +47,17 @@ const deleteMessages = () => {
 const App = () => {
   // State to manage chat visibility
   const [isChatOpen, setChatOpen] = useState(false);
+  
+  // Get current location
+  const location = useLocation();
+  
+  // Extract categoryId from pathname if on category route
+  const getCategoryId = () => {
+    const match = location.pathname.match(/^\/category\/(.+)$/);
+    return match ? match[1] : null;
+  };
+  
+  const categoryId = getCategoryId();
 
   // Handler to toggle chat visibility
   const handleChatToggle = () => {
@@ -86,7 +97,7 @@ const App = () => {
           >
             <Suspense fallback={<Loading />}>
               <ScrollToTop />
-              <Header />
+              <Header active categoryId={categoryId} />
               <Box sx={{ flexGrow: 1 }}>
                 <Routes>
                   {/* Home page with text only */}
