@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import { Box, Container, Button, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 
 class CategoryList extends Component {
   constructor(props) {
     super(props);
     this.state = {
       categories: [],
+      parentCategory: null,
       fetchedCategories: false
     };
   }
@@ -49,7 +51,7 @@ class CategoryList extends Component {
       const cacheKey = 'categoryList_' + this.props.categoryId;
       const cachedData = window.productCache[cacheKey];
       if (cachedData) {
-        const { categories, timestamp } = cachedData;
+        const { categories, parentCategory, timestamp } = cachedData;
         const cacheAge = Date.now() - timestamp;
         const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
         
@@ -58,6 +60,7 @@ class CategoryList extends Component {
           //console.log('Using cached categories, age:', Math.round(cacheAge/1000), 'seconds');
           this.setState({ 
             categories,
+            parentCategory: parentCategory || null,
             fetchedCategories: true 
           });
           return;
@@ -69,7 +72,8 @@ class CategoryList extends Component {
     
     //console.log('CategoryList: Fetching categories from socket');
     socket.emit('categoryList', {categoryId: this.props.categoryId}, (response) => {
-      //console.log('CategoryList response:', response);
+      console.log('CategoryList response:', response);
+      
       if (response && response.categories) {
         //console.log('Categories received:', response.categories.length);
         
@@ -78,6 +82,7 @@ class CategoryList extends Component {
           const cacheKey = 'categoryList_' + this.props.categoryId;
           window.productCache[cacheKey] = {
             categories: response.categories,
+            parentCategory: response.parentCategory || null,
             timestamp: Date.now()
           };
         } catch (err) {
@@ -86,6 +91,7 @@ class CategoryList extends Component {
         
         this.setState({ 
           categories: response.categories,
+          parentCategory: response.parentCategory || null,
           fetchedCategories: true 
         }, () => {
           //console.log('Categories in state:', this.state.categories);
@@ -96,6 +102,7 @@ class CategoryList extends Component {
             const cacheKey = 'categoryList_' + this.props.categoryId;
             window.productCache[cacheKey] = {
               categories: [],
+              parentCategory: response.parentCategory || null,
               timestamp: Date.now()
             };
           } catch (err) {
@@ -104,6 +111,7 @@ class CategoryList extends Component {
           
           this.setState({ 
             categories: [],
+            parentCategory: response.parentCategory || null,
             fetchedCategories: true 
           }, () => {
             //console.log('Categories in state:', this.state.categories);
@@ -162,6 +170,30 @@ class CategoryList extends Component {
                 }}
               >
                 <HomeIcon sx={{ fontSize: '1rem' }} />
+              </Button>
+            )}
+            {this.state.parentCategory && this.state.parentCategory.id && this.state.parentCategory.name && (
+              <Button
+                component={Link}
+                to={`/category/${this.state.parentCategory.id}`}
+                color="inherit"
+                size="small"
+                sx={{
+                  fontSize: '0.75rem',
+                  fontWeight: 'normal',
+                  textTransform: 'none',
+                  whiteSpace: 'nowrap',
+                  opacity: 0.9,
+                  mx: 0.5,
+                  minWidth: 'auto',
+                  '&:hover': {
+                    opacity: 1,
+                    bgcolor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+                title={`Up to ${this.state.parentCategory.name}`}
+              >
+                <ArrowUpwardIcon sx={{ fontSize: '1rem' }} />
               </Button>
             )}
             {this.state.fetchedCategories && categories.length > 0 ? (
