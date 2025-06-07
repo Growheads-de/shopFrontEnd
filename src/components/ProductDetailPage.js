@@ -67,10 +67,10 @@ class Images extends Component {
             pics.push(window.smallPicCache[bildId]);
             this.loadPic('medium',bildId,newMainPic);
           }else if(window.tinyPicCache[bildId]){
-            pics.push(window.tinyPicCache[bildId]);
+            pics.push(bildId);
             this.loadPic('medium',bildId,newMainPic);
           }else{
-            pics.push(null);
+            pics.push(bildId);
             this.loadPic('medium',bildId,newMainPic);
           }  
         }else{
