@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Fab from '@mui/material/Fab';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import Content from './components/Content.js';
-import ProductDetailWithSocket from './components/ProductDetailPage.js';
+import ProductDetailWithSocket from './components/ProductDetailWithSocket.js';
 import SocketProvider from './providers/SocketProvider.js';
 import SocketContext from './contexts/SocketContext.js';
 import config from './config.js';
