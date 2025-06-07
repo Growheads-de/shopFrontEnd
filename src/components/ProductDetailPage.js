@@ -2,7 +2,8 @@ import React, { Component, Fragment } from 'react';
 import { 
   Box, 
   Typography,
-  CardMedia
+  CardMedia,
+  Stack
 } from '@mui/material';
 import { Link, useParams, useNavigate, useLocation} from 'react-router-dom';
 import SocketContext from '../contexts/SocketContext.js';
@@ -53,6 +54,7 @@ class Images extends Component {
 
     if(this.props.pictureList && this.props.pictureList.length > 0){
       const bildIds = this.props.pictureList.split(',');
+     
 
       const pics = [];
       const mainPicId = bildIds[this.state.mainPic];
@@ -65,6 +67,9 @@ class Images extends Component {
           }else if(window.smallPicCache[bildId]){
             pics.push(window.smallPicCache[bildId]);
             this.loadPic('medium',bildId,this.state.mainPic);
+          }else if(window.tinyPicCache[bildId]){
+            pics.push(window.tinyPicCache[bildId]);
+            this.loadPic('medium',bildId,this.state.mainPic);
           }else{
             pics.push(null);
             this.loadPic('medium',bildId,this.state.mainPic);
@@ -72,12 +77,16 @@ class Images extends Component {
         }else{
           if(window.tinyPicCache[bildId]){
             pics.push(window.tinyPicCache[bildId]);
+          }else if(window.mediumPicCache[bildId]){
+            pics.push(window.mediumPicCache[bildId]);
+            this.loadPic('tiny',bildId,this.state.mainPic);
           }else{
             pics.push(null);
             this.loadPic('tiny',bildId,pics.length-1);
           }
         }
       }
+      console.log('pics',pics);
       this.setState({ pics });
     }else{
       if(this.state.pics.length > 0) this.setState({ pics:[] });
@@ -100,13 +109,45 @@ class Images extends Component {
     })
   }
 
+  handleThumbnailClick = (clickedPic) => {
+    // Find the original index of the clicked picture in the full pics array
+    const originalIndex = this.state.pics.findIndex(pic => pic === clickedPic);
+    if (originalIndex !== -1) {
+      this.setState({ mainPic: originalIndex }, () => {
+        this.updatePics();
+      });
+    }
+  }
+
   render() {
     return (
       <>
         {this.state.pics[this.state.mainPic] && (
           <CardMedia component="img" height="400" sx={{ objectFit: 'contain'}} image={this.state.pics[this.state.mainPic]}/>
         )}
-
+        <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mt: 2 }}>
+        {this.state.pics.filter(pic => pic !== null && pic !== this.state.pics[this.state.mainPic]).map((pic, index) => (
+          <CardMedia 
+            key={index} 
+            component="img" 
+            height="80" 
+            sx={{ 
+              objectFit: 'contain',
+              cursor: 'pointer',
+              borderRadius: 1,
+              border: '2px solid transparent',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                border: '2px solid #1976d2',
+                transform: 'scale(1.05)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+              }
+            }} 
+            image={pic}
+            onClick={() => this.handleThumbnailClick(pic)}
+          />
+        ))}
+        </Stack>
       </>
     );
   }
