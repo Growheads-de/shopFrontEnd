@@ -5,7 +5,9 @@ import {
   Stack,
   Dialog,
   DialogContent,
-  IconButton
+  IconButton,
+  Badge
+  
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -217,27 +219,50 @@ class Images extends Component {
               onClick={(e) => e.stopPropagation()}
             >
               <Stack direction="row" spacing={2} sx={{ justifyContent: 'center', p: 3 }}>
-                {this.state.pics.filter(pic => pic !== null && pic !== this.state.pics[this.state.mainPic]).map((pic, index) => (
-                  <CardMedia 
-                    key={index} 
-                    component="img" 
-                    height="60" 
-                    sx={{ 
-                      objectFit: 'contain',
-                      cursor: 'pointer',
-                      borderRadius: 1,
-                      border: '2px solid rgba(255, 255, 255, 0.3)',
-                      transition: 'all 0.2s ease-in-out',
-                      '&:hover': {
-                        border: '2px solid #1976d2',
-                        transform: 'scale(1.1)',
-                        boxShadow: '0 4px 8px rgba(25, 118, 210, 0.5)'
-                      }
-                    }} 
-                    image={pic}
-                    onClick={() => this.handleThumbnailClick(pic)}
-                  />
-                ))}
+                {this.state.pics.filter(pic => pic !== null && pic !== this.state.pics[this.state.mainPic]).map((pic, filterIndex) => {
+                  // Find the original index in the full pics array
+                  const originalIndex = this.state.pics.findIndex(p => p === pic);
+                  return (
+                    <Box key={filterIndex} sx={{ position: 'relative' }}>
+                      <Badge
+                        badgeContent={originalIndex + 1}
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            backgroundColor: 'rgba(119, 155, 191, 0.79)',
+                            color: 'white',
+                            fontSize: '0.7rem',
+                            minWidth: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            top: 4,
+                            right: 4,
+                            border: '2px solid rgba(255, 255, 255, 0.8)',
+                            fontWeight: 'bold'
+                          }
+                        }}
+                      >
+                        <CardMedia 
+                          component="img" 
+                          height="60" 
+                          sx={{ 
+                            objectFit: 'contain',
+                            cursor: 'pointer',
+                            borderRadius: 1,
+                            border: '2px solid rgba(255, 255, 255, 0.3)',
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': {
+                              border: '2px solid #1976d2',
+                              transform: 'scale(1.1)',
+                              boxShadow: '0 4px 8px rgba(25, 118, 210, 0.5)'
+                            }
+                          }} 
+                          image={pic}
+                          onClick={() => this.handleThumbnailClick(pic)}
+                        />
+                      </Badge>
+                    </Box>
+                  );
+                })}
               </Stack>
             </Box>
           </DialogContent>
