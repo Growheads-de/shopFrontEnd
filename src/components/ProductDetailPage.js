@@ -42,12 +42,7 @@ class Images extends Component {
   }
 
   componentDidMount  () {
-    this.updatePics();
-  }
-  componentDidUpdate(prevProps) {
-    if (prevProps.mainPic !== this.props.mainPic) {
-      this.updatePics();
-    }
+    this.updatePics(0);
   }
 
   updatePics = (newMainPic = this.state.mainPic) => {
