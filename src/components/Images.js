@@ -122,27 +122,55 @@ class Images extends Component {
           />
         )}
         <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mt: 1,mb: 1 }}>
-        {this.state.pics.filter(pic => pic !== null && pic !== this.state.pics[this.state.mainPic]).map((pic, index) => (
-          <CardMedia 
-            key={index} 
-            component="img" 
-            height="80" 
-            sx={{ 
-              objectFit: 'contain',
-              cursor: 'pointer',
-              borderRadius: 1,
-              border: '2px solid transparent',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                border: '2px solid #1976d2',
-                transform: 'scale(1.05)',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
-              }
-            }} 
-            image={pic}
-            onClick={() => this.handleThumbnailClick(pic)}
-          />
-        ))}
+        {this.state.pics.filter(pic => pic !== null && pic !== this.state.pics[this.state.mainPic]).map((pic, filterIndex) => {
+          // Find the original index in the full pics array
+          const originalIndex = this.state.pics.findIndex(p => p === pic);
+          return (
+            <Box key={filterIndex} sx={{ position: 'relative' }}>
+              <Badge
+                badgeContent={originalIndex + 1}
+                sx={{
+                  '& .MuiBadge-badge': {
+                    backgroundColor: 'rgba(119, 155, 191, 0.79)',
+                    color: 'white',
+                    fontSize: '0.7rem',
+                    minWidth: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    top: 4,
+                    right: 4,
+                    border: '2px solid rgba(255, 255, 255, 0.8)',
+                    fontWeight: 'bold',
+                    opacity: 0,
+                    transition: 'opacity 0.2s ease-in-out'
+                  },
+                  '&:hover .MuiBadge-badge': {
+                    opacity: 1
+                  }
+                }}
+              >
+                <CardMedia 
+                  component="img" 
+                  height="80" 
+                  sx={{ 
+                    objectFit: 'contain',
+                    cursor: 'pointer',
+                    borderRadius: 1,
+                    border: '2px solid transparent',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      border: '2px solid #1976d2',
+                      transform: 'scale(1.05)',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                    }
+                  }} 
+                  image={pic}
+                  onClick={() => this.handleThumbnailClick(pic)}
+                />
+              </Badge>
+            </Box>
+          );
+        })}
         </Stack>
 
         {/* Fullscreen Dialog */}
@@ -224,22 +252,27 @@ class Images extends Component {
                   const originalIndex = this.state.pics.findIndex(p => p === pic);
                   return (
                     <Box key={filterIndex} sx={{ position: 'relative' }}>
-                      <Badge
-                        badgeContent={originalIndex + 1}
-                        sx={{
-                          '& .MuiBadge-badge': {
-                            backgroundColor: 'rgba(119, 155, 191, 0.79)',
-                            color: 'white',
-                            fontSize: '0.7rem',
-                            minWidth: '20px',
-                            height: '20px',
-                            borderRadius: '50%',
-                            top: 4,
-                            right: 4,
-                            border: '2px solid rgba(255, 255, 255, 0.8)',
-                            fontWeight: 'bold'
-                          }
-                        }}
+                                             <Badge
+                         badgeContent={originalIndex + 1}
+                         sx={{
+                           '& .MuiBadge-badge': {
+                             backgroundColor: 'rgba(119, 155, 191, 0.79)',
+                             color: 'white',
+                             fontSize: '0.7rem',
+                             minWidth: '20px',
+                             height: '20px',
+                             borderRadius: '50%',
+                             top: 4,
+                             right: 4,
+                             border: '2px solid rgba(255, 255, 255, 0.8)',
+                             fontWeight: 'bold',
+                             opacity: 0,
+                             transition: 'opacity 0.2s ease-in-out'
+                           },
+                           '&:hover .MuiBadge-badge': {
+                             opacity: 1
+                           }
+                         }}
                       >
                         <CardMedia 
                           component="img" 
