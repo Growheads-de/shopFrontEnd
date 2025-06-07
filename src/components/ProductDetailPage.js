@@ -44,6 +44,11 @@ class Images extends Component {
   componentDidMount  () {
     this.updatePics(0);
   }
+  componentDidUpdate(prevProps) {
+    if (prevProps.fullscreenOpen !== this.props.fullscreenOpen) {
+      this.updatePics();
+    }
+  }
 
   updatePics = (newMainPic = this.state.mainPic) => {
     if (!window.tinyPicCache) window.tinyPicCache = {}; 
@@ -61,17 +66,20 @@ class Images extends Component {
       for(const bildId of bildIds){
         if(bildId == mainPicId){
         
-          if(window.mediumPicCache[bildId]){
-            pics.push(window.mediumPicCache[bildId]); 
+          if(window.largePicCache[bildId]){
+            pics.push(window.largePicCache[bildId]);  
+          }else if(window.mediumPicCache[bildId]){
+            pics.push(window.mediumPicCache[bildId]);
+            if(this.props.fullscreenOpen) this.loadPic('large',bildId,newMainPic);
           }else if(window.smallPicCache[bildId]){
             pics.push(window.smallPicCache[bildId]);
-            this.loadPic('medium',bildId,newMainPic);
+            this.loadPic(this.props.fullscreenOpen ? 'large' : 'medium',bildId,newMainPic);
           }else if(window.tinyPicCache[bildId]){
             pics.push(bildId);
-            this.loadPic('medium',bildId,newMainPic);
+            this.loadPic(this.props.fullscreenOpen ? 'large' : 'medium',bildId,newMainPic);
           }else{
             pics.push(bildId);
-            this.loadPic('medium',bildId,newMainPic);
+            this.loadPic(this.props.fullscreenOpen ? 'large' : 'medium',bildId,newMainPic);
           }  
         }else{
           if(window.tinyPicCache[bildId]){
