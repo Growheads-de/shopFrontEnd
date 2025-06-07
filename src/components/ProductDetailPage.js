@@ -3,8 +3,12 @@ import {
   Box, 
   Typography,
   CardMedia,
-  Stack
+  Stack,
+  Dialog,
+  DialogContent,
+  IconButton
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { Link, useParams, useNavigate, useLocation} from 'react-router-dom';
 import SocketContext from '../contexts/SocketContext.js';
 import parse from 'html-react-parser';
@@ -123,7 +127,20 @@ class Images extends Component {
     return (
       <>
         {this.state.pics[this.state.mainPic] && (
-          <CardMedia component="img" height="400" sx={{ objectFit: 'contain'}} image={this.state.pics[this.state.mainPic]}/>
+          <CardMedia 
+            component="img" 
+            height="400" 
+            sx={{ 
+              objectFit: 'contain',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'scale(1.02)'
+              }
+            }} 
+            image={this.state.pics[this.state.mainPic]}
+            onClick={this.props.onOpenFullscreen}
+          />
         )}
         <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mt: 2 }}>
         {this.state.pics.filter(pic => pic !== null && pic !== this.state.pics[this.state.mainPic]).map((pic, index) => (
@@ -148,6 +165,106 @@ class Images extends Component {
           />
         ))}
         </Stack>
+
+        {/* Fullscreen Dialog */}
+        <Dialog
+          open={this.props.fullscreenOpen || false}
+          onClose={this.props.onCloseFullscreen}
+          maxWidth={false}
+          fullScreen
+          sx={{
+            '& .MuiDialog-paper': {
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+            }
+          }}
+        >
+          <DialogContent 
+            sx={{ 
+              p: 0, 
+              display: 'flex', 
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              height: '100vh',
+              cursor: 'pointer'
+            }}
+            onClick={(e) => {
+              // Only close if clicking on the background (DialogContent itself)
+              if (e.target === e.currentTarget) {
+                this.props.onCloseFullscreen();
+              }
+            }}
+          >
+            {/* Close Button */}
+            <IconButton
+              onClick={this.props.onCloseFullscreen}
+              sx={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                color: 'white',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+
+            {/* Main Image in Fullscreen */}
+            {this.state.pics[this.state.mainPic] && (
+                              <CardMedia 
+                  component="img" 
+                  sx={{                               
+                    objectFit: 'contain',
+                    width: '90vw',
+                    height: '80vh'
+                  }} 
+                  image={this.state.pics[this.state.mainPic]}
+                  onClick={this.props.onCloseFullscreen}
+                />
+            )}
+
+            {/* Thumbnail Stack in Fullscreen */}
+            <Box 
+              sx={{ 
+                position: 'absolute',
+                bottom: 16,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                maxWidth: '90%',
+                overflow: 'hidden'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Stack direction="row" spacing={2} sx={{ justifyContent: 'center', py: 2 }}>
+                {this.state.pics.filter(pic => pic !== null && pic !== this.state.pics[this.state.mainPic]).map((pic, index) => (
+                  <CardMedia 
+                    key={index} 
+                    component="img" 
+                    height="60" 
+                    sx={{ 
+                      objectFit: 'contain',
+                      cursor: 'pointer',
+                      borderRadius: 1,
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        border: '2px solid #1976d2',
+                        transform: 'scale(1.1)',
+                        boxShadow: '0 4px 8px rgba(25, 118, 210, 0.5)'
+                      }
+                    }} 
+                    image={pic}
+                    onClick={() => this.handleThumbnailClick(pic)}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          </DialogContent>
+        </Dialog>
       </>
     );
   }
@@ -325,7 +442,13 @@ class ProductDetailPage extends Component {
               />  
             )}
             {product.pictureList && (
-              <Images socket={this.props.socket} pictureList={product.pictureList}/>
+              <Images 
+                socket={this.props.socket} 
+                pictureList={product.pictureList}
+                fullscreenOpen={this.state.imageDialogOpen}
+                onOpenFullscreen={this.handleOpenDialog}
+                onCloseFullscreen={this.handleCloseDialog}
+              />
             )}
           </Box>
          
