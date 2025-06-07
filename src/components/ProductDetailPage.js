@@ -50,7 +50,7 @@ class Images extends Component {
     }
   }
 
-  updatePics = () => {
+  updatePics = (newMainPic = this.state.mainPic) => {
     if (!window.tinyPicCache) window.tinyPicCache = {}; 
     if (!window.smallPicCache) window.smallPicCache = {};
     if (!window.mediumPicCache) window.mediumPicCache = {};
@@ -61,7 +61,7 @@ class Images extends Component {
      
 
       const pics = [];
-      const mainPicId = bildIds[this.state.mainPic];
+      const mainPicId = bildIds[newMainPic];
 
       for(const bildId of bildIds){
         if(bildId == mainPicId){
@@ -70,20 +70,20 @@ class Images extends Component {
             pics.push(window.mediumPicCache[bildId]); 
           }else if(window.smallPicCache[bildId]){
             pics.push(window.smallPicCache[bildId]);
-            this.loadPic('medium',bildId,this.state.mainPic);
+            this.loadPic('medium',bildId,newMainPic);
           }else if(window.tinyPicCache[bildId]){
             pics.push(window.tinyPicCache[bildId]);
-            this.loadPic('medium',bildId,this.state.mainPic);
+            this.loadPic('medium',bildId,newMainPic);
           }else{
             pics.push(null);
-            this.loadPic('medium',bildId,this.state.mainPic);
+            this.loadPic('medium',bildId,newMainPic);
           }  
         }else{
           if(window.tinyPicCache[bildId]){
             pics.push(window.tinyPicCache[bildId]);
           }else if(window.mediumPicCache[bildId]){
             pics.push(window.mediumPicCache[bildId]);
-            this.loadPic('tiny',bildId,this.state.mainPic);
+            this.loadPic('tiny',bildId,newMainPic);
           }else{
             pics.push(null);
             this.loadPic('tiny',bildId,pics.length-1);
@@ -91,9 +91,9 @@ class Images extends Component {
         }
       }
       console.log('pics',pics);
-      this.setState({ pics });
+      this.setState({ pics, mainPic: newMainPic });
     }else{
-      if(this.state.pics.length > 0) this.setState({ pics:[] });
+      if(this.state.pics.length > 0) this.setState({ pics:[], mainPic: newMainPic });
     }
   }
 
@@ -117,9 +117,7 @@ class Images extends Component {
     // Find the original index of the clicked picture in the full pics array
     const originalIndex = this.state.pics.findIndex(pic => pic === clickedPic);
     if (originalIndex !== -1) {
-      this.setState({ mainPic: originalIndex }, () => {
-        this.updatePics();
-      });
+      this.updatePics(originalIndex);
     }
   }
 
