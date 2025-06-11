@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { Container, Box, Paper, Typography, Stack } from '@mui/material';
+import { Container, Box, Stack, Paper, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ProductFilters from './ProductFilters.js';
 import ProductList from './ProductList.js';
+import CategoryBoxGrid from './CategoryBoxGrid.js';
 
 import { useParams, useSearchParams } from 'react-router-dom';
 import { getAllSettingsWithPrefix } from '../utils/sessionStorage.js';
@@ -164,16 +165,17 @@ class Content extends Component {
       categoryName: null, 
       unfilteredProducts: [],
       filteredProducts: [],
-      attributes: []
+      attributes: [],
+      childCategories: []
     };
   }
 
   componentDidMount() {
-    if(this.props.params.categoryId) {this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
+    if(this.props.params.categoryId) {this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
       this.fetchCategoryData(this.props.params.categoryId);
     })}
     else if (this.props.searchParams?.get('q')) {
-      this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
+      this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
         this.fetchSearchData(this.props.searchParams?.get('q'));
       })
     }
@@ -182,12 +184,12 @@ class Content extends Component {
   componentDidUpdate(prevProps) {
     if(this.props.params.categoryId && (prevProps.params.categoryId !== this.props.params.categoryId)) {
         window.currentSearchQuery = null;
-        this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
+        this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
         this.fetchCategoryData(this.props.params.categoryId);
       }); 
     } 
     else if (this.props.searchParams?.get('q') && (prevProps.searchParams?.get('q') !== this.props.searchParams?.get('q'))) {
-      this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null}, () => {
+      this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
         this.fetchSearchData(this.props.searchParams?.get('q'));
       })
     }
@@ -217,6 +219,7 @@ class Content extends Component {
       dataType: response.dataType,
       dataParam: response.dataParam,
       attributes: response.attributes,
+      childCategories: response.childCategories || [],
       loaded: true
     });
   }
@@ -224,20 +227,61 @@ class Content extends Component {
   fetchCategoryData(categoryId) {
     const cachedData = getCachedCategoryData(categoryId);
     if (cachedData) {
-      this.processData(cachedData);
+      this.processDataWithCategoryTree(cachedData, categoryId);
       return;
     }
 
     this.props.socket.emit("getCategoryProducts", { categoryId: parseInt(categoryId) },
       (response) => {
         setCachedCategoryData(categoryId, response);
-        if (response && response.products) {
-          this.processData(response);
+        if (response && response.products !== undefined) {
+          this.processDataWithCategoryTree(response, categoryId);
         } else {
           console.log("fetchCategoryData in Content failed", response);
         }
       }
     );
+  }
+  
+  processDataWithCategoryTree(response, categoryId) {
+    // Get child categories from the cached category tree
+    let childCategories = [];
+    try {
+      const categoryTreeCache = window.productCache && window.productCache['categoryTree_209'];
+      if (categoryTreeCache && categoryTreeCache.categoryTree) {
+        const targetCategory = this.findCategoryById(categoryTreeCache.categoryTree, parseInt(categoryId));
+        if (targetCategory && targetCategory.children) {
+          childCategories = targetCategory.children;
+        }
+      }
+    } catch (err) {
+      console.error('Error getting child categories from tree:', err);
+    }
+    
+    // Add child categories to the response
+    const enhancedResponse = {
+      ...response,
+      childCategories
+    };
+    
+    this.processData(enhancedResponse);
+  }
+  
+  findCategoryById(category, targetId) {
+    if (!category) return null;
+    
+    if (category.id === targetId) {
+      return category;
+    }
+    
+    if (category.children) {
+      for (let child of category.children) {
+        const found = this.findCategoryById(child, targetId);
+        if (found) return found;
+      }
+    }
+    
+    return null;
   }
 
   fetchSearchData(query) {
@@ -262,37 +306,51 @@ class Content extends Component {
   }
 
 
+
+
   render() {
+    // Check if we should show category boxes instead of product list
+    const showCategoryBoxes = this.state.loaded && 
+                             this.state.unfilteredProducts.length === 0 && 
+                             this.state.childCategories.length > 0;
+
     return (
       <Container maxWidth="xl" sx={{ py: 4, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
         <style>{fontFaceStyle}</style>
 
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 2fr', md: '1fr 3fr', lg: '1fr 4fr', xl: '1fr 4fr' }, 
-          gap: 3
-        }}>
+        {showCategoryBoxes ? (
+          // Show category boxes layout when no products but have child categories
+          <CategoryBoxGrid 
+            categories={this.state.childCategories}
+            title={this.state.categoryName}
+          />
+        ) : (
+          // Show normal product list layout
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 2fr', md: '1fr 3fr', lg: '1fr 4fr', xl: '1fr 4fr' }, 
+            gap: 3
+          }}>
 
-          <Stack direction="row" spacing={0} sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            minHeight: { xs: 'min-content', sm: '100%' }
-          }}> 
+            <Stack direction="row" spacing={0} sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              minHeight: { xs: 'min-content', sm: '100%' }
+            }}> 
 
-          <Box >
-   
-            <ProductFilters 
-              products={this.state.unfilteredProducts}
-              filteredProducts={this.state.filteredProducts}
-              attributes={this.state.attributes}
-              searchParams={this.props.searchParams}
-              onFilterChange={()=>{this.filterProducts()}}
-              dataType={this.state.dataType}
-              dataParam={this.state.dataParam}
-            />
-          </Box>
-
-          {(this.props.params.categoryId == 706 ||this.props.params.categoryId == 689) &&
+            <Box >
+     
+              <ProductFilters 
+                products={this.state.unfilteredProducts}
+                filteredProducts={this.state.filteredProducts}
+                attributes={this.state.attributes}
+                searchParams={this.props.searchParams}
+                onFilterChange={()=>{this.filterProducts()}}
+                dataType={this.state.dataType}
+                dataParam={this.state.dataParam}
+              />
+            </Box>
+            {(this.props.params.categoryId == 706 ||this.props.params.categoryId == 689) &&
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             <Typography variant="h6" sx={{mt:3}}>
               Andere Kategorien
@@ -347,7 +405,7 @@ class Content extends Component {
             </Paper>
           }
 
-          {this.props.params.categoryId == 689 && <Paper
+            {this.props.params.categoryId == 689 && <Paper
             component={Link}
             to="/category/706"
             sx={{
@@ -392,21 +450,22 @@ class Content extends Component {
               </Box>
             </Box>
           </Paper>}
-          </Stack>
+            </Stack>
 
-          <Box>
-            <ProductList
-              socket={this.props.socket}
-              totalProductCount={(this.state.unfilteredProducts || []).length}
-              products={this.state.filteredProducts || []}
-              activeAttributeFilters={this.state.activeAttributeFilters || []}
-              activeManufacturerFilters={this.state.activeManufacturerFilters || []}
-              onFilterChange={()=>{this.filterProducts()}}
-              dataType={this.state.dataType}
-              dataParam={this.state.dataParam}
-            />
+            <Box>
+              <ProductList
+                socket={this.props.socket}
+                totalProductCount={(this.state.unfilteredProducts || []).length}
+                products={this.state.filteredProducts || []}
+                activeAttributeFilters={this.state.activeAttributeFilters || []}
+                activeManufacturerFilters={this.state.activeManufacturerFilters || []}
+                onFilterChange={()=>{this.filterProducts()}}
+                dataType={this.state.dataType}
+                dataParam={this.state.dataParam}
+              />
+            </Box>
           </Box>
-        </Box>
+        )}
       </Container>
     );
   }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Typography, Box, Paper, Grid } from '@mui/material';
+import { Container, Box, Typography, Paper, Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 // Add font-face declaration at the top of the file
