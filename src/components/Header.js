@@ -79,7 +79,7 @@ class Header extends Component {
             </Box>
           </Container>
         </Toolbar>
-        {(isHomePage || this.props.categoryId) && <CategoryList categoryId={this.props.categoryId} socket={socket} />}
+        {(isHomePage || this.props.categoryId) && <CategoryList categoryId={209} activeCategoryId={this.props.categoryId} socket={socket} />}
       </AppBar>
     );
   }
