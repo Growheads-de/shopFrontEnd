@@ -209,6 +209,7 @@ class CategoryList extends Component {
           alignItems: 'center',
           flexWrap: 'nowrap',
           overflowX: 'auto',
+          py: 0.5, // Add vertical padding to prevent border clipping
           '&::-webkit-scrollbar': {
             display: 'none'
           },
@@ -229,16 +230,23 @@ class CategoryList extends Component {
               whiteSpace: 'nowrap',
               opacity: 0.9,
               mx: 0.5,
+              my: 0.25, // Add consistent vertical margin to account for borders
               minWidth: 'auto',
+              border: '2px solid transparent', // Always have border space
+              borderRadius: 1, // Always have border radius
               ...(this.props.activeCategoryId === null && {
-                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                transform: 'translateY(-1px)',
-                bgcolor: 'rgba(255,255,255,0.1)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                transform: 'translateY(-2px)',
+                bgcolor: 'rgba(255,255,255,0.25)',
+                borderColor: 'rgba(255,255,255,0.6)', // Change border color instead of adding border
+                fontWeight: 'bold',
                 opacity: 1
               }),
               '&:hover': {
                 opacity: 1,
-                bgcolor: 'rgba(255,255,255,0.1)'
+                bgcolor: 'rgba(255,255,255,0.15)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
               }
             }}
           >
@@ -265,15 +273,22 @@ class CategoryList extends Component {
                     whiteSpace: 'nowrap',
                     opacity: 0.9,
                     mx: 0.5,
+                    my: 0.25, // Add consistent vertical margin to account for borders
+                    border: '2px solid transparent', // Always have border space
+                    borderRadius: 1, // Always have border radius
                     ...(isActiveAtThisLevel && {
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                      transform: 'translateY(-1px)',
-                      bgcolor: 'rgba(255,255,255,0.1)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                      transform: 'translateY(-2px)',
+                      bgcolor: 'rgba(255,255,255,0.25)',
+                      borderColor: 'rgba(255,255,255,0.6)', // Change border color instead of adding border
+                      fontWeight: 'bold',
                       opacity: 1
                     }),
                     '&:hover': {
                       opacity: 1,
-                      bgcolor: 'rgba(255,255,255,0.1)'
+                      bgcolor: 'rgba(255,255,255,0.15)',
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
                     }
                   }}
                 >
@@ -308,7 +323,7 @@ class CategoryList extends Component {
         sx={{ 
           width: '100%',
           bgcolor: 'primary.dark',
-          py: 0.75,
+          py: 1.25, // Increased padding to accommodate elevated buttons and borders
           px: 2,
           display: { xs: 'none', md: 'block' }
         }}
