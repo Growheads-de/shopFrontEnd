@@ -47,7 +47,7 @@ class CategoryList extends Component {
     }
     
     if (this.state.fetchedCategories) {
-      console.log('Categories already fetched, skipping');
+      //console.log('Categories already fetched, skipping');
       return;
     }
     
@@ -69,6 +69,7 @@ class CategoryList extends Component {
         if (cacheAge < tenMinutes && categoryTree) {
           //console.log('Using cached category tree, age:', Math.round(cacheAge/1000), 'seconds');
           this.processCategoryTree(categoryTree);
+          this.setState({ fetchedCategories: true }); // Mark as fetched to prevent future calls
           return;
         }
       }
@@ -76,10 +77,11 @@ class CategoryList extends Component {
       console.error('Error reading from cache:', err);
     }
     
+    // Mark as being fetched to prevent concurrent calls
+    this.setState({ fetchedCategories: true });
+    
     //console.log('CategoryList: Fetching categories from socket');
     socket.emit('categoryList', {categoryId: 209}, (response) => {
-      console.log('CategoryList response:', response);
-      
       if (response && response.categoryTree) {
         //console.log('Category tree received:', response.categoryTree);
         
@@ -112,8 +114,7 @@ class CategoryList extends Component {
             level1Categories: [],
             level2Categories: [],
             level3Categories: [],
-            activePath: [],
-            fetchedCategories: true 
+            activePath: []
           });
       }
     });

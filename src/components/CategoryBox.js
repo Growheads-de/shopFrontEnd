@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -15,10 +15,49 @@ const CategoryBox = ({
   name, 
   image, 
   bgcolor, 
-  height = 250,
-  fontSize = '1.2rem',
+  height = 130,
+  fontSize = '1.0rem',
   ...props 
 }) => {
+  const [imageUrl, setImageUrl] = useState(null);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Handle different image types
+    if (image) {
+      if (typeof image === 'string') {
+        // It's already a URL string
+        setImageUrl(image);
+        setImageError(false);
+      } else if (image instanceof ArrayBuffer) {
+        // Convert ArrayBuffer to data URL
+        try {
+          const blob = new Blob([image], { type: 'image/jpeg' }); // Assume JPEG, could be PNG
+          const dataUrl = URL.createObjectURL(blob);
+          setImageUrl(dataUrl);
+          setImageError(false);
+          
+          // Clean up the object URL when component unmounts or image changes
+          return () => {
+            URL.revokeObjectURL(dataUrl);
+          };
+        } catch (error) {
+          console.error('Error converting ArrayBuffer to image URL:', error);
+          setImageError(true);
+          setImageUrl(null);
+        }
+      } else {
+        // Unknown image type
+        console.warn('Unknown image type for category', id, typeof image);
+        setImageError(true);
+        setImageUrl(null);
+      }
+    } else {
+      setImageUrl(null);
+      setImageError(false);
+    }
+  }, [image, id]);
+
   return (
     <>
       <style>{fontFaceStyle}</style>
@@ -31,8 +70,8 @@ const CategoryBox = ({
           borderRadius: 2,
           overflow: 'hidden',
           width: '100%',
-          height: typeof height === 'object' ? '250px' : `${height}px`,
-          minHeight: '250px',
+          height: typeof height === 'object' ? '130px' : `${height}px`,
+          minHeight: '130px',
           display: 'block',
           position: 'relative',
           bgcolor: bgcolor || '#f0f0f0',
@@ -45,14 +84,14 @@ const CategoryBox = ({
         }}
         {...props}
       >
-                {/* Main content area - using flex to fill space */}
+        {/* Main content area - using flex to fill space */}
         <Box sx={{
-          width: '100%',
+          width: '130px',
           height: '100%',
-          minHeight: '250px',
+          minHeight: '130px',
           bgcolor: bgcolor || '#e0e0e0',
           position: 'relative',
-          backgroundImage: image ? `url("${image}")` : 'none',
+          backgroundImage: imageUrl && !imageError ? `url("${imageUrl}")` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -66,7 +105,7 @@ const CategoryBox = ({
           {/* Category name at bottom */}
           <Box sx={{
             bgcolor: 'rgba(0,0,0,0.7)',
-            minWidth: '200px',
+            minWidth: '130px',
             p: 2
           }}>
             <Typography 

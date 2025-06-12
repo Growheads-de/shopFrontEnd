@@ -233,6 +233,7 @@ class Content extends Component {
 
     this.props.socket.emit("getCategoryProducts", { categoryId: parseInt(categoryId) },
       (response) => {
+        console.log("fetchCategoryData in Content", response);
         setCachedCategoryData(categoryId, response);
         if (response && response.products !== undefined) {
           this.processDataWithCategoryTree(response, categoryId);
@@ -350,6 +351,30 @@ class Content extends Component {
                 dataParam={this.state.dataParam}
               />
             </Box>
+
+            {/* Show subcategories in sidebar when there are both products and child categories */}
+            {this.state.loaded && 
+             this.state.unfilteredProducts.length > 0 && 
+             this.state.childCategories.length > 0 && (
+              <Box sx={{ mt: 2, display: { xs: 'none', sm: 'block' } }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Unterkategorien
+                </Typography>
+                <CategoryBoxGrid 
+                  categories={this.state.childCategories}
+                  showTitle={false}
+                  spacing={2}
+                  gridProps={{
+                    sx: { maxHeight: '60vh', overflowY: 'auto' }
+                  }}
+                  boxProps={{
+                    height: 150,
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </Box>
+            )}
+
             {(this.props.params.categoryId == 706 ||this.props.params.categoryId == 689) &&
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             <Typography variant="h6" sx={{mt:3}}>
