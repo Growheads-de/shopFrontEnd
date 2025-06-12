@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import { Container, Box, Stack, Paper, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ProductFilters from './ProductFilters.js';
 import ProductList from './ProductList.js';
 import CategoryBoxGrid from './CategoryBoxGrid.js';
+import CategoryBox from './CategoryBox.js';
 
 import { useParams, useSearchParams } from 'react-router-dom';
 import { getAllSettingsWithPrefix } from '../utils/sessionStorage.js';
@@ -306,8 +308,42 @@ class Content extends Component {
     });
   }
 
+  renderParentCategoryNavigation = () => {
+    const currentCategoryId = parseInt(this.props.params.categoryId);
+    
+    // Get the category tree from cache
+    const categoryTreeCache = window.productCache && window.productCache['categoryTree_209'];
+    if (!categoryTreeCache || !categoryTreeCache.categoryTree) {
+      return null;
+    }
 
+    // Find the current category in the tree
+    const currentCategory = this.findCategoryById(categoryTreeCache.categoryTree, currentCategoryId);
+    if (!currentCategory) {
+      return null;
+    }
 
+    // Check if this category has a parent (not root category 209)
+    if (!currentCategory.parentId || currentCategory.parentId === 209) {
+      return null; // Don't show for top-level categories
+    }
+
+    // Find the parent category
+    const parentCategory = this.findCategoryById(categoryTreeCache.categoryTree, currentCategory.parentId);
+    if (!parentCategory) {
+      return null;
+    }
+
+    // Create parent category object for CategoryBox
+    const parentCategoryForDisplay = {
+      id: parentCategory.id,
+      name: parentCategory.name,
+      image: parentCategory.image,
+      isParentNav: true
+    };
+
+    return parentCategoryForDisplay;
+  }
 
   render() {
     // Check if we should show category boxes instead of product list
@@ -332,13 +368,99 @@ class Content extends Component {
              this.state.unfilteredProducts.length > 0 && 
              this.state.childCategories.length > 0 && (
               <Box sx={{ mb: 4 }}>
-                <CategoryBoxGrid 
-                  categories={this.state.childCategories}
-                  showTitle={false}
-                  spacing={3}
-                />
+                {(() => {
+                  const parentCategory = this.renderParentCategoryNavigation();
+                  if (parentCategory) {
+                    // Show parent category to the left of subcategories
+                    return (
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3, flexWrap: 'wrap' }}>
+                        {/* Parent Category Box */}
+                        <Box sx={{ mt:2,position: 'relative', flexShrink: 0 }}>
+                          <CategoryBox
+                            id={parentCategory.id}
+                            name={parentCategory.name}
+                            image={parentCategory.image}
+                            height={130}
+                            fontSize="1.0rem"
+                          />
+                          {/* Up Arrow Overlay */}
+                          <Box sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            bgcolor: 'rgba(0,0,0,0.7)',
+                            borderRadius: '50%',
+                            width: 32,
+                            height: 32,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}>
+                            <KeyboardArrowUpIcon sx={{ color: 'white', fontSize: '1.2rem' }} />
+                          </Box>
+                        </Box>
+                        
+                        {/* Subcategories Grid */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <CategoryBoxGrid 
+                            categories={this.state.childCategories}
+                            showTitle={false}
+                            spacing={3}
+                          />
+                        </Box>
+                      </Box>
+                    );
+                  } else {
+                    // Just show subcategories without parent
+                    return (
+                      <CategoryBoxGrid 
+                        categories={this.state.childCategories}
+                        showTitle={false}
+                        spacing={3}
+                      />
+                    );
+                  }
+                })()}
               </Box>
             )}
+
+            {/* Show parent category navigation when in 2nd or 3rd level but no subcategories */}
+            {this.state.loaded && 
+             this.props.params.categoryId && 
+             !(this.state.unfilteredProducts.length > 0 && this.state.childCategories.length > 0) && (() => {
+              const parentCategory = this.renderParentCategoryNavigation();
+              if (parentCategory) {
+                return (
+                  <Box sx={{ mb: 3 }}>
+                    <Box sx={{ position: 'relative', width: 'fit-content' }}>
+                      <CategoryBox
+                        id={parentCategory.id}
+                        name={parentCategory.name}
+                        image={parentCategory.image}
+                        height={130}
+                        fontSize="1.0rem"
+                      />
+                      {/* Up Arrow Overlay */}
+                      <Box sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        bgcolor: 'rgba(0,0,0,0.7)',
+                        borderRadius: '50%',
+                        width: 32,
+                        height: 32,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <KeyboardArrowUpIcon sx={{ color: 'white', fontSize: '1.2rem' }} />
+                      </Box>
+                    </Box>
+                  </Box>
+                );
+              }
+              return null;
+            })()}
 
             {/* Show normal product list layout */}
             <Box sx={{ 
