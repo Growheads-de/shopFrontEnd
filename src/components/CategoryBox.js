@@ -16,7 +16,7 @@ const CategoryBox = ({
   image, 
   bgcolor, 
   height = 130,
-  fontSize = '1.0rem',
+  fontSize = '0.8rem',
   ...props 
 }) => {
   const [imageUrl, setImageUrl] = useState(null);
