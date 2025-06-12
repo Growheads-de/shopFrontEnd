@@ -316,7 +316,7 @@ class Content extends Component {
                              this.state.childCategories.length > 0;
 
     return (
-      <Container maxWidth="xl" sx={{ py: 4, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
+      <Container maxWidth="xl" sx={{ py: 2, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
         <style>{fontFaceStyle}</style>
 
         {showCategoryBoxes ? (
@@ -326,12 +326,26 @@ class Content extends Component {
             title={this.state.categoryName}
           />
         ) : (
-          // Show normal product list layout
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 2fr', md: '1fr 3fr', lg: '1fr 4fr', xl: '1fr 4fr' }, 
-            gap: 3
-          }}>
+          <>
+            {/* Show subcategories above main layout when there are both products and child categories */}
+            {this.state.loaded && 
+             this.state.unfilteredProducts.length > 0 && 
+             this.state.childCategories.length > 0 && (
+              <Box sx={{ mb: 4 }}>
+                <CategoryBoxGrid 
+                  categories={this.state.childCategories}
+                  showTitle={false}
+                  spacing={3}
+                />
+              </Box>
+            )}
+
+            {/* Show normal product list layout */}
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', sm: '1fr 2fr', md: '1fr 3fr', lg: '1fr 4fr', xl: '1fr 4fr' }, 
+              gap: 3
+            }}>
 
             <Stack direction="row" spacing={0} sx={{ 
               display: 'flex', 
@@ -351,29 +365,6 @@ class Content extends Component {
                 dataParam={this.state.dataParam}
               />
             </Box>
-
-            {/* Show subcategories in sidebar when there are both products and child categories */}
-            {this.state.loaded && 
-             this.state.unfilteredProducts.length > 0 && 
-             this.state.childCategories.length > 0 && (
-              <Box sx={{ mt: 2, display: { xs: 'none', sm: 'block' } }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Unterkategorien
-                </Typography>
-                <CategoryBoxGrid 
-                  categories={this.state.childCategories}
-                  showTitle={false}
-                  spacing={2}
-                  gridProps={{
-                    sx: { maxHeight: '60vh', overflowY: 'auto' }
-                  }}
-                  boxProps={{
-                    height: 150,
-                    fontSize: '0.9rem'
-                  }}
-                />
-              </Box>
-            )}
 
             {(this.props.params.categoryId == 706 ||this.props.params.categoryId == 689) &&
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
@@ -490,6 +481,7 @@ class Content extends Component {
               />
             </Box>
           </Box>
+          </>
         )}
       </Container>
     );
