@@ -14,6 +14,13 @@ class CartDropdown extends Component {
     const { cartItems = [], onClose, onCheckout } = this.props;
     console.log('cartItems', cartItems);
 
+    // Calculate the total weight of all items in the cart
+    const totalWeight = Object.values(cartItems).reduce((sum, item) => {
+      const weightPerItem = item.weight || 0;
+      const quantity = item.quantity || 1;
+      return sum + weightPerItem * quantity;
+    }, 0);
+
     return (
       <>
         <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2 }}>
@@ -34,6 +41,13 @@ class CartDropdown extends Component {
                 />
               ))}
             </List>
+
+            {/* Display total weight if greater than 0 */}
+            {totalWeight > 0 && (
+              <Typography variant="subtitle2" sx={{ px: 2, mb: 1 }}>
+                Gesamtgewicht: {totalWeight.toFixed(2)} kg
+              </Typography>
+            )}
 
             {onClose && (
               <Button 

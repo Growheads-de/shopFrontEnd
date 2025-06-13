@@ -40,7 +40,7 @@ class AddToCartButton extends Component {
     if(!window.cart) window.cart = {}; 
 
     if(!window.cart[this.props.id]){
-      window.cart[this.props.id] = {name:this.props.name, pictureList:this.props.pictureList, price:this.props.price, quantity:1};
+      window.cart[this.props.id] = {name:this.props.name, pictureList:this.props.pictureList, price:this.props.price, quantity:1, weight:this.props.weight};
     }else{
       window.cart[this.props.id].quantity++;
     }

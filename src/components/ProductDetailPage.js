@@ -314,7 +314,7 @@ class ProductDetailPage extends Component {
               </Box>
               
               <Box sx={{ p: 2, pt: 0 }}>
-                <AddToCartButton cartButton={true} pictureList={product.pictureList} available={product.available} id={product.id} price={product.price} name={product.name}/>
+                <AddToCartButton cartButton={true} pictureList={product.pictureList} available={product.available} id={product.id} price={product.price} weight={product.weight} name={product.name}/>
               </Box>
 
             </Box>

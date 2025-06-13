@@ -67,7 +67,12 @@ class Product extends Component {
   }
 
   render() {
-    const { id, name, price, available, manufacturer, currency, vat, massMenge, massEinheit, thc, floweringWeeks,incoming, neu } = this.props;
+    const { 
+      id, name, price, available, manufacturer,
+      currency, vat, massMenge, massEinheit, thc,
+      floweringWeeks,incoming, neu, weight 
+    } = this.props;
+
     const isNew = neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
     const showThcBadge = thc > 0;
     let thcBadgeColor = '#4caf50'; // Green default
@@ -351,7 +356,7 @@ class Product extends Component {
             >
               <ZoomInIcon />
             </IconButton>
-            <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} name={name}/>
+            <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} weight={weight} name={name}/>
           </Box>
         </Card>
       </Box>

@@ -99,9 +99,16 @@ class CartItem extends Component {
               >
                 {new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(item.price * item.quantity)}
               </Typography>
-            </Box> 
+            </Box>
+            {item.weight > 0 && (<Typography 
+                variant="body2" 
+                color="text.secondary"
+                component="div"
+              >
+                {item.weight.toFixed(1).replace('.',',')} kg
+              </Typography>)}
             <Box sx={{ width: '250px'}}>
-              <AddToCartButton available={1} id={this.props.id} price={item.price} name={item.name}/>
+              <AddToCartButton available={1} id={this.props.id} price={item.price} name={item.name} weight={item.weight}/>
             </Box>          
           </Box>         
         </ListItem>
