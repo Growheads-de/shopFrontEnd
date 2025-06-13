@@ -100,15 +100,40 @@ class CartItem extends Component {
                 {new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(item.price * item.quantity)}
               </Typography>
             </Box>
-            {item.weight > 0 && (<Typography 
-                variant="body2" 
-                color="text.secondary"
-                component="div"
-              >
-                {item.weight.toFixed(1).replace('.',',')} kg
-              </Typography>)}
+            
+            {/* Weight and VAT display - conditional layout based on weight */}
+            {(item.weight > 0 || item.vat) && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: item.weight > 0 ? 'space-between' : 'flex-end', 
+                mb: 1 
+              }}>
+                {item.weight > 0 && (
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    component="div"
+                  >
+                    {item.weight.toFixed(1).replace('.',',')} kg
+                  </Typography>
+                )}
+                {item.vat && (
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary"
+                    fontStyle="italic"
+                    component="div"
+                  >
+                    inkl. {new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(
+                      (item.price * item.quantity) - ((item.price * item.quantity) / (1 + item.vat / 100))
+                    )} MwSt. ({item.vat}%)
+                  </Typography>
+                )}
+              </Box>
+            )}
+            
             <Box sx={{ width: '250px'}}>
-              <AddToCartButton available={1} id={this.props.id} price={item.price} name={item.name} weight={item.weight}/>
+              <AddToCartButton available={1} id={this.props.id} price={item.price} name={item.name} weight={item.weight} vat={item.vat}/>
             </Box>          
           </Box>         
         </ListItem>

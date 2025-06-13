@@ -231,6 +231,42 @@ class LoginComponent extends Component {
     });
   };
 
+  handleForgotPassword = () => {
+    const { email } = this.state;
+    const { socket } = this.props;
+
+    if (!email) {
+      this.setState({ error: 'Bitte geben Sie Ihre E-Mail-Adresse ein' });
+      return;
+    }
+
+    if (!this.validateEmail(email)) {
+      this.setState({ error: 'Bitte geben Sie eine gültige E-Mail-Adresse ein' });
+      return;
+    }
+
+    this.setState({ loading: true, error: '' });
+
+    // Call resetPassword socket endpoint
+    socket.emit('resetPassword', { 
+      email, 
+      domain: window.location.origin 
+    }, (response) => {
+      console.log('Reset Password Response:', response);
+      if (response.success) {
+        this.setState({
+          loading: false,
+          success: 'Ein Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail-Adresse gesendet.'
+        });
+      } else {
+        this.setState({
+          loading: false,
+          error: response.message || 'Fehler beim Senden der E-Mail'
+        });
+      }
+    });
+  };
+
   // Google login functionality
   handleGoogleLoginSuccess = (credentialResponse) => {
     const { socket, navigate } = this.props;
@@ -455,6 +491,24 @@ class LoginComponent extends Component {
                 onChange={(e) => this.setState({ password: e.target.value })}
                 disabled={loading}
               />
+              
+              {tabValue === 0 && (
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1, mb: 1 }}>
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={this.handleForgotPassword}
+                    disabled={loading}
+                    sx={{ 
+                      color: '#2e7d32',
+                      textTransform: 'none',
+                      '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' }
+                    }}
+                  >
+                    Passwort vergessen?
+                  </Button>
+                </Box>
+              )}
               
               {tabValue === 1 && (
                 <TextField

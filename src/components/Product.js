@@ -356,7 +356,7 @@ class Product extends Component {
             >
               <ZoomInIcon />
             </IconButton>
-            <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} weight={weight} name={name}/>
+            <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} vat={vat} weight={weight} name={name}/>
           </Box>
         </Card>
       </Box>

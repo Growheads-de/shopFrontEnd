@@ -20,6 +20,7 @@ import AdminPage from './pages/AdminPage.js';
 // Import the new ChatAssistant component
 import ChatAssistant from './components/ChatAssistant.js';
 import ProfilePageWithSocket from './pages/ProfilePage.js';
+import ResetPassword from './pages/ResetPassword.js';
 // Import legal pages
 import Datenschutz from './pages/Datenschutz.js';
 import AGB from './pages/AGB.js';
@@ -127,6 +128,13 @@ const App = () => {
 
                   {/* Profile page */}
                   <Route path="/profile" element={<ProfilePageWithSocket />} />
+
+                  {/* Reset password page */}
+                  <Route path="/resetPassword" element={
+                    <SocketContext.Consumer>
+                      {socket => <ResetPassword socket={socket} />}
+                    </SocketContext.Consumer>
+                  } />
 
                   {/* Admin page */ }
                   <Route path="/admin" element={<SocketContext.Consumer>{socket =><AdminPage socket={socket}/>}</SocketContext.Consumer>}/>
