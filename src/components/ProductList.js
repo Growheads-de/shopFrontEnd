@@ -323,6 +323,7 @@ class ProductList extends Component {
                 incoming={product.incomingDate}
                 neu={product.neu}
                 thc={product.thc}
+                floweringWeeks={product.floweringWeeks}
                 socket={this.props.socket}
                 pictureList={product.pictureList}
               />

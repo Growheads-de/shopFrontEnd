@@ -323,7 +323,6 @@ class CategoryList extends Component {
         sx={{ 
           width: '100%',
           bgcolor: 'primary.dark',
-          py: 1.25, // Increased padding to accommodate elevated buttons and borders
           px: 2,
           display: { xs: 'none', md: 'block' }
         }}

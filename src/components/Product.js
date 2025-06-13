@@ -65,7 +65,7 @@ class Product extends Component {
   }
 
   render() {
-    const { id, name, price, available, manufacturer, currency, vat, massMenge, massEinheit, thc, incoming, neu } = this.props;
+    const { id, name, price, available, manufacturer, currency, vat, massMenge, massEinheit, thc, floweringWeeks,incoming, neu } = this.props;
     const isNew = neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
     const showThcBadge = thc > 0;
     let thcBadgeColor = '#4caf50'; // Green default
@@ -74,6 +74,15 @@ class Product extends Component {
     } else if (thc > 25) {
       thcBadgeColor = '#ffeb3b'; // Yellow for > 25
     }
+    const showFloweringWeeksBadge = floweringWeeks > 0;
+    let floweringWeeksBadgeColor = '#4caf50'; // Green default
+    if (floweringWeeks > 12) {
+      floweringWeeksBadgeColor = '#f44336'; // Red for > 12
+    } else if (floweringWeeks > 8) {
+      floweringWeeksBadgeColor = '#ffeb3b'; // Yellow for > 8
+    }
+
+
     
     return (
       <Box sx={{ 
@@ -200,6 +209,29 @@ class Product extends Component {
               }}
             >
               THC {thc}%
+            </div>
+          )}
+
+          {showFloweringWeeksBadge && (
+            <div aria-label={`Flowering Weeks: ${floweringWeeks}`}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                backgroundColor: floweringWeeksBadgeColor,
+                color: floweringWeeks > 8 && floweringWeeks <= 12 ? '#000000' : '#ffffff',
+                fontWeight: 'bold',
+                padding: '1px 0',
+                width: '100px',
+                textAlign: 'center',
+                zIndex: 999,
+                fontSize: '9px',
+                boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
+                transform: 'rotate(-45deg) translateX(-50px) translateY(32px)',
+                transformOrigin: 'top left'
+              }}
+            >
+              {floweringWeeks} Wochen
             </div>
           )}
           

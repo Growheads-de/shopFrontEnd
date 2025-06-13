@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { 
   Box, 
   Typography,
-  CardMedia
+  CardMedia,
+  Stack
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import parse from 'html-react-parser';
@@ -19,7 +20,8 @@ class ProductDetailPage extends Component {
       this.state = { 
         product: window.productDetailCache[this.props.productId], 
         loading: false, 
-        error: null, 
+        error: null,
+        attributeImages: {},
         imageDialogOpen: false
       };
     }else{
@@ -27,6 +29,7 @@ class ProductDetailPage extends Component {
         product: null, 
         loading: true, 
         error: null, 
+        attributeImages: {},
         imageDialogOpen: false
       };
     }
@@ -47,6 +50,52 @@ class ProductDetailPage extends Component {
       console.log('Product data received:', res);
       if (res.success) {        
         this.setState({ product: res.product, loading: false, error: null, imageDialogOpen: false });
+
+        // Initialize window-level attribute image cache if it doesn't exist
+        if (!window.attributeImageCache) {
+          window.attributeImageCache = {};
+        }
+
+        if(res.attributes && res.attributes.length > 0){
+          const attributeImages = {};
+          
+          for(const attribute of res.attributes){
+            const cacheKey = attribute.kMerkmalWert;
+            
+            // Check if we have a cached result (either URL or negative result)
+            if (window.attributeImageCache[cacheKey]) {
+              const cached = window.attributeImageCache[cacheKey];
+              if (cached.url) {
+                // Use cached URL
+                attributeImages[cacheKey] = cached.url;         
+              }
+            } else {
+              // Not in cache, fetch from server
+              this.props.socket.emit('getAttributePicture', { id: cacheKey }, (res) => {
+                if(res.success){
+                  const blob = new Blob([res.imageBuffer], { type: 'image/jpeg' }); 
+                  const url = URL.createObjectURL(blob);
+                  
+                  // Cache the successful URL
+                  window.attributeImageCache[cacheKey] = { url: url, timestamp: Date.now() };
+                  
+                  // Update state
+                  const updatedImages = { ...this.state.attributeImages };
+                  updatedImages[cacheKey] = url;
+                  this.setState({ attributeImages: updatedImages });
+                } else {
+                  // Cache negative result to avoid future requests
+                  window.attributeImageCache[cacheKey] = { noImage: true, timestamp: Date.now() };                
+                }
+              });
+            }
+          }
+          
+          // Set initial state with cached images
+          if (Object.keys(attributeImages).length > 0) {
+            this.setState({ attributeImages });
+          }
+        }
       } else {
         console.error('Error loading product:', res.error || 'Unknown error',res);
         this.setState({ product: null, loading: false, error: 'Error loading product', imageDialogOpen: false });
@@ -63,7 +112,7 @@ class ProductDetailPage extends Component {
   }
 
   render() {
-    const { product, loading, error } = this.state;
+    const { product, loading, error, attributeImages } = this.state;
     
     if (loading) {
       return (
@@ -224,6 +273,15 @@ class ProductDetailPage extends Component {
                 </Typography>
               </Box>
             )}
+
+            {/* Attribute pictures */}
+            <Stack direction="row" spacing={2}>
+              {Object.keys(attributeImages).map((key) => (
+                <Box key={key} sx={{ mb: 2 }}>
+                  <CardMedia component="img" image={attributeImages[key]} alt={`Attribute ${key}`} sx={{ maxWidth: '100px', maxHeight: '100px', objectFit: 'contain' }} />
+                </Box>
+              ))}
+            </Stack>
                         
             {/* Price and availability section */}
             <Box 
