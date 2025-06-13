@@ -5,7 +5,8 @@ import {
   CardContent, 
   CardMedia, 
   Typography,
-  CircularProgress
+  CircularProgress,
+  IconButton
 } from '@mui/material';
 import AddToCartButton from './AddToCartButton.js';
 import { Link } from 'react-router-dom';
@@ -342,7 +343,14 @@ class Product extends Component {
           </Box>
           
           <Box sx={{ p: 2, pt: 0, display: 'flex', alignItems: 'center' }}>
-            <ZoomInIcon sx={{ mr: 1, color: 'text.secondary', pointerEvents: 'none' }} />
+            <IconButton
+              component={Link}
+              to={`/product/${id}`}
+              size="small"
+              sx={{ mr: 1, color: 'text.secondary' }}
+            >
+              <ZoomInIcon />
+            </IconButton>
             <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} name={name}/>
           </Box>
         </Card>

@@ -189,7 +189,7 @@ class AddToCartButton extends Component {
           <IconButton 
             color="inherit" 
             onClick={this.handleDecrement}
-            sx={{ borderRadius: 0, flexGrow: 1 }}
+            sx={{ width: '28px', borderRadius: 0, flexGrow: 1 }}
           >
             <RemoveIcon />
           </IconButton>
@@ -220,6 +220,7 @@ class AddToCartButton extends Component {
                   style: { 
                     textAlign: 'center', 
                     width: '30px',
+                    fontSize: '14px',
                     padding: '2px',
                     fontWeight: 'bold'
                   },
@@ -239,7 +240,7 @@ class AddToCartButton extends Component {
           <IconButton 
             color="inherit" 
             onClick={this.handleIncrement}
-            sx={{ borderRadius: 0, flexGrow: 1 }}
+            sx={{ width: '28px',borderRadius: 0, flexGrow: 1 }}
           >
             <AddIcon />
           </IconButton>
