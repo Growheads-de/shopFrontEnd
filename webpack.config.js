@@ -63,13 +63,24 @@ class GitHashJsonPlugin {
 const CopyAssetsPlugin = {
   apply: (compiler) => {
     compiler.hooks.afterEmit.tap('CopyAssetsPlugin', () => {
-      const src = path.resolve(__dirname, 'public/assets');
-      const dest = path.resolve(__dirname, 'dist/assets');
+      // Copy assets directory
+      const assetsSrc = path.resolve(__dirname, 'public/assets');
+      const assetsDest = path.resolve(__dirname, 'dist/assets');
       try {
-        cpSync(src, dest, { recursive: true });
+        cpSync(assetsSrc, assetsDest, { recursive: true });
         console.log('Assets copied successfully');
       } catch (err) {
         console.error('Error copying assets:', err);
+      }
+      
+      // Copy favicon.ico
+      const faviconSrc = path.resolve(__dirname, 'public/favicon.ico');
+      const faviconDest = path.resolve(__dirname, 'dist/favicon.ico');
+      try {
+        cpSync(faviconSrc, faviconDest);
+        console.log('Favicon copied successfully');
+      } catch (err) {
+        console.error('Error copying favicon:', err);
       }
     });
   },
