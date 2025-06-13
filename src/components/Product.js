@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import AddToCartButton from './AddToCartButton.js';
 import { Link } from 'react-router-dom';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 
 class Product extends Component {
   constructor(props) {
@@ -340,7 +341,8 @@ class Product extends Component {
             </CardContent>
           </Box>
           
-          <Box sx={{ p: 2, pt: 0 }}>
+          <Box sx={{ p: 2, pt: 0, display: 'flex', alignItems: 'center' }}>
+            <ZoomInIcon sx={{ mr: 1, color: 'text.secondary', pointerEvents: 'none' }} />
             <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} name={name}/>
           </Box>
         </Card>

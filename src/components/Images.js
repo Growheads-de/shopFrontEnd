@@ -10,6 +10,7 @@ import {
   
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import LoupeIcon from '@mui/icons-material/Loupe';
 
 class Images extends Component {
   constructor(props) {
@@ -106,20 +107,39 @@ class Images extends Component {
     return (
       <>
         {this.state.pics[this.state.mainPic] && (
-          <CardMedia 
-            component="img" 
-            height="400" 
-            sx={{ 
-              objectFit: 'contain',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease-in-out',
-              '&:hover': {
-                transform: 'scale(1.02)'
-              }
-            }} 
-            image={this.state.pics[this.state.mainPic]}
-            onClick={this.props.onOpenFullscreen}
-          />
+          <Box sx={{ position: 'relative', display: 'inline-block' }}>
+            <CardMedia 
+              component="img" 
+              height="400" 
+              sx={{ 
+                objectFit: 'contain',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.02)'
+                }
+              }} 
+              image={this.state.pics[this.state.mainPic]}
+              onClick={this.props.onOpenFullscreen}
+            />
+            <IconButton
+              size="small"
+              disableRipple
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                color: 'white',
+                backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                pointerEvents: 'none',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)'
+                }
+              }}
+            >
+              <LoupeIcon fontSize="small" />
+            </IconButton>
+          </Box>
         )}
         <Stack direction="row" spacing={2} sx={{ justifyContent: 'flex-start', mt: 1,mb: 1 }}>
         {this.state.pics.filter(pic => pic !== null && pic !== this.state.pics[this.state.mainPic]).map((pic, filterIndex) => {
