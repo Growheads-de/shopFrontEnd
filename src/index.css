@@ -36,6 +36,7 @@ body {
   font-family: Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-y: scroll; /* Always show vertical scrollbar */
 }
 
 /* Prevent Material-UI from changing scrollbar when modals open */
