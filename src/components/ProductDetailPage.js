@@ -282,6 +282,13 @@ class ProductDetailPage extends Component {
                 </Box>
               ))}
             </Stack>
+
+            {/* Weight */}
+            {product.weight > 0 && <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Gewicht: {product.weight.toFixed(2).replace('.',',')} kg
+              </Typography>
+            </Box>}
                         
             {/* Price and availability section */}
             <Box 
