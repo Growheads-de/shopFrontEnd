@@ -47,7 +47,6 @@ class ProductDetailPage extends Component {
 
   loadProductData = () => {
     this.props.socket.emit('getProductView', { articleId: parseInt(this.props.productId) }, (res) => {
-      console.log('Product data received:', res);
       if (res.success) {        
         this.setState({ product: res.product, loading: false, error: null, imageDialogOpen: false });
 
