@@ -235,7 +235,6 @@ class Content extends Component {
 
     this.props.socket.emit("getCategoryProducts", { categoryId: parseInt(categoryId) },
       (response) => {
-        console.log("fetchCategoryData in Content", response);
         setCachedCategoryData(categoryId, response);
         if (response && response.products !== undefined) {
           this.processDataWithCategoryTree(response, categoryId);
