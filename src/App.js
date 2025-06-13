@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material/styles';
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -12,6 +12,7 @@ import SocketProvider from './providers/SocketProvider.js';
 import SocketContext from './contexts/SocketContext.js';
 import config from './config.js';
 import ScrollToTop from './components/ScrollToTop.js';
+import TelemetryService from './services/telemetryService.js';
 
 import Header from './components/Header.js';
 import Footer from './components/Footer.js';
@@ -43,6 +44,27 @@ const deleteMessages = () => {
   console.log('Deleting messages');
   window.chatMessages = [];
 }
+
+// Component to initialize telemetry service with socket
+const TelemetryInitializer = ({ socket }) => {
+  const telemetryServiceRef = useRef(null);
+
+  useEffect(() => {
+    if (socket && !telemetryServiceRef.current) {
+      telemetryServiceRef.current = new TelemetryService(socket);
+      telemetryServiceRef.current.init();
+    }
+
+    return () => {
+      if (telemetryServiceRef.current) {
+        telemetryServiceRef.current.destroy();
+        telemetryServiceRef.current = null;
+      }
+    };
+  }, [socket]);
+
+  return null; // This component doesn't render anything
+};
 
 // Convert App to a functional component to use hooks
 const App = () => {
@@ -98,6 +120,9 @@ const App = () => {
           >
             <Suspense fallback={<Loading />}>
               <ScrollToTop />
+              <SocketContext.Consumer>
+                {socket => <TelemetryInitializer socket={socket} />}
+              </SocketContext.Consumer>
               <Header active categoryId={categoryId} />
               <Box sx={{ flexGrow: 1 }}>
                 <Routes>
