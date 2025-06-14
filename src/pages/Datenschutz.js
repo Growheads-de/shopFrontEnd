@@ -40,6 +40,22 @@ const Datenschutz = () => {
       </Typography>
       
       <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+        Anmeldung mit Google (Google Single Sign-On)
+      </Typography>
+      <Typography variant="body1" paragraph>
+        Wir bieten Ihnen die Möglichkeit, sich für Ihr Kundenkonto mit Ihrem Google-Konto anzumelden. Wenn Sie die Funktion „Mit Google anmelden“ nutzen, erfolgt die Authentifizierung über den Dienst Google Single Sign-On. Dabei können Cookies von Google auf Ihrem Endgerät gespeichert werden, die für den Anmeldeprozess und die Authentifizierung erforderlich sind. Im Rahmen der Google-Anmeldung erhalten wir von Google bestimmte personenbezogene Daten zur Verifizierung Ihrer Identität. Insbesondere übermittelt Google an uns Ihren Namen, Ihre E-Mail-Adresse sowie – falls in Ihrem Google-Konto hinterlegt – Ihr Profilbild. Diese Informationen werden von Google bereitgestellt, sobald Sie sich mit Ihrem Google-Konto bei unserem Online-Shop anmelden. Google kann als Drittanbieter auf diese Daten zugreifen und sie verarbeiten; hierbei kann es auch zu einer Datenübermittlung in die USA kommen. Wir haben mit Google Standarddatenschutzklauseln nach Art. 46 Abs. 2 lit. c DSGVO abgeschlossen, um ein angemessenes Datenschutzniveau bei der Übermittlung Ihrer Daten sicherzustellen. Weitere Details zur Datenverarbeitung durch Google finden Sie in der Google-Datenschutzerklärung (unter <a href="https://policies.google.com/privacy?hl=de" target="_blank" rel="noopener noreferrer">policies.google.com/privacy?hl=de</a>).
+      </Typography>
+      <Typography variant="body1" paragraph>
+        <strong>Rechtsgrundlagen:</strong> Die Verarbeitung der Daten im Zusammenhang mit der Google-Anmeldung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Durchführung vorvertraglicher Maßnahmen und Vertragserfüllung, z. B. zur Erstellung und Nutzung Ihres Kundenkontos) sowie Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse unsererseits, Ihnen eine schnelle und komfortable Anmeldemöglichkeit bereitzustellen).
+      </Typography>
+      <Typography variant="body1" paragraph>
+        <strong>Freiwillige Nutzung:</strong> Die Nutzung der „Mit Google anmelden“-Funktion ist freiwillig. Sie können unseren Online-Shop und Ihr Kundenkonto selbstverständlich auch ohne Google SSO nutzen, indem Sie sich regulär mit E-Mail-Adresse und Passwort registrieren bzw. anmelden. Wenn Sie sich für die Google-Anmeldung entscheiden, können Sie diese Verbindung jederzeit wieder aufheben, indem Sie die Verknüpfung in Ihren Google-Konto-Einstellungen trennen.
+      </Typography>
+      <Typography variant="body1" paragraph>
+        <strong>Ihre Rechte:</strong> Bezüglich der über Google SSO verarbeiteten personenbezogenen Daten stehen Ihnen die gesetzlichen Betroffenenrechte zu. Insbesondere haben Sie das Recht, Auskunft über die zu Ihrer Person gespeicherten Daten zu erhalten (Art. 15 DSGVO), Berichtigung unrichtiger Daten (Art. 16 DSGVO) oder Löschung Ihrer Daten zu verlangen (Art. 17 DSGVO). Ferner haben Sie das Recht auf Einschränkung der Verarbeitung Ihrer Daten (Art. 18 DSGVO) und ein Recht auf Datenübertragbarkeit (Art. 20 DSGVO). Soweit wir die Verarbeitung auf unser berechtigtes Interesse stützen, können Sie Widerspruch gegen die Verarbeitung einlegen (Art. 21 DSGVO). Zudem können Sie sich jederzeit mit einer Beschwerde an die zuständige Datenschutzaufsichtsbehörde wenden. Ihre bereits bestehenden Rechte und Wahlmöglichkeiten aus der übrigen Datenschutzerklärung gelten selbstverständlich auch für die Nutzung von Google Anmelden.
+      </Typography>
+
+      <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
         Erhebung, Verarbeitung und Nutzung personenbezogener Daten bei Bestellungen
       </Typography>
       <Typography variant="body1" paragraph>
@@ -76,7 +92,18 @@ const Datenschutz = () => {
         Cookies
       </Typography>
       <Typography variant="body1" paragraph>
-        Unsere Website setzt Cookies ausschließlich im Rahmen des Zahlungsprozesses, wenn Sie eine Kreditkartenzahlung oder Sofortüberweisung (z.&nbsp;B.&nbsp;Klarna&nbsp;Sofort) vornehmen. Für andere Zahlungsarten – Lastschrift, Abholung oder Nachnahme – werden keinerlei Cookies eingesetzt. Ein Cookie enthält eine charakteristische Zeichenfolge, die eine eindeutige Identifizierung des Browsers ermöglicht. Diese Cookies werden vom Zahlungsdienstleister für die sichere Abwicklung der genannten Zahlungen verwendet und können nicht abgewählt werden, da andernfalls keine Bestellungen mit diesen Zahlungsarten möglich wären. Die Verarbeitung erfolgt auf Grundlage des Art.&nbsp;6&nbsp;(1)&nbsp;lit.&nbsp;b&nbsp;DSGVO zur Vertragserfüllung.
+        Unsere Website setzt Cookies in folgenden Fällen ein:
+      </Typography>
+      <Typography variant="body1" paragraph component="div" style={{ paddingLeft: '20px' }}>
+        <div style={{ marginBottom: '10px' }}>
+          <strong>1. Zahlungsprozess:</strong> Bei Kreditkartenzahlungen oder Sofortüberweisungen (z.&nbsp;B. Klarna Sofort) werden technisch notwendige Cookies verwendet. Diese enthalten eine charakteristische Zeichenfolge, die eine eindeutige Identifizierung des Browsers ermöglicht. Diese Cookies werden vom jeweiligen Zahlungsdienstleister für die sichere Abwicklung der Zahlungen verwendet und können nicht abgewählt werden, da andernfalls keine Bestellungen mit diesen Zahlungsarten möglich wären. Die Verarbeitung erfolgt auf Grundlage des Art. 6 (1) lit. b DSGVO zur Vertragserfüllung.
+        </div>
+        <div>
+          <strong>2. Google Single Sign-On (SSO):</strong> Bei Nutzung der Google-Anmeldung werden Cookies durch Google gesetzt, die für den Anmeldevorgang und die Authentifizierung erforderlich sind. Diese Cookies ermöglichen es Ihnen, sich bequem mit Ihrem Google-Konto anmelden zu können, ohne sich jedes Mal neu anmelden zu müssen. Die Verarbeitung erfolgt auf Grundlage von Art. 6 (1) lit. b DSGVO (Vertragserfüllung) und Art. 6 (1) lit. f DSGVO (berechtigtes Interesse an einer benutzerfreundlichen Anmeldung).
+        </div>
+      </Typography>
+      <Typography variant="body1" paragraph>
+        Für andere Zahlungsarten – Lastschrift, Abholung oder Nachnahme – werden keine zusätzlichen Cookies verwendet, sofern Sie nicht die Google-Anmeldung nutzen.
       </Typography>
       
       <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
