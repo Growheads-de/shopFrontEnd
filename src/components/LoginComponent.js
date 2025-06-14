@@ -1,6 +1,8 @@
-import React, { Component, lazy, Suspense } from 'react';
+import React, { Component } from 'react';
+import { Link, withRouter } from 'react-router-dom';
 import { 
-  Button, 
+  Box,
+  Button,
   Dialog, 
   DialogTitle, 
   DialogContent, 
@@ -148,7 +150,10 @@ class LoginComponent extends Component {
           console.log('LoginComponent', this.state)
         
           try{
-            window.cart = JSON.parse(response.user.cart);
+            const newCart = JSON.parse(response.user.cart);
+            console.log('winCart',window.cart,'newCart',newCart);
+            const { syncCart } = require('../utils/cartUtils');
+            syncCart(newCart);
             window.dispatchEvent(new CustomEvent('cart'));
           }catch(error){
             console.error('Error parsing cart  :',response.user, error);
@@ -292,7 +297,10 @@ class LoginComponent extends Component {
           admin: response.user.admin
         };
         try{
-          window.cart = JSON.parse(response.user.cart);
+          const newCart = JSON.parse(response.user.cart);
+          console.log('winCart', window.cart, 'newCart', newCart);
+          const { syncCart } = require('../utils/cartUtils');
+          syncCart(newCart);
           window.dispatchEvent(new CustomEvent('cart'));
         }catch(error){
           console.error('Error parsing cart  :',response.user, error);
