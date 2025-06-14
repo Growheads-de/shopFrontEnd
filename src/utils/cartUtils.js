@@ -9,6 +9,14 @@ export const syncCart = (serverCart) => {
     const localCart = window.cart || [];
  
 
+    // pm2 log present the user which a choice on how to sync the cart: 
+    // - use the current cart and store the server cart in the archive
+    // - delete the server cart
+    // - use the server cart
+    // - merge
+
+    // show both carts side by side to the user
+
     // Create a map of local cart items by product ID for quick lookup
     const localCartMap = new Map();
     localCart.forEach(item => {
