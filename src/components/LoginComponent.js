@@ -1,4 +1,4 @@
-import React, { lazy, Component } from 'react';
+import React, { lazy, Component, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Box,
