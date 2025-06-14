@@ -28,7 +28,15 @@ class SocketProvider extends Component {
       
       const user = isUserLoggedIn();
       console.log('SocketProvider: connected',user);
-    
+
+      // Check for ID parameter in URL and emit setId if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('id');
+      if (id) {
+        console.log('SocketProvider: Emitting setId with ID:', id);
+        this.socket.emit('setId', { id });
+      }
+      
       if(user && user.isLoggedIn && user.user.token) this.socket.emit('verifyToken', { token: user.user.token }, (response) => {
         console.log('SocketProvider: verifyToken', response);
         if (response.success) {
