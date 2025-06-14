@@ -13,11 +13,14 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+if (!Array.isArray(window.cart)) window.cart = [];
+
 class AddToCartButton extends Component {
   constructor(props) {
     super(props);
+    if (!Array.isArray(window.cart)) window.cart = [];
     this.state = {
-      quantity: window.cart && window.cart[this.props.id] ? window.cart[this.props.id].quantity : 0,
+      quantity: window.cart.find(i => i.id === this.props.id) ? window.cart.find(i => i.id === this.props.id).quantity : 0,
       isEditing: false,
       editValue: ''
     };
@@ -25,8 +28,10 @@ class AddToCartButton extends Component {
   
   componentDidMount() { 
     this.cart = () => {
-      const newQuantity = window.cart && window.cart[this.props.id] ? window.cart[this.props.id].quantity : 0;
-      if(this.state.quantity != newQuantity) this.setState({quantity:  newQuantity});
+      if (!Array.isArray(window.cart)) window.cart = [];
+      const item = window.cart.find(i => i.id === this.props.id);
+      const newQuantity = item ? item.quantity : 0;
+      if (this.state.quantity !== newQuantity) this.setState({ quantity: newQuantity });
     };
     window.addEventListener('cart', this.cart);
   }
@@ -37,32 +42,44 @@ class AddToCartButton extends Component {
 
 
   handleIncrement = () => {
-    if(!window.cart) window.cart = {}; 
-
-    if(!window.cart[this.props.id]){
-      window.cart[this.props.id] = {name:this.props.name, pictureList:this.props.pictureList, price:this.props.price, quantity:1, weight:this.props.weight, vat:this.props.vat};
-    }else{
-      window.cart[this.props.id].quantity++;
+    if (!window.cart) window.cart = [];
+    const idx = window.cart.findIndex(item => item.id === this.props.id);
+    if (idx === -1) {
+      window.cart.push({
+        id: this.props.id,
+        name: this.props.name,
+        pictureList: this.props.pictureList,
+        price: this.props.price,
+        quantity: 1,
+        weight: this.props.weight,
+        vat: this.props.vat
+      });
+    } else {
+      window.cart[idx].quantity++;
     }
     window.dispatchEvent(new CustomEvent('cart'));
   };
 
   handleDecrement = () => {
-    if(!window.cart) window.cart = {};
-    
-    if(window.cart[this.props.id] && window.cart[this.props.id].quantity > 1){
-      window.cart[this.props.id].quantity--;
-    }else{
-      delete window.cart[this.props.id];
+    if (!window.cart) window.cart = [];
+    const idx = window.cart.findIndex(item => item.id === this.props.id);
+    if (idx !== -1) {
+      if (window.cart[idx].quantity > 1) {
+        window.cart[idx].quantity--;
+      } else {
+        window.cart.splice(idx, 1);
+      }
+      window.dispatchEvent(new CustomEvent('cart'));
     }
-
-    window.dispatchEvent(new CustomEvent('cart'));
   };
 
   handleClearCart = () => {
-    if(!window.cart) window.cart = {};
-    delete window.cart[this.props.id];
-    window.dispatchEvent(new CustomEvent('cart'));
+    if (!window.cart) window.cart = [];
+    const idx = window.cart.findIndex(item => item.id === this.props.id);
+    if (idx !== -1) {
+      window.cart.splice(idx, 1);
+      window.dispatchEvent(new CustomEvent('cart'));
+    }
   };
 
   handleEditStart = () => {
@@ -80,14 +97,15 @@ class AddToCartButton extends Component {
 
   handleEditComplete = () => {
     let newQuantity = parseInt(this.state.editValue, 10);
-    
-    // Handle invalid input
     if (isNaN(newQuantity) || newQuantity < 0) {
       newQuantity = 0;
     }
-    if(!window.cart) window.cart = {};
-    window.cart[this.props.id].quantity = newQuantity;
-    window.dispatchEvent(new CustomEvent('cart', { detail: {id:this.props.id, quantity:newQuantity} }));
+    if (!window.cart) window.cart = [];
+    const idx = window.cart.findIndex(item => item.id === this.props.id);
+    if (idx !== -1) {
+      window.cart[idx].quantity = newQuantity;
+      window.dispatchEvent(new CustomEvent('cart', { detail: { id: this.props.id, quantity: newQuantity } }));
+    }
     this.setState({ isEditing: false });
   };
 

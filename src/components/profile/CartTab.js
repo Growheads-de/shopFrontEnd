@@ -17,7 +17,7 @@ class CartTab extends Component {
     super(props);
     this.state = {
       isCheckingOut: false,
-      cartItems: window.cart || {},
+      cartItems: Array.isArray(window.cart) ? window.cart : [],
       deliveryMethod: 'DHL',
       paymentMethod: 'Onlinezahlung',
       showPaymentForm: false,
@@ -46,7 +46,7 @@ class CartTab extends Component {
   
   componentDidMount() { 
     this.cart = () => {
-      this.setState({cartItems: window.cart || {}});
+      this.setState({ cartItems: Array.isArray(window.cart) ? window.cart : [] });
     };
     window.addEventListener('cart', this.cart);
   }
@@ -171,7 +171,7 @@ class CartTab extends Component {
     const deliveryCost = this.getDeliveryCost();
     
     // Calculate subtotal from cart items
-    const subtotal = Object.values(cartItems).reduce(
+    const subtotal = cartItems.reduce(
       (total, item) => total + (item.price * item.quantity), 
       0
     );

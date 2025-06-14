@@ -9,8 +9,8 @@ import { isUserLoggedIn } from '../LoginComponent.js';
 
 function getBadgeNumber() {
   let count = 0;
-  if(window.cart) for(const item of Object.values(window.cart)){
-    if(item.quantity) count += item.quantity;
+  if (Array.isArray(window.cart)) for (const item of window.cart) {
+    if (item.quantity) count += item.quantity;
   }
   return count;
 }
@@ -73,7 +73,7 @@ class ButtonGroup extends Component {
   render() {
     const { socket, navigate } = this.props;
     const { isCartOpen } = this.state;
-    const cartItems = window.cart || {};
+    const cartItems = Array.isArray(window.cart) ? window.cart : [];
     
     return (
       <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 } }}>

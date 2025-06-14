@@ -20,6 +20,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import { withRouter } from './withRouter.js';
 import GoogleLoginButton from './GoogleLoginButton.js';
+import CartSyncDialog from './CartSyncDialog.js';
+import { localAndArchiveServer, mergeCarts } from '../utils/cartUtils.js';
 
 // Lazy load GoogleAuthProvider
 const GoogleAuthProvider = lazy(() => import('../providers/GoogleAuthProvider.js'));
@@ -42,7 +44,35 @@ export const isUserLoggedIn = () => {
   return { isLoggedIn: false, user: null, isAdmin: false };
 };
 
-class LoginComponent extends Component {
+// Hilfsfunktion zum Vergleich zweier Cart-Arrays
+function cartsAreIdentical(cartA, cartB) {
+  console.log('Vergleiche Carts:', {cartA, cartB});
+  if (!Array.isArray(cartA) || !Array.isArray(cartB)) {
+    console.log('Mindestens eines der Carts ist kein Array');
+    return false;
+  }
+  if (cartA.length !== cartB.length) {
+    console.log('Unterschiedliche Längen:', cartA.length, cartB.length);
+    return false;
+  }
+  const sortById = arr => [...arr].sort((a, b) => (a.id > b.id ? 1 : -1));
+  const aSorted = sortById(cartA);
+  const bSorted = sortById(cartB);
+  for (let i = 0; i < aSorted.length; i++) {
+    if (aSorted[i].id !== bSorted[i].id) {
+      console.log('Unterschiedliche IDs:', aSorted[i].id, bSorted[i].id, aSorted[i], bSorted[i]);
+      return false;
+    }
+    if (aSorted[i].quantity !== bSorted[i].quantity) {
+      console.log('Unterschiedliche Mengen:', aSorted[i].id, aSorted[i].quantity, bSorted[i].quantity);
+      return false;
+    }
+  }
+  console.log('Carts sind identisch');
+  return true;
+}
+
+export class LoginComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -58,7 +88,11 @@ class LoginComponent extends Component {
       isAdmin: false,
       user: null,
       anchorEl: null,
-      showGoogleAuth: false
+      showGoogleAuth: false,
+      cartSyncOpen: false,
+      localCartSync: [],
+      serverCartSync: [],
+      pendingNavigate: null
     };
   }
 
@@ -147,14 +181,33 @@ class LoginComponent extends Component {
         },()=>{
           console.log('LoginComponent', this.state)
         
-          try{
+          try {
             const newCart = JSON.parse(response.user.cart);
-            console.log('winCart',window.cart,'newCart',newCart);
-            const { syncCart } = require('../utils/cartUtils');
-            syncCart(newCart);
-            window.dispatchEvent(new CustomEvent('cart'));
-          }catch(error){
-            console.error('Error parsing cart  :',response.user, error);
+            const localCartArr = window.cart ? Object.values(window.cart) : [];
+            const serverCartArr = newCart ? Object.values(newCart) : [];
+            if (serverCartArr.length === 0) {
+              socket.emit('updateCart', window.cart);
+              this.handleClose();
+              navigate('/profile');
+            } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
+              // Server-Cart übernehmen
+              window.cart = serverCartArr;
+              window.dispatchEvent(new CustomEvent('cart'));
+              this.handleClose();
+              navigate('/profile');
+            } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
+              this.handleClose();
+              navigate('/profile');
+            } else {
+              this.setState({
+                cartSyncOpen: true,
+                localCartSync: localCartArr,
+                serverCartSync: serverCartArr,
+                pendingNavigate: navigate
+              });
+            }
+          } catch (error) {
+            console.error('Error parsing cart:', response.user, error);
           }
           this.handleClose(); // Close the dialog after successful login
           navigate('/profile'); // Navigate programmatically
@@ -294,14 +347,33 @@ class LoginComponent extends Component {
           token: response.user.token,
           admin: response.user.admin
         };
-        try{
-          console.log('winCart', window.cart, 'newCart', newCart);
-          const { syncCart } = require('../utils/cartUtils');
+        try {
           const newCart = JSON.parse(response.user.cart);
-          syncCart(newCart);
-          window.dispatchEvent(new CustomEvent('cart'));
-        }catch(error){
-          console.error('Error parsing cart  :',response.user, error);
+          const localCartArr = window.cart ? Object.values(window.cart) : [];
+          const serverCartArr = newCart ? Object.values(newCart) : [];
+          if (serverCartArr.length === 0) {
+            socket.emit('updateCart', window.cart);
+            this.handleClose();
+            navigate('/profile');
+          } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
+            // Server-Cart übernehmen
+            window.cart = serverCartArr;
+            window.dispatchEvent(new CustomEvent('cart'));
+            this.handleClose();
+            navigate('/profile');
+          } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
+            this.handleClose();
+            navigate('/profile');
+          } else {
+            this.setState({
+              cartSyncOpen: true,
+              localCartSync: localCartArr,
+              serverCartSync: serverCartArr,
+              pendingNavigate: navigate
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing cart:', response.user, error);
         }
         // Store in sessionStorage
         sessionStorage.setItem('user', JSON.stringify(googleUser));
@@ -321,6 +393,32 @@ class LoginComponent extends Component {
     this.setState({ error: 'Google-Anmeldung fehlgeschlagen' });
   };
 
+  handleCartSyncConfirm = async (option) => {
+    const { localCartSync, serverCartSync, pendingNavigate } = this.state;
+    switch (option) {
+      case 'useLocalArchive':
+        localAndArchiveServer(localCartSync, serverCartSync);
+        break;
+      case 'deleteServer':
+        this.props.socket.emit('updateCart', window.cart) 
+        break;
+      case 'useServer':
+        window.cart = serverCartSync;
+        break;
+      case 'merge':
+      default: {
+        const merged = mergeCarts(localCartSync, serverCartSync);
+        console.log('MERGED CART RESULT:', merged);
+        window.cart = merged;
+        break;
+      }
+    }
+    window.dispatchEvent(new CustomEvent('cart'));
+    this.setState({ cartSyncOpen: false, localCartSync: [], serverCartSync: [], pendingNavigate: null });
+    this.handleClose();
+    if (pendingNavigate) pendingNavigate('/profile');
+  };
+
   render() {
     const { 
       open, 
@@ -335,7 +433,10 @@ class LoginComponent extends Component {
       isAdmin, 
       user, 
       anchorEl, 
-      showGoogleAuth 
+      showGoogleAuth,
+      cartSyncOpen,
+      localCartSync,
+      serverCartSync
     } = this.state;
 
     return (
@@ -551,6 +652,13 @@ class LoginComponent extends Component {
             </Box>
           </DialogContent>
         </Dialog>
+        <CartSyncDialog
+          open={cartSyncOpen}
+          localCart={localCartSync}
+          serverCart={serverCartSync}
+          onClose={() => this.setState({ cartSyncOpen: false })}
+          onConfirm={this.handleCartSyncConfirm}
+        />
       </>
     );
   }

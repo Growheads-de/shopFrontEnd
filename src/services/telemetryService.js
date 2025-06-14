@@ -37,8 +37,14 @@ class TelemetryService {
       // Call original console.error first
       this.originalConsole.error.apply(console, args);
       
-      // Send to telemetry
-      this.sendTelemetry('error', this.formatMessage(args));
+      // Send to telemetry with stack trace
+      const errorWithStack = args.map(arg => {
+        if (arg instanceof Error) {
+          return `${arg.message}\n${arg.stack}`;
+        }
+        return arg;
+      });
+      this.sendTelemetry('error', this.formatMessage(errorWithStack));
     };
 
     // Capture unhandled errors

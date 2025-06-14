@@ -19,14 +19,14 @@ class CartDropdown extends Component {
     console.log('cartItems', cartItems);
 
     // Calculate the total weight of all items in the cart
-    const totalWeight = Object.values(cartItems).reduce((sum, item) => {
+    const totalWeight = cartItems.reduce((sum, item) => {
       const weightPerItem = item.weight || 0;
       const quantity = item.quantity || 1;
       return sum + weightPerItem * quantity;
     }, 0);
 
     // Calculate price breakdowns
-    const priceCalculations = Object.values(cartItems).reduce((acc, item) => {
+    const priceCalculations = cartItems.reduce((acc, item) => {
       const totalItemPrice = item.price * item.quantity;
       const netPrice = totalItemPrice / (1 + item.vat / 100);
       const vatAmount = totalItemPrice - netPrice;
@@ -47,19 +47,19 @@ class CartDropdown extends Component {
       <>
         <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2 }}>
           <Typography variant="h6">
-            {Object.values(cartItems).length} {Object.values(cartItems).length === 1 ? 'Produkt' : 'Produkte'}
+            {cartItems.length} {cartItems.length === 1 ? 'Produkt' : 'Produkte'}
           </Typography>
         </Box>
 
         { cartItems && (
           <>
             <List sx={{ width: '100%' }}>
-              {Object.keys(cartItems).map((item) => (
+              {cartItems.map((item) => (
                 <CartItem
-                  key={item}
+                  key={item.id}
                   socket={this.props.socket}
-                  item={cartItems[item]}
-                  id={item}
+                  item={item}
+                  id={item.id}
                 />
               ))}
             </List>
@@ -72,7 +72,7 @@ class CartDropdown extends Component {
             )}
 
             {/* Price breakdown table */}
-            {Object.values(cartItems).length > 0 && (
+            {cartItems.length > 0 && (
               <Box sx={{ px: 2, mb: 2 }}>
                 <Table size="small">
                   <TableBody>
@@ -120,7 +120,7 @@ class CartDropdown extends Component {
               </Button>
             )}
 
-            {onCheckout && Object.values(cartItems).length > 0 && (
+            {onCheckout && cartItems.length > 0 && (
               <Button 
                 variant="contained" 
                 color="secondary" 
