@@ -22,7 +22,7 @@ const CartSyncDialog = ({ open, localCart = [], serverCart = [], onClose, onConf
       <DialogTitle>Warenkorb-Synchronisierung</DialogTitle>
       <DialogContent>
         <Typography paragraph>
-          Sie haben lokal gespeicherte und serverseitige Warenkörbe. Bitte wählen Sie, wie Sie verfahren möchten:
+          Sie haben einen gespeicherten Warenkorb in ihrem Account. Bitte wählen Sie, wie Sie verfahren möchten:
         </Typography>
         <RadioGroup value={option} onChange={e => setOption(e.target.value)}>
           {/*<FormControlLabel
@@ -43,13 +43,13 @@ const CartSyncDialog = ({ open, localCart = [], serverCart = [], onClose, onConf
           <FormControlLabel
             value="merge"
             control={<Radio />}
-            label="Warenkörbe zusammenführen (Merge)"
+            label="Warenkörbe zusammenführen"
           />
         </RadioGroup>
 
         <Grid container spacing={2} sx={{ mt: 2 }}>
           <Grid item xs={6}>
-            <Typography variant="h6">Lokaler Warenkorb</Typography>
+            <Typography variant="h6">Ihr aktueller Warenkorb</Typography>
             <List>
               {localCart.length > 0
                 ? localCart.map(item => (
@@ -61,7 +61,7 @@ const CartSyncDialog = ({ open, localCart = [], serverCart = [], onClose, onConf
             </List>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h6">Server-Warenkorb</Typography>
+            <Typography variant="h6">In Ihrem Profil gespeicherter Warenkorb</Typography>
             <List>
               {serverCart.length > 0
                 ? serverCart.map(item => (
