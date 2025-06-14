@@ -221,14 +221,18 @@ class LoginComponent extends Component {
   };
 
   handleLogout = () => {
-    sessionStorage.removeItem('user');
-    this.setState({
-      user: null,
-      isLoggedIn: false,
-      isAdmin: false,
-      anchorEl: null,
-      showGoogleAuth: false
+    this.props.socket.emit('logout', (response) => {
+      if(response.success){
+        sessionStorage.removeItem('user');
+        this.setState({
+          user: null,
+          isLoggedIn: false,
+          isAdmin: false,
+          anchorEl: null,
+        });
+      }
     });
+
   };
 
   handleForgotPassword = () => {
