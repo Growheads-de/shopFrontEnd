@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Container, Box, Typography, Paper, Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
+import CategoryBoxGrid from '../components/CategoryBoxGrid.js';
+import SocketContext from '../contexts/SocketContext.js';
 
 // Add font-face declaration at the top of the file
 const fontFaceStyle = `
@@ -11,6 +13,50 @@ const fontFaceStyle = `
 `;
 
 const Home = () => {
+  const [rootCategories, setRootCategories] = useState([]);
+  const socket = useContext(SocketContext);
+
+  useEffect(() => {
+    // Helper to process and set categories
+    const processCategoryTree = (categoryTree) => {
+      if (categoryTree && categoryTree.id === 209 && Array.isArray(categoryTree.children)) {
+        setRootCategories(categoryTree.children);
+      } else {
+        setRootCategories([]);
+      }
+    };
+
+    // Try cache first
+    if (window.productCache && window.productCache['categoryTree_209']) {
+      const cached = window.productCache['categoryTree_209'];
+      const cacheAge = Date.now() - cached.timestamp;
+      const tenMinutes = 10 * 60 * 1000;
+      if (cacheAge < tenMinutes && cached.categoryTree) {
+        processCategoryTree(cached.categoryTree);
+        return;
+      }
+    }
+
+    // Otherwise, fetch from socket if available
+    if (socket) {
+      socket.emit('categoryList', { categoryId: 209 }, (response) => {
+        if (response && response.categoryTree) {
+          // Store in cache
+          try {
+            if (!window.productCache) window.productCache = {};
+            window.productCache['categoryTree_209'] = {
+              categoryTree: response.categoryTree,
+              timestamp: Date.now()
+            };
+          } catch (err) {
+            console.error(err);
+          }
+          setRootCategories(response.categoryTree.children || []);
+        }
+      });
+    }
+  }, [socket]);
+
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
       {/* Inject the font-face style */}
@@ -130,6 +176,11 @@ const Home = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* CategoryBoxGrid for root categories */}
+      <Box sx={{ mt: 6 }}>
+        <CategoryBoxGrid categories={rootCategories.filter(cat => cat.id !== 689 && cat.id !== 706)} title="Kategorien" />
+      </Box>
     </Container>
   );
 };
