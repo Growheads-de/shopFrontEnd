@@ -295,9 +295,9 @@ class LoginComponent extends Component {
           admin: response.user.admin
         };
         try{
-          const newCart = JSON.parse(response.user.cart);
           console.log('winCart', window.cart, 'newCart', newCart);
           const { syncCart } = require('../utils/cartUtils');
+          const newCart = JSON.parse(response.user.cart);
           syncCart(newCart);
           window.dispatchEvent(new CustomEvent('cart'));
         }catch(error){
