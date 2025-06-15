@@ -15,6 +15,7 @@ import SocketContext from '../../contexts/SocketContext.js';
 class CartTab extends Component {
   constructor(props) {
     super(props);
+    console.log('Ycart', window.cart);
     this.state = {
       isCheckingOut: false,
       cartItems: Array.isArray(window.cart) ? window.cart : [],
@@ -46,6 +47,7 @@ class CartTab extends Component {
   
   componentDidMount() { 
     this.cart = () => {
+      console.log('Xcart', window.cart);
       this.setState({ cartItems: Array.isArray(window.cart) ? window.cart : [] });
     };
     window.addEventListener('cart', this.cart);
@@ -179,7 +181,7 @@ class CartTab extends Component {
     return (
       <Box sx={{ p: 3 }}>
         <CartDropdown 
-          cartItems={cartItems}
+          cartItems={cartItems} socket={this.context}
         />
         
         <Paper sx={{ p: 3, mt: 3 }}>

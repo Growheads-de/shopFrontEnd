@@ -1,41 +1,59 @@
+import js from '@eslint/js';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import globals from 'globals';
 import babelParser from '@babel/eslint-parser';
 
-const toReadonly = obj =>
-  Object.fromEntries(Object.keys(obj).map(k => [k, 'readonly']));
-
 export default [
+  js.configs.recommended,
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
-      globals: {
-        ...toReadonly(globals.browser),
-        ...toReadonly(globals.node),
-      },
       parser: babelParser,
       parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        ecmaVersion: 2022,
-        sourceType: 'module',
+        ecmaFeatures: { jsx: true },
         requireConfigFile: false,
         babelOptions: {
           presets: ['@babel/preset-react']
         }
       },
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        console: 'readonly',
+        alert: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        fetch: 'readonly',
+        XMLHttpRequest: 'readonly',
+        setTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearTimeout: 'readonly',
+        clearInterval: 'readonly',
+        process: 'readonly',
+        global: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+      },
+    },
+    plugins: {
+      react: reactPlugin,
+      'react-hooks': reactHooksPlugin,
     },
     rules: {
-      'no-unused-vars': ['error', { 
+      'no-unused-vars': ['error', {
         varsIgnorePattern: 'React',
         ignoreRestSiblings: true,
         args: 'after-used',
         argsIgnorePattern: '^_'
       }],
+      ...reactPlugin.configs.recommended.rules,
+      ...reactHooksPlugin.configs.recommended.rules,
     },
-  },
-]; 
+  }
+];
