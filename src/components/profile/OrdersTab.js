@@ -56,6 +56,8 @@ class OrdersTab extends Component {
       'Teil Retoure': '#9c27b0', // purple
       'Teil geliefert': '#009688' // teal
     };
+
+    this.currencyFormatter = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
   }
 
   componentDidMount() {
@@ -131,6 +133,8 @@ class OrdersTab extends Component {
               <TableBody>
                 {orders.map((order) => {
                   const displayStatus = this.getStatusDisplay(order.status);
+                  const subtotal = order.items.reduce((acc, item) => acc + item.price * item.quantity_ordered, 0);
+                  const total = subtotal + order.delivery_cost;
                   return (
                   <TableRow key={order.orderId} hover>
                     <TableCell>{order.orderId}</TableCell>
@@ -151,7 +155,7 @@ class OrdersTab extends Component {
                       </Box>
                     </TableCell>
                     <TableCell>{order.items.reduce((acc, item) => acc + item.quantity_ordered, 0)}</TableCell>
-                    <TableCell align="right">€{order.delivery_cost.toFixed(2)}</TableCell>
+                    <TableCell align="right">{this.currencyFormatter.format(total)}</TableCell>
                     <TableCell align="center">
                       <Tooltip title="Details anzeigen">
                         <IconButton 

@@ -21,6 +21,8 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
     return null;
   }
 
+  const currencyFormatter = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" });
+
   const handleCancelOrder = () => {
     // Implement order cancellation logic here
     console.log(`Cancel order: ${order.orderId}`);
@@ -66,8 +68,8 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
                 <TableRow key={item.id}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell align="right">{item.quantity_ordered}</TableCell>
-                  <TableCell align="right">€{item.price.toFixed(2)}</TableCell>
-                  <TableCell align="right">€{(item.price * item.quantity_ordered).toFixed(2)}</TableCell>
+                  <TableCell align="right">{currencyFormatter.format(item.price)}</TableCell>
+                  <TableCell align="right">{currencyFormatter.format(item.price * item.quantity_ordered)}</TableCell>
                 </TableRow>
               ))}
               <TableRow>
@@ -76,13 +78,13 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
                   <Typography fontWeight="bold">Zwischensumme</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography fontWeight="bold">€{subtotal.toFixed(2)}</Typography>
+                  <Typography fontWeight="bold">{currencyFormatter.format(subtotal)}</Typography>
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell colSpan={2} />
                 <TableCell align="right">Lieferkosten</TableCell>
-                <TableCell align="right">€{order.delivery_cost.toFixed(2)}</TableCell>
+                <TableCell align="right">{currencyFormatter.format(order.delivery_cost)}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell colSpan={2} />
@@ -90,7 +92,7 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
                   <Typography fontWeight="bold">Gesamtsumme</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography fontWeight="bold">€{total.toFixed(2)}</Typography>
+                  <Typography fontWeight="bold">{currencyFormatter.format(total)}</Typography>
                 </TableCell>
               </TableRow>
             </TableBody>
