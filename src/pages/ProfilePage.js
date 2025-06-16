@@ -33,6 +33,8 @@ const ProfilePage = (props) => {
       const orderId = hash.substring(1);
       setOrderIdFromHash(orderId);
       setTabValue(1); // Switch to Orders tab
+    } else {
+      setOrderIdFromHash(null);
     }
   }, [location.hash]);
 
