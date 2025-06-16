@@ -439,7 +439,6 @@ export class LoginComponent extends Component {
       success, 
       isLoggedIn, 
       isAdmin, 
-      user, 
       anchorEl, 
       showGoogleAuth,
       cartSyncOpen,
@@ -463,7 +462,7 @@ export class LoginComponent extends Component {
                 color={isAdmin ? 'secondary' : 'inherit'}
                 sx={{ my: 1, mx: 1.5 }}
               >
-                {user?.name || user?.email?.split('@')[0] || 'Benutzer'}
+                Profil
               </Button>
               <Menu
                 disableScrollLock={true}
