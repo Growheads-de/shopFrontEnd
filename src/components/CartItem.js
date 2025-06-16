@@ -48,7 +48,6 @@ class CartItem extends Component {
   render() {
     const { item } = this.props;
 
-    console.log('item pictureList', item.pictureList);
     return (
       <>
         <ListItem 
@@ -105,7 +104,7 @@ class CartItem extends Component {
             {(item.weight > 0 || item.vat) && (
               <Box sx={{ 
                 display: 'flex', 
-                justifyContent: item.weight > 0 ? 'space-between' : 'flex-end', 
+                justifyContent: item.weight > 0 || (item.versandklasse && item.versandklasse != 'standard' && item.versandklasse != 'kostenlos') ? 'space-between' : 'flex-end', 
                 mb: 1 
               }}>
                 {item.weight > 0 && (
@@ -115,6 +114,11 @@ class CartItem extends Component {
                     component="div"
                   >
                     {item.weight.toFixed(1).replace('.',',')} kg
+                  </Typography>
+                )}
+                {item.versandklasse && item.versandklasse != 'standard' && item.versandklasse != 'kostenlos' && (
+                  <Typography variant="caption" color="text.secondary" component="div">
+                    {item.versandklasse}
                   </Typography>
                 )}
                 {item.vat && (
@@ -127,13 +131,14 @@ class CartItem extends Component {
                     inkl. {new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(
                       (item.price * item.quantity) - ((item.price * item.quantity) / (1 + item.vat / 100))
                     )} MwSt. ({item.vat}%)
-                  </Typography>
+                  </Typography>               
                 )}
+
               </Box>
             )}
             
             <Box sx={{ width: '250px'}}>
-              <AddToCartButton available={1} id={this.props.id} price={item.price} name={item.name} weight={item.weight} vat={item.vat}/>
+              <AddToCartButton available={1} id={this.props.id} price={item.price} name={item.name} weight={item.weight} vat={item.vat} versandklasse={item.versandklasse}/>
             </Box>          
           </Box>         
         </ListItem>

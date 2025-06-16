@@ -70,7 +70,7 @@ class Product extends Component {
     const { 
       id, name, price, available, manufacturer,
       currency, vat, massMenge, massEinheit, thc,
-      floweringWeeks,incoming, neu, weight 
+      floweringWeeks,incoming, neu, weight, versandklasse
     } = this.props;
 
     const isNew = neu && (new Date().getTime() - new Date(neu).getTime() < 30 * 24 * 60 * 60 * 1000);
@@ -356,7 +356,7 @@ class Product extends Component {
             >
               <ZoomInIcon />
             </IconButton>
-            <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} vat={vat} weight={weight} name={name}/>
+            <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} vat={vat} weight={weight} name={name} versandklasse={versandklasse}/>
           </Box>
         </Card>
       </Box>

@@ -310,10 +310,15 @@ class ProductDetailPage extends Component {
                 <Typography variant="body2" color="text.secondary">
                   inkl. {product.vat}% MwSt.
                 </Typography>
+                {product.versandklasse && product.versandklasse != 'standard' && product.versandklasse != 'kostenlos' && (
+                  <Typography variant="body2" color="text.secondary">
+                    {product.versandklasse}
+                  </Typography>
+                )}
               </Box>
               
               <Box sx={{ p: 2, pt: 0 }}>
-                <AddToCartButton cartButton={true} pictureList={product.pictureList} available={product.available} id={product.id} price={product.price} vat={product.vat} weight={product.weight} name={product.name}/>
+                <AddToCartButton cartButton={true} pictureList={product.pictureList} available={product.available} id={product.id} price={product.price} vat={product.vat} weight={product.weight} name={product.name} versandklasse={product.versandklasse}/>
               </Box>
 
             </Box>

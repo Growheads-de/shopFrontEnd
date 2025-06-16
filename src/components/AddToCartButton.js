@@ -52,7 +52,8 @@ class AddToCartButton extends Component {
         price: this.props.price,
         quantity: 1,
         weight: this.props.weight,
-        vat: this.props.vat
+        vat: this.props.vat,
+        versandklasse: this.props.versandklasse
       });
     } else {
       window.cart[idx].quantity++;

@@ -16,7 +16,6 @@ class CartDropdown extends Component {
 
   render() {
     const { cartItems = [], onClose, onCheckout } = this.props;
-    console.log('cartItems', cartItems);
 
     // Calculate the total weight of all items in the cart
     const totalWeight = cartItems.reduce((sum, item) => {

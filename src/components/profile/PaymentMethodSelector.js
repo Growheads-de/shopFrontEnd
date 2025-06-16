@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-const PaymentMethodSelector = ({ paymentMethod, onChange }) => {
+const PaymentMethodSelector = ({ paymentMethod, onChange, deliveryMethod }) => {
   const paymentOptions = [
     {
       id: 'Überweisung',
@@ -11,17 +11,14 @@ const PaymentMethodSelector = ({ paymentMethod, onChange }) => {
     {
       id: 'Nachnahme',
       name: 'Nachnahme',
-      description: 'Bezahlen Sie bei Lieferung'
+      description: 'Bezahlen Sie bei Lieferung (€8,99 Aufschlag)',
+      disabled: deliveryMethod !== 'DHL'
     },
     {
       id: 'Filiale',
       name: 'Zahlung in der Filiale',
-      description: 'Bei Abholung bezahlen'
-    },
-    {
-      id: 'Onlinezahlung',
-      name: 'Onlinezahlung',
-      description: 'Kreditkarte, Lastschrift, etc.'
+      description: 'Bei Abholung bezahlen',
+      disabled: deliveryMethod !== 'Abholung'
     }
   ];
 
@@ -41,8 +38,21 @@ const PaymentMethodSelector = ({ paymentMethod, onChange }) => {
               mb: index < paymentOptions.length - 1 ? 1 : 0, 
               p: 1, 
               border: '1px solid #e0e0e0', 
-              borderRadius: 1 
+              borderRadius: 1,
+              cursor: option.disabled ? 'not-allowed' : 'pointer',
+              opacity: option.disabled ? 0.6 : 1,
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': !option.disabled ? {
+                backgroundColor: '#f5f5f5',
+                borderColor: '#2e7d32',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              } : {},
+              ...(paymentMethod === option.id && !option.disabled && {
+                backgroundColor: '#e8f5e8',
+                borderColor: '#2e7d32'
+              })
             }}
+            onClick={!option.disabled ? () => onChange({ target: { value: option.id } }) : undefined}
           >
             <input
               type="radio"
@@ -51,11 +61,27 @@ const PaymentMethodSelector = ({ paymentMethod, onChange }) => {
               value={option.id}
               checked={paymentMethod === option.id}
               onChange={onChange}
+              disabled={option.disabled}
+              style={{ cursor: option.disabled ? 'not-allowed' : 'pointer' }}
             />
             <Box sx={{ ml: 2 }}>
-              <label htmlFor={option.id}>
-                <Typography variant="body1">{option.name}</Typography>
-                <Typography variant="body2" color="text.secondary">{option.description}</Typography>
+              <label 
+                htmlFor={option.id} 
+                style={{ 
+                  cursor: option.disabled ? 'not-allowed' : 'pointer',
+                  color: option.disabled ? '#999' : 'inherit'
+                }}
+              >
+                <Typography variant="body1" sx={{ color: option.disabled ? '#999' : 'inherit' }}>
+                  {option.name}
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{ color: option.disabled ? '#ccc' : 'text.secondary' }}
+                >
+                  {option.description}
+                </Typography>
               </label>
             </Box>
           </Box>

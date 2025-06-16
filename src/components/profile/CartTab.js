@@ -3,7 +3,8 @@ import {
   Box, 
   Paper, 
   Typography, 
-  Button
+  Button,
+  Alert
 } from '@mui/material';
 import CartDropdown from '../CartDropdown.js';
 import AddressForm from './AddressForm.js';
@@ -20,7 +21,7 @@ class CartTab extends Component {
       isCheckingOut: false,
       cartItems: Array.isArray(window.cart) ? window.cart : [],
       deliveryMethod: 'DHL',
-      paymentMethod: 'Onlinezahlung',
+      paymentMethod: 'Überweisung',
       showPaymentForm: false,
       invoiceAddress: {
         firstName: '',
@@ -41,7 +42,9 @@ class CartTab extends Component {
         country: 'Deutschland'
       },
       useSameAddress: true,
-      addressFormErrors: {}
+      addressFormErrors: {},
+      termsAccepted: false,
+      termsError: false
     };
   }
   
@@ -66,14 +69,27 @@ class CartTab extends Component {
   };
 
   handleDeliveryMethodChange = (event) => {
-    this.setState({ deliveryMethod: event.target.value });
+    const newDeliveryMethod = event.target.value;
+    const newState = { deliveryMethod: newDeliveryMethod };
+    
+    // If switching away from DHL and Nachnahme is selected, reset to default payment method
+    if (newDeliveryMethod !== 'DHL' && this.state.paymentMethod === 'Nachnahme') {
+      newState.paymentMethod = 'Überweisung';
+    }
+    
+    // If switching away from Abholung and Filiale is selected, reset to default payment method
+    if (newDeliveryMethod !== 'Abholung' && this.state.paymentMethod === 'Filiale') {
+      newState.paymentMethod = 'Überweisung';
+    }
+    
+    this.setState(newState);
   };
 
   handlePaymentMethodChange = (event) => {
     const paymentMethod = event.target.value;
     this.setState({ 
       paymentMethod,
-      showPaymentForm: paymentMethod === 'Onlinezahlung'
+      showPaymentForm: paymentMethod === 'Überweisung'
     });
   };
 
@@ -102,6 +118,13 @@ class CartTab extends Component {
     this.setState({ 
       useSameAddress,
       deliveryAddress: useSameAddress ? this.state.invoiceAddress : this.state.deliveryAddress
+    });
+  };
+
+  handleTermsAcceptedChange = (e) => {
+    this.setState({ 
+      termsAccepted: e.target.checked,
+      termsError: false // Clear error when user checks the box
     });
   };
 
@@ -137,25 +160,68 @@ class CartTab extends Component {
       return;
     }
     
-    const { deliveryMethod, paymentMethod } = this.state;
+    // Validate terms acceptance
+    if (!this.state.termsAccepted) {
+      this.setState({ termsError: true });
+      return;
+    }
     
-    alert(`Bestellung mit ${paymentMethod} wird verarbeitet. Versandart: ${deliveryMethod}`);
+    const { 
+      deliveryMethod, 
+      paymentMethod, 
+      invoiceAddress, 
+      deliveryAddress, 
+      useSameAddress,
+      cartItems 
+    } = this.state;
     
-    // Here you would typically send the order data to your backend
-    // socket.emit('createOrder', { invoiceAddress, deliveryAddress: useSameAddress ? invoiceAddress : deliveryAddress, ... })
+    const deliveryCost = this.getDeliveryCost();
+    
+    const orderData = {
+      items: cartItems,
+      invoiceAddress,
+      deliveryAddress: useSameAddress ? invoiceAddress : deliveryAddress,
+      deliveryMethod,
+      paymentMethod,
+      deliveryCost
+    };
+    
+    // Emit order to backend via socket.io
+    if (this.context) {
+      this.context.emit('issueOrder', orderData);
+      console.log('Order issued:', JSON.stringify(orderData, null, 2));
+    } else {
+      console.error('Socket context not available');
+    }
   };
 
   getDeliveryCost = () => {
-    switch(this.state.deliveryMethod) {
+    const { deliveryMethod, paymentMethod } = this.state;
+    let cost = 0;
+    
+    switch(deliveryMethod) {
       case 'DHL':
-        return 5.90;
+        cost = 6.99;
+        break;
       case 'DPD':
-        return 4.90;
+        cost = 4.90;
+        break;
+      case 'Sperrgut':
+        cost = 28.99;
+        break;
       case 'Abholung':
-        return 0;
+        cost = 0;
+        break;
       default:
-        return 5.90;
+        cost = 6.99;
     }
+    
+    // Add Nachnahme surcharge if selected
+    if (paymentMethod === 'Nachnahme') {
+      cost += 8.99;
+    }
+    
+    return cost;
   };
   
   render() {
@@ -167,7 +233,9 @@ class CartTab extends Component {
       invoiceAddress,
       deliveryAddress,
       useSameAddress,
-      addressFormErrors
+      addressFormErrors,
+      termsAccepted,
+      termsError
     } = this.state;
     
     const deliveryCost = this.getDeliveryCost();
@@ -229,12 +297,34 @@ class CartTab extends Component {
           <PaymentMethodSelector
             paymentMethod={paymentMethod}
             onChange={this.handlePaymentMethodChange}
+            deliveryMethod={deliveryMethod}
           />
           
           <OrderSummary
             subtotal={subtotal}
             deliveryCost={deliveryCost}
           />
+
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, mt: 2 }}>
+            <input
+              type="checkbox"
+              id="termsAccepted"
+              checked={termsAccepted}
+              onChange={this.handleTermsAcceptedChange}
+              style={{ cursor: 'pointer' }}
+            />
+            <label htmlFor="termsAccepted" style={{ cursor: 'pointer' }}>
+              <Typography variant="body2" sx={{ ml: 1 }}>
+                Ich habe die AGBs, die Datenschutzerklärung und die Bestimmungen zum Widerrufsrecht gelesen
+              </Typography>
+            </label>
+          </Box>
+
+          {termsError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Bitte akzeptieren Sie die AGBs, Datenschutzerklärung und Widerrufsrecht, um fortzufahren.
+            </Alert>
+          )}
 
           {!showPaymentForm && (
             <Button 
