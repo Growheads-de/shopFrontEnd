@@ -4,7 +4,8 @@ import {
   Paper, 
   Typography, 
   Button,
-  Alert
+  Alert,
+  TextField
 } from '@mui/material';
 import CartDropdown from '../CartDropdown.js';
 import AddressForm from './AddressForm.js';
@@ -46,7 +47,8 @@ class CartTab extends Component {
       termsAccepted: false,
       termsError: false,
       isCompletingOrder: false,
-      orderError: null
+      orderError: null,
+      note: ''
     };
   }
   
@@ -136,6 +138,10 @@ class CartTab extends Component {
     });
   };
 
+  handleNoteChange = (e) => {
+    this.setState({ note: e.target.value });
+  };
+
   validateAddressForm = () => {
     const { invoiceAddress, deliveryAddress, useSameAddress, deliveryMethod } = this.state;
     const errors = {};
@@ -183,7 +189,8 @@ class CartTab extends Component {
       invoiceAddress, 
       deliveryAddress, 
       useSameAddress,
-      cartItems 
+      cartItems,
+      note
     } = this.state;
     
     const deliveryCost = this.getDeliveryCost();
@@ -194,7 +201,8 @@ class CartTab extends Component {
       deliveryAddress: useSameAddress ? invoiceAddress : deliveryAddress,
       deliveryMethod,
       paymentMethod,
-      deliveryCost
+      deliveryCost,
+      note
     };
     
     // Emit order to backend via socket.io
@@ -275,7 +283,8 @@ class CartTab extends Component {
       termsAccepted,
       termsError,
       isCompletingOrder,
-      orderError
+      orderError,
+      note
     } = this.state;
     
     const deliveryCost = this.getDeliveryCost();
@@ -301,6 +310,19 @@ class CartTab extends Component {
               onChange={this.handleInvoiceAddressChange}
               errors={addressFormErrors}
               namePrefix="invoice"
+            />
+
+            <TextField
+              label="Anmerkung"
+              name="note"
+              value={note}
+              onChange={this.handleNoteChange}
+              fullWidth
+              multiline
+              rows={3}
+              margin="normal"
+              variant="outlined"
+              sx={{ mb: 2 }}
             />
 
             <DeliveryMethodSelector
