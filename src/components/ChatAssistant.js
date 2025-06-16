@@ -15,61 +15,18 @@ import StopIcon from '@mui/icons-material/Stop';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import parse, { domToReact } from 'html-react-parser';
 import { Link } from 'react-router-dom';
+import { isUserLoggedIn } from './LoginComponent.js';
 // Initialize window object for storing messages
 if (!window.chatMessages) {
   window.chatMessages = [];
 }
 
-// Function to convert markdown code blocks to HTML
-const formatMarkdown = (text) => {
-  // Replace code blocks with formatted HTML
-  return text.replace(/```(.*?)\n([\s\S]*?)```/g, (match, language, code) => {
-    return `<pre class="code-block" data-language="${language.trim()}"><code>${code.trim()}</code></pre>`;
-  });
-};
-
-// Custom parser options to convert <a> tags to <Link> components and style code blocks
-const parseOptions = {
-  replace: (domNode) => {
-    // Convert <a> tags to React Router Links
-    if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
-      const href = domNode.attribs.href;
-      
-      // Only convert internal links (not external URLs)
-      if (!href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('//')) {
-        return (
-          <Link to={href} style={{ color: 'inherit', textDecoration: 'underline' }}>
-            {domToReact(domNode.children, parseOptions)}
-          </Link>
-        );
-      }
-    }
-    
-    // Style pre/code blocks
-    if (domNode.name === 'pre' && domNode.attribs && domNode.attribs.class === 'code-block') {
-      const language = domNode.attribs['data-language'] || '';
-      return (
-        <pre style={{ 
-          backgroundColor: '#c0f5c0', 
-          padding: '8px', 
-          borderRadius: '4px',
-          overflowX: 'auto',
-          fontFamily: 'monospace',
-          fontSize: '0.9em',
-          whiteSpace: 'pre-wrap',
-          margin: '8px 0'
-        }}>
-          {language && <div style={{ marginBottom: '4px', color: '#666' }}>{language}</div>}
-          {domToReact(domNode.children, parseOptions)}
-        </pre>
-      );
-    }
-  }
-};
-
 class ChatAssistant extends Component {
   constructor(props) {
     super(props);
+
+    const privacyConfirmed = sessionStorage.getItem('privacyConfirmed') === 'true';
+
     this.state = {
       messages: window.chatMessages,
       inputValue: '',
@@ -80,7 +37,9 @@ class ChatAssistant extends Component {
       audioChunks: [],
       aiThink: false,
       atDatabase: false,
-      atWeb: false
+      atWeb: false,
+      privacyConfirmed: privacyConfirmed,
+      isGuest: false
     };
     
     this.messagesEndRef = React.createRef();
@@ -92,6 +51,31 @@ class ChatAssistant extends Component {
     // Set up socket event listener
     this.props.socket.on('aiassyResponse', this.handleBotResponse);
     this.props.socket.on('aiassyStatus', this.handleStateResponse);
+
+    const userStatus = isUserLoggedIn();
+    const isGuest = !userStatus.isLoggedIn;
+
+    if (isGuest && !this.state.privacyConfirmed) {
+      this.setState(prevState => {
+        if (prevState.messages.find(msg => msg.id === 'privacy-prompt')) {
+          return { isGuest: true };
+        }
+
+        const privacyMessage = {
+          id: 'privacy-prompt',
+          sender: 'bot',
+          text: 'Bitte bestätigen Sie, dass Sie die <a href="/datenschutz" target="_blank" rel="noopener noreferrer">Datenschutzbestimmungen</a> gelesen haben und damit einverstanden sind. <button data-confirm-privacy="true">Gelesen & Akzeptiert</button>',
+        };
+        const updatedMessages = [privacyMessage, ...prevState.messages];
+        window.chatMessages = updatedMessages;
+        return { 
+          messages: updatedMessages,
+          isGuest: true 
+        };
+      });
+    } else {
+      this.setState({ isGuest });
+    }
   }
   
   componentDidUpdate(prevProps, prevState) {
@@ -389,13 +373,76 @@ class ChatAssistant extends Component {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
   
+  handlePrivacyConfirm = () => {
+    sessionStorage.setItem('privacyConfirmed', 'true');
+    this.setState(prevState => {
+      const updatedMessages = prevState.messages.filter(msg => msg.id !== 'privacy-prompt');
+      window.chatMessages = updatedMessages;
+      return { 
+        privacyConfirmed: true,
+        messages: updatedMessages
+      };
+    });
+  };
+
+  formatMarkdown = (text) => {
+    // Replace code blocks with formatted HTML
+    return text.replace(/```(.*?)\n([\s\S]*?)```/g, (match, language, code) => {
+      return `<pre class="code-block" data-language="${language.trim()}"><code>${code.trim()}</code></pre>`;
+    });
+  };
+
+  getParseOptions = () => ({
+    replace: (domNode) => {
+      // Convert <a> tags to React Router Links
+      if (domNode.name === 'a' && domNode.attribs && domNode.attribs.href) {
+        const href = domNode.attribs.href;
+        
+        // Only convert internal links (not external URLs)
+        if (!href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('//')) {
+          return (
+            <Link to={href} style={{ color: 'inherit', textDecoration: 'underline' }}>
+              {domToReact(domNode.children, this.getParseOptions())}
+            </Link>
+          );
+        }
+      }
+      
+      // Style pre/code blocks
+      if (domNode.name === 'pre' && domNode.attribs && domNode.attribs.class === 'code-block') {
+        const language = domNode.attribs['data-language'] || '';
+        return (
+          <pre style={{ 
+            backgroundColor: '#c0f5c0', 
+            padding: '8px', 
+            borderRadius: '4px',
+            overflowX: 'auto',
+            fontFamily: 'monospace',
+            fontSize: '0.9em',
+            whiteSpace: 'pre-wrap',
+            margin: '8px 0'
+          }}>
+            {language && <div style={{ marginBottom: '4px', color: '#666' }}>{language}</div>}
+            {domToReact(domNode.children, this.getParseOptions())}
+          </pre>
+        );
+      }
+      
+      if (domNode.name === 'button' && domNode.attribs && domNode.attribs['data-confirm-privacy']) {
+        return <Button variant="contained" size="small" onClick={this.handlePrivacyConfirm}>Gelesen & Akzeptiert</Button>;
+      }
+    }
+  });
+  
   render() {
     const { open, onClose } = this.props;
-    const { messages, inputValue, isTyping, isRecording, recordingTime } = this.state;
+    const { messages, inputValue, isTyping, isRecording, recordingTime, isGuest, privacyConfirmed } = this.state;
     
     if (!open) {
       return null;
     }
+
+    const inputsDisabled = isGuest && !privacyConfirmed;
 
     return (
       <Paper 
@@ -479,7 +526,7 @@ class ChatAssistant extends Component {
                   fontSize: '0.8em'
                 }}
               >
-                {message.text ? parse(formatMarkdown(message.text), parseOptions) : ''}
+                {message.text ? parse(this.formatMarkdown(message.text), this.getParseOptions()) : ''}
               </Paper>
               {message.sender === 'user' && (
                 <Avatar sx={{ bgcolor: 'secondary.main', width: 30, height: 30 }}>
@@ -528,7 +575,7 @@ class ChatAssistant extends Component {
             value={inputValue}
             onChange={this.handleInputChange}
             onKeyDown={this.handleKeyDown}
-            disabled={isRecording}
+            disabled={isRecording || inputsDisabled}
             slotProps={{
               input: { 
                 maxLength: 300, 
@@ -554,7 +601,7 @@ class ChatAssistant extends Component {
               color="primary"
               onClick={this.startRecording}
               sx={{ ml: 1 }}
-              disabled={isTyping}
+              disabled={isTyping || inputsDisabled}
             >
               <MicIcon />
             </IconButton>
@@ -564,7 +611,7 @@ class ChatAssistant extends Component {
             color="primary"
             onClick={this.handleImageUpload}
             sx={{ ml: 1 }}
-            disabled={isTyping || isRecording}
+            disabled={isTyping || isRecording || inputsDisabled}
           >
             <PhotoCameraIcon />
           </IconButton>
@@ -573,7 +620,7 @@ class ChatAssistant extends Component {
             variant="contained" 
             sx={{ ml: 1 }} 
             onClick={this.handleSendMessage}
-            disabled={isTyping || isRecording}
+            disabled={isTyping || isRecording || inputsDisabled}
           >
             Senden
           </Button>
