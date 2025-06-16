@@ -542,7 +542,7 @@ export class LoginComponent extends Component {
             <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
               {!privacyConfirmed && (
                 <Typography variant="caption" sx={{ mb: 1, textAlign: 'center' }}>
-                  Mit dem Click auf "Mit Google anmelden" akzeptiere ich die Datenschutzbestimmungen
+                  Mit dem Click auf "Mit Google anmelden" akzeptiere ich die <Link to="/datenschutz" style={{ color: '#4285F4' }}>Datenschutzbestimmungen</Link>
                 </Typography>
               )}
               {!showGoogleAuth && (
