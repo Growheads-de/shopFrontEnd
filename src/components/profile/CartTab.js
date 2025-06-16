@@ -44,7 +44,9 @@ class CartTab extends Component {
       useSameAddress: true,
       addressFormErrors: {},
       termsAccepted: false,
-      termsError: false
+      termsError: false,
+      isCompletingOrder: false,
+      orderError: null
     };
   }
   
@@ -161,6 +163,7 @@ class CartTab extends Component {
   };
 
   handleCompleteOrder = () => {
+    this.setState({ orderError: null }); // Clear previous errors
     // Validate address form
     if (!this.validateAddressForm()) {
       return;
@@ -172,6 +175,8 @@ class CartTab extends Component {
       return;
     }
     
+    this.setState({ isCompletingOrder: true });
+
     const { 
       deliveryMethod, 
       paymentMethod, 
@@ -194,10 +199,37 @@ class CartTab extends Component {
     
     // Emit order to backend via socket.io
     if (this.context) {
-      this.context.emit('issueOrder', orderData);
+      this.context.emit('issueOrder', orderData, (response) => {
+        console.log('Order issued:', response);
+        if (response.success) {
+          // Clear the cart
+          window.cart = [];
+          window.dispatchEvent(new CustomEvent('cart'));
+
+          // Reset state and navigate to orders tab
+          this.setState({
+            isCheckingOut: false,
+            cartItems: [],
+            isCompletingOrder: false,
+            orderError: null
+          });
+          if (this.props.onOrderSuccess) {
+            this.props.onOrderSuccess();
+          }
+        } else {
+          this.setState({
+            isCompletingOrder: false,
+            orderError: response.error || 'Failed to complete order. Please try again.'
+          });
+        }
+      });
       console.log('Order issued:', JSON.stringify(orderData, null, 2));
     } else {
       console.error('Socket context not available');
+      this.setState({ 
+        isCompletingOrder: false,
+        orderError: 'Cannot connect to server. Please try again later.'
+      });
     }
   };
 
@@ -241,7 +273,9 @@ class CartTab extends Component {
       useSameAddress,
       addressFormErrors,
       termsAccepted,
-      termsError
+      termsError,
+      isCompletingOrder,
+      orderError
     } = this.state;
     
     const deliveryCost = this.getDeliveryCost();
@@ -259,92 +293,101 @@ class CartTab extends Component {
           cartItems={cartItems} socket={this.context}
         />
         
-        <Paper sx={{ p: 3, mt: 3 }}>
-          <AddressForm
-            title="Rechnungsadresse"
-            address={invoiceAddress}
-            onChange={this.handleInvoiceAddressChange}
-            errors={addressFormErrors}
-            namePrefix="invoice"
-          />
-
-          <DeliveryMethodSelector
-            deliveryMethod={deliveryMethod}
-            onChange={this.handleDeliveryMethodChange}
-            isPickupOnly={isPickupOnly}
-          />
-          
-          {(deliveryMethod === 'DHL' || deliveryMethod === 'DPD') && (
-            <>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <input
-                  type="checkbox"
-                  id="useSameAddress"
-                  checked={useSameAddress}
-                  onChange={this.handleUseSameAddressChange}
-                />
-                <label htmlFor="useSameAddress">
-                  <Typography variant="body1" sx={{ ml: 1 }}>
-                    Lieferadresse ist identisch mit Rechnungsadresse
-                  </Typography>
-                </label>
-              </Box>
-
-              {!useSameAddress && (
-                <AddressForm
-                  title="Lieferadresse"
-                  address={deliveryAddress}
-                  onChange={this.handleDeliveryAddressChange}
-                  errors={addressFormErrors}
-                  namePrefix="delivery"
-                />
-              )}
-            </>
-          )}
-          
-          <PaymentMethodSelector
-            paymentMethod={paymentMethod}
-            onChange={this.handlePaymentMethodChange}
-            deliveryMethod={deliveryMethod}
-          />
-          
-          <OrderSummary
-            subtotal={subtotal}
-            deliveryCost={deliveryCost}
-          />
-
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, mt: 2 }}>
-            <input
-              type="checkbox"
-              id="termsAccepted"
-              checked={termsAccepted}
-              onChange={this.handleTermsAcceptedChange}
-              style={{ cursor: 'pointer' }}
+        {cartItems.length > 0 && (
+          <Paper sx={{ p: 3, mt: 3 }}>
+            <AddressForm
+              title="Rechnungsadresse"
+              address={invoiceAddress}
+              onChange={this.handleInvoiceAddressChange}
+              errors={addressFormErrors}
+              namePrefix="invoice"
             />
-            <label htmlFor="termsAccepted" style={{ cursor: 'pointer' }}>
-              <Typography variant="body2" sx={{ ml: 1 }}>
-                Ich habe die AGBs, die Datenschutzerklärung und die Bestimmungen zum Widerrufsrecht gelesen
-              </Typography>
-            </label>
-          </Box>
 
-          {termsError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              Bitte akzeptieren Sie die AGBs, Datenschutzerklärung und Widerrufsrecht, um fortzufahren.
-            </Alert>
-          )}
+            <DeliveryMethodSelector
+              deliveryMethod={deliveryMethod}
+              onChange={this.handleDeliveryMethodChange}
+              isPickupOnly={isPickupOnly}
+            />
+            
+            {(deliveryMethod === 'DHL' || deliveryMethod === 'DPD') && (
+              <>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <input
+                    type="checkbox"
+                    id="useSameAddress"
+                    checked={useSameAddress}
+                    onChange={this.handleUseSameAddressChange}
+                  />
+                  <label htmlFor="useSameAddress">
+                    <Typography variant="body1" sx={{ ml: 1 }}>
+                      Lieferadresse ist identisch mit Rechnungsadresse
+                    </Typography>
+                  </label>
+                </Box>
 
-          {!showPaymentForm && (
-            <Button 
-              variant="contained" 
-              fullWidth
-              sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
-              onClick={this.handleCompleteOrder}
-            >
-              Bestellung abschließen
-            </Button>
-          )}
-        </Paper>
+                {!useSameAddress && (
+                  <AddressForm
+                    title="Lieferadresse"
+                    address={deliveryAddress}
+                    onChange={this.handleDeliveryAddressChange}
+                    errors={addressFormErrors}
+                    namePrefix="delivery"
+                  />
+                )}
+              </>
+            )}
+            
+            <PaymentMethodSelector
+              paymentMethod={paymentMethod}
+              onChange={this.handlePaymentMethodChange}
+              deliveryMethod={deliveryMethod}
+            />
+            
+            <OrderSummary
+              subtotal={subtotal}
+              deliveryCost={deliveryCost}
+            />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, mt: 2 }}>
+              <input
+                type="checkbox"
+                id="termsAccepted"
+                checked={termsAccepted}
+                onChange={this.handleTermsAcceptedChange}
+                style={{ cursor: 'pointer' }}
+              />
+              <label htmlFor="termsAccepted" style={{ cursor: 'pointer' }}>
+                <Typography variant="body2" sx={{ ml: 1 }}>
+                  Ich habe die AGBs, die Datenschutzerklärung und die Bestimmungen zum Widerrufsrecht gelesen
+                </Typography>
+              </label>
+            </Box>
+
+            {termsError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Bitte akzeptieren Sie die AGBs, Datenschutzerklärung und Widerrufsrecht, um fortzufahren.
+              </Alert>
+            )}
+
+            {orderError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {orderError}
+              </Alert>
+            )}
+
+            {!showPaymentForm && (
+              <Button 
+                variant="contained" 
+                fullWidth
+                sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
+                onClick={this.handleCompleteOrder}
+                disabled={isCompletingOrder}
+              >
+                {isCompletingOrder ? 'Bestellung wird verarbeitet...' : 'Bestellung abschließen'}
+              </Button>
+            )}
+          </Paper>
+        )}
       </Box>
     );
   }

@@ -47,6 +47,10 @@ class SocketProvider extends Component {
             console.error('Error parsing cart  :',response.user, error);
           }
         }
+        else{
+          sessionStorage.removeItem('user');
+          window.location.reload();
+        }
       });
       this.setState({ connected: true });
       console.log('SocketProvider: Socket connected successfully');

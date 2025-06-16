@@ -83,6 +83,10 @@ class ProfilePage extends Component {
     this.setState({ tabValue: newValue });
   };
 
+  handleGoToOrders = () => {
+    this.setState({ tabValue: 1 });
+  }
+
   render() {
     // Redirect to login if not logged in
     if (this.state.redirect || (!this.state.loading && !this.state.user)) {
@@ -137,7 +141,7 @@ class ProfilePage extends Component {
  
             </Tabs>
 
-            {this.state.tabValue === 0 && <CartTab />}
+            {this.state.tabValue === 0 && <CartTab onOrderSuccess={this.handleGoToOrders}/>}
             {this.state.tabValue === 1 && <OrdersTab />}
             {this.state.tabValue === 2 && <SettingsTab socket={this.props.socket} />}
 
