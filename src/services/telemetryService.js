@@ -62,11 +62,20 @@ class TelemetryService {
 
   formatMessage(args) {
     return args.map(arg => {
-      if (typeof arg === 'object') {
+      if (typeof arg === 'object' && arg !== null) {
+        // Prevent stringifying large or complex objects that might cause issues
+        if (arg.constructor.name === 'Object' || Array.isArray(arg)) {
+          const keyCount = Object.keys(arg).length;
+          // Heuristic: if an object has many keys or is a component instance, don't stringify it.
+          if (keyCount > 20 || Object.prototype.hasOwnProperty.call(arg, '_reactinternals')) {
+            return `[${Array.isArray(arg) ? 'Array' : 'Object'}: ${keyCount} keys]`;
+          }
+        }
         try {
           return JSON.stringify(arg, null, 2);
         } catch {
-          return String(arg);
+          // If stringify fails (e.g., circular reference), return a placeholder.
+          return `[Unstringifiable ${typeof arg}]`;
         }
       }
       return String(arg);

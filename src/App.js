@@ -12,7 +12,7 @@ import SocketProvider from './providers/SocketProvider.js';
 import SocketContext from './contexts/SocketContext.js';
 import config from './config.js';
 import ScrollToTop from './components/ScrollToTop.js';
-import TelemetryService from './services/telemetryService.js';
+//import TelemetryService from './services/telemetryService.js';
 
 import Header from './components/Header.js';
 import Footer from './components/Footer.js';
@@ -51,8 +51,8 @@ const TelemetryInitializer = ({ socket }) => {
 
   useEffect(() => {
     if (socket && !telemetryServiceRef.current) {
-      telemetryServiceRef.current = new TelemetryService(socket);
-      telemetryServiceRef.current.init();
+      //telemetryServiceRef.current = new TelemetryService(socket);
+      //telemetryServiceRef.current.init();
     }
 
     return () => {
@@ -84,17 +84,14 @@ const AppContent = () => {
   }, [location, navigate]);
   
   useEffect(() => {
-    const handleLogin = (event) => {
+    const handleLogin = () => {
       setAuthVersion(v => v + 1);
-      if (event.detail && event.detail.redirectTo) {
-        navigate(event.detail.redirectTo);
-      }
     };
     window.addEventListener('userLoggedIn', handleLogin);
     return () => {
       window.removeEventListener('userLoggedIn', handleLogin);
     };
-  }, [navigate]);
+  }, []);
 
   // Extract categoryId from pathname if on category route
   const getCategoryId = () => {

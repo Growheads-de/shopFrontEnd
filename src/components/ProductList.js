@@ -277,7 +277,7 @@ class ProductList extends Component {
           justifyContent: 'space-between', 
           alignItems: 'center'
         }}>
-        { this.renderPagination(Math.ceil(this.props.products.length / this.state.itemsPerPage), this.state.page) }
+        { this.renderPagination(Math.ceil(filteredProducts.length / this.state.itemsPerPage), this.state.page) }
         <Stack direction="row" spacing={2}>
           <Typography variant="body2" color="text.secondary">
                 {/*this.props.dataType == 'category' && (<>Kategorie: {this.props.dataParam}</>)}*/}
@@ -295,45 +295,14 @@ class ProductList extends Component {
         </Box>
 
         <Grid container spacing={2}>
-          {products.map((product) => (
-            <Grid 
-              item 
-              key={product.id} 
-              xs={12} 
-              sm={6} 
-              md={4}
-              lg={3}
-              xl={3}
-              sx={{
-                display: 'flex', 
-                justifyContent: { xs: 'stretch', sm: 'center' },
-                mb: 1
-              }}
-            > 
-              <Product 
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                currency={product.currency}
-                available={product.available}
-                manufacturer={product.manufacturer}
-                vat={product.vat}
-                massMenge={product.massMenge}
-                massEinheit={product.massEinheit}
-                incoming={product.incomingDate}
-                neu={product.neu}
-                thc={product.thc}
-                floweringWeeks={product.floweringWeeks}
-                versandklasse={product.versandklasse}
-                weight={product.weight}
-                socket={this.props.socket}
-                pictureList={product.pictureList}
-              />
+          {products.map(product => (
+            <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              <Product product={product} />
             </Grid>
           ))}
         </Grid>
 
-        { this.renderPagination(Math.ceil(this.props.products.length / this.state.itemsPerPage), this.state.page) }
+        {this.renderPagination(Math.ceil(filteredProducts.length / this.state.itemsPerPage), this.state.page)}
       </Box>
     );
   }

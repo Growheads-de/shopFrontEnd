@@ -167,7 +167,7 @@ export class LoginComponent extends Component {
 
   handleLogin = () => {
     const { email, password } = this.state;
-    const { socket, location } = this.props;
+    const { socket, location, navigate } = this.props;
 
     if (!email || !password) {
       this.setState({ error: 'Bitte füllen Sie alle Felder aus' });
@@ -193,7 +193,10 @@ export class LoginComponent extends Component {
         });
         
         const redirectTo = location && location.hash ? `/profile${location.hash}` : '/profile';
-        const dispatchLoginEvent = () => window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: { redirectTo } }));
+        const dispatchLoginEvent = () => {
+          window.dispatchEvent(new CustomEvent('userLoggedIn'));
+          navigate(redirectTo);
+        }
 
         try {
           const newCart = JSON.parse(response.user.cart);
@@ -289,7 +292,8 @@ export class LoginComponent extends Component {
     this.props.socket.emit('logout', (response) => {
       if(response.success){
         sessionStorage.removeItem('user');
-        window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: { redirectTo: '/' } }));
+        window.dispatchEvent(new CustomEvent('userLoggedIn'));
+        this.props.navigate('/');
         this.setState({
           user: null,
           isLoggedIn: false,
@@ -338,7 +342,7 @@ export class LoginComponent extends Component {
 
   // Google login functionality
   handleGoogleLoginSuccess = (credentialResponse) => {
-    const { socket, location } = this.props;
+    const { socket, location, navigate } = this.props;
     this.setState({ loading: true, error: '' });
 
     socket.emit('googleLogin', { credential: credentialResponse.credential }, (response) => {
@@ -351,7 +355,10 @@ export class LoginComponent extends Component {
         });
 
         const redirectTo = location && location.hash ? `/profile${location.hash}` : '/profile';
-        const dispatchLoginEvent = () => window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: { redirectTo } }));
+        const dispatchLoginEvent = () => {
+          window.dispatchEvent(new CustomEvent('userLoggedIn'));
+          navigate(redirectTo);
+        };
 
         try {
           const newCart = JSON.parse(response.user.cart);

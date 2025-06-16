@@ -100,7 +100,7 @@ export default {
     path: path.resolve(__dirname, 'dist'),
     filename: isDevelopment ? 'js/[name].[contenthash].bundle.js' : 'js/[name].[contenthash].js',
     chunkFilename: isDevelopment ? 'js/[name].[contenthash].chunk.js' : 'js/[name].[contenthash].chunk.js',
-    clean: isDevelopment ? true : false,
+    clean: isDevelopment ? false : false,
     publicPath: '/'
   },
   devtool: isDevelopment ? 'source-map' : false,
@@ -188,9 +188,6 @@ export default {
   ].filter(Boolean),
   devServer: {
     allowedHosts: 'all',
-    headers: {
-      'Cache-Control': 'public, max-age=3600',
-    },
     static: [
       {
         directory: path.resolve(__dirname, 'dist'),
@@ -200,19 +197,6 @@ export default {
         publicPath: '/',
       }
     ],
-    setupMiddlewares: (middlewares, devServer) => {
-      if (!devServer) throw new Error('webpack-dev-server is not defined');
-      devServer.app.use((req, res, next) => {
-        if (req.url === '/' || req.url.startsWith('/index.html')) {
-          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-          res.setHeader('Pragma', 'no-cache');
-          res.setHeader('Expires', '0');
-        }
-        next();
-      });
-
-      return middlewares;
-    },
     hot: true,
     port: 9500,
     open: false,
