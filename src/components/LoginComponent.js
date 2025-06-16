@@ -110,6 +110,16 @@ export class LoginComponent extends Component {
         isLoggedIn: true
       });
     }
+
+    if (this.props.open) {
+      this.setState({ open: true });
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.open !== prevProps.open) {
+      this.setState({ open: this.props.open });
+    }
   }
 
   componentWillUnmount() {
@@ -156,7 +166,7 @@ export class LoginComponent extends Component {
 
   handleLogin = () => {
     const { email, password } = this.state;
-    const { socket, navigate } = this.props;
+    const { socket, navigate, location } = this.props;
 
     if (!email || !password) {
       this.setState({ error: 'Bitte füllen Sie alle Felder aus' });
@@ -181,41 +191,38 @@ export class LoginComponent extends Component {
           isLoggedIn: true,
           isAdmin: !!response.user.admin
         },()=>{
-          console.log('LoginComponent', this.state)
-        
+          const redirectTo = location && location.hash ? `/profile${location.hash}` : '/profile';
           try {
             const newCart = JSON.parse(response.user.cart);
             const localCartArr = window.cart ? Object.values(window.cart) : [];
             const serverCartArr = newCart ? Object.values(newCart) : [];
+
             if (serverCartArr.length === 0) {
               socket.emit('updateCart', window.cart);
               this.handleClose();
-              navigate('/profile');
+              navigate(redirectTo);
             } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
               // Server-Cart übernehmen
               window.cart = serverCartArr;
               window.dispatchEvent(new CustomEvent('cart'));
               this.handleClose();
-              navigate('/profile');
+              navigate(redirectTo);
             } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
               this.handleClose();
-              navigate('/profile');
+              navigate(redirectTo);
             } else {
               this.setState({
                 cartSyncOpen: true,
                 localCartSync: localCartArr,
                 serverCartSync: serverCartArr,
-                pendingNavigate: navigate
+                pendingNavigate: () => navigate(redirectTo)
               });
             }
           } catch (error) {
             console.error('Error parsing cart:', response.user, error);
+            this.handleClose(); // Close the dialog after successful login
+            navigate(redirectTo); // Navigate programmatically
           }
-          this.handleClose(); // Close the dialog after successful login
-          navigate('/profile'); // Navigate programmatically
-        
-        
-        
         });
 
       } else {
@@ -331,63 +338,53 @@ export class LoginComponent extends Component {
 
   // Google login functionality
   handleGoogleLoginSuccess = (credentialResponse) => {
-    const { socket, navigate } = this.props;
-    console.log('Google Login Success:', credentialResponse);
-    
-    // Decode the credential to get basic user info
-    if (credentialResponse.credential) {
-      socket.emit('verifyGoogleUser', credentialResponse, (response) => {
-        console.log('Google Login Verify:', response);
+    const { socket, navigate, location } = this.props;
+    this.setState({ loading: true, error: '' });
 
-        const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-        console.log('Google Decode:', decoded);
-        const googleUser = {
-          email: decoded.email,
-          name: decoded.name,
-          picture: decoded.picture,
-          googleId: decoded.sub,
-          token: response.user.token,
-          admin: response.user.admin
-        };
-        try {
-          const newCart = JSON.parse(response.user.cart);
-          const localCartArr = window.cart ? Object.values(window.cart) : [];
-          const serverCartArr = newCart ? Object.values(newCart) : [];
-          if (serverCartArr.length === 0) {
-            socket.emit('updateCart', window.cart);
-            this.handleClose();
-            navigate('/profile');
-          } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
-            // Server-Cart übernehmen
-            window.cart = serverCartArr;
-            window.dispatchEvent(new CustomEvent('cart'));
-            this.handleClose();
-            navigate('/profile');
-          } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
-            this.handleClose();
-            navigate('/profile');
-          } else {
-            this.setState({
-              cartSyncOpen: true,
-              localCartSync: localCartArr,
-              serverCartSync: serverCartArr,
-              pendingNavigate: navigate
-            });
-          }
-        } catch (error) {
-          console.error('Error parsing cart:', response.user, error);
-        }
-        // Store in sessionStorage
-        sessionStorage.setItem('user', JSON.stringify(googleUser));
+    socket.emit('googleLogin', { credential: credentialResponse.credential }, (response) => {
+      if (response.success) {
+        sessionStorage.setItem('user', JSON.stringify(response.user));
         this.setState({
-          user: googleUser,
           isLoggedIn: true,
-          isAdmin: response.user.admin
+          isAdmin: !!response.user.admin,
+          user: response.user
+        },()=>{
+            const redirectTo = location && location.hash ? `/profile${location.hash}` : '/profile';
+            try {
+              const newCart = JSON.parse(response.user.cart);
+              const localCartArr = window.cart ? Object.values(window.cart) : [];
+              const serverCartArr = newCart ? Object.values(newCart) : [];
+              if (serverCartArr.length === 0) {
+                socket.emit('updateCart', window.cart);
+                this.handleClose();
+                navigate(redirectTo);
+              } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
+                // Server-Cart übernehmen
+                window.cart = serverCartArr;
+                window.dispatchEvent(new CustomEvent('cart'));
+                this.handleClose();
+                navigate(redirectTo);
+              } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
+                this.handleClose();
+                navigate(redirectTo);
+              } else {
+                this.setState({
+                  cartSyncOpen: true,
+                  localCartSync: localCartArr,
+                  serverCartSync: serverCartArr,
+                  pendingNavigate: () => navigate(redirectTo)
+                });
+              }
+            } catch (error) {
+              console.error('Error parsing cart:', response.user, error);
+              this.handleClose(); // Close the dialog after successful login
+              navigate(redirectTo); // Navigate programmatically
+            }
         });
-        this.handleClose();
-        navigate('/profile');
-      });
-    }
+      } else {
+        this.setState({ loading: false, error: 'Google-Anmeldung fehlgeschlagen' });
+      }
+    });
   };
 
   handleGoogleLoginError = (error) => {
@@ -442,52 +439,57 @@ export class LoginComponent extends Component {
       privacyConfirmed
     } = this.state;
 
+    const { open: openProp, handleClose: handleCloseProp } = this.props;
+    const isExternallyControlled = openProp !== undefined;
+
     return (
       <>
-        {isLoggedIn ? (
-          <>
+        {!isExternallyControlled && (
+          isLoggedIn ? (
+            <>
+              <Button
+                variant="text"
+                onClick={this.handleUserMenuClick}
+                startIcon={<PersonIcon />}
+                color={isAdmin ? 'secondary' : 'inherit'}
+                sx={{ my: 1, mx: 1.5 }}
+              >
+                {user?.name || user?.email?.split('@')[0] || 'Benutzer'}
+              </Button>
+              <Menu
+                disableScrollLock={true}
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={this.handleUserMenuClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="/profile" onClick={this.handleUserMenuClose}>Profil</MenuItem>
+                {isAdmin ? <MenuItem component={Link} to="/admin" onClick={this.handleUserMenuClose}>Admin</MenuItem> : null}
+                <MenuItem onClick={this.handleLogout}>Abmelden</MenuItem>
+              </Menu>
+            </>
+          ) : (
             <Button
-              variant="text"
-              onClick={this.handleUserMenuClick}
-              startIcon={<PersonIcon />}
-              color={isAdmin ? 'secondary' : 'inherit'}
+              variant="outlined"
+              color="inherit" 
+              onClick={this.handleOpen}
               sx={{ my: 1, mx: 1.5 }}
             >
-              {user?.name || user?.email?.split('@')[0] || 'Benutzer'}
+              Anmelden
             </Button>
-            <Menu
-              disableScrollLock={true}
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={this.handleUserMenuClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-            >
-              <MenuItem component={Link} to="/profile" onClick={this.handleUserMenuClose}>Profil</MenuItem>
-              {isAdmin ? <MenuItem component={Link} to="/admin" onClick={this.handleUserMenuClose}>Admin</MenuItem> : null}
-              <MenuItem onClick={this.handleLogout}>Abmelden</MenuItem>
-            </Menu>
-          </>
-        ) : (
-          <Button
-            variant="outlined"
-            color="inherit" 
-            onClick={this.handleOpen}
-            sx={{ my: 1, mx: 1.5 }}
-          >
-            Anmelden
-          </Button>
+          )
         )}
 
         <Dialog 
           open={open} 
-          onClose={this.handleClose}
+          onClose={handleCloseProp || this.handleClose}
           disableScrollLock
           fullWidth
           maxWidth="xs"

@@ -5,23 +5,26 @@ import {
   Box, 
   Typography, 
   Tabs, 
-  Tab
+  Tab,
+  CircularProgress
 } from '@mui/material';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import SocketContext from '../contexts/SocketContext.js';
 
 // Import extracted components
 import OrdersTab from '../components/profile/OrdersTab.js';
 import SettingsTab from '../components/profile/SettingsTab.js';
 import CartTab from '../components/profile/CartTab.js';
+import LoginComponent from '../components/LoginComponent.js';
 
 // Functional Profile Page Component
 const ProfilePage = (props) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [redirect, setRedirect] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const [orderIdFromHash, setOrderIdFromHash] = useState(null);
 
   useEffect(() => {
@@ -37,7 +40,7 @@ const ProfilePage = (props) => {
     const checkUserLoggedIn = () => {
       const storedUser = sessionStorage.getItem('user');
       if (!storedUser) {
-        setRedirect(true);
+        setShowLogin(true);
         setUser(null);
         return;
       }
@@ -45,14 +48,15 @@ const ProfilePage = (props) => {
       try {
         const userData = JSON.parse(storedUser);
         if (!userData) {
-          setRedirect(true);
+          setShowLogin(true);
           setUser(null);
         } else if (!user) {
           setUser(userData);
+          setShowLogin(false); // Hide login on successful user load
         }
       } catch (error) {
         console.error('Error parsing user from sessionStorage:', error);
-        setRedirect(true);
+        setShowLogin(true);
         setUser(null);
       }
 
@@ -66,7 +70,8 @@ const ProfilePage = (props) => {
 
     const handleStorageChange = (e) => {
       if (e.key === 'user' && !e.newValue) {
-        setRedirect(true);
+        // User was removed from sessionStorage in another tab
+        setShowLogin(true);
         setUser(null);
       }
     };
@@ -87,8 +92,29 @@ const ProfilePage = (props) => {
     setTabValue(1);
   };
 
-  if (redirect || (!loading && !user)) {
-    return <Navigate to="/" />;
+  const handleLoginClose = () => {
+    setShowLogin(false);
+    // If user closes login without logging in, redirect to home.
+    const storedUser = sessionStorage.getItem('user');
+    if (!storedUser) {
+      navigate('/', { replace: true });
+    }
+  }
+
+  if (showLogin) {
+    return <LoginComponent open={showLogin} handleClose={handleLoginClose} location={location} socket={props.socket} />;
+  }
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />;
   }
 
   return (
