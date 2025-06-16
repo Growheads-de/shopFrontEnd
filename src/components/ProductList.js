@@ -295,9 +295,40 @@ class ProductList extends Component {
         </Box>
 
         <Grid container spacing={2}>
-          {products.map(product => (
-            <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
-              <Product product={product} />
+          {products.map((product) => (
+            <Grid 
+              item 
+              key={product.id} 
+              xs={12} 
+              sm={6} 
+              md={4}
+              lg={3}
+              xl={3}
+              sx={{
+                display: 'flex', 
+                justifyContent: { xs: 'stretch', sm: 'center' },
+                mb: 1
+              }}
+            > 
+              <Product 
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                currency={product.currency}
+                available={product.available}
+                manufacturer={product.manufacturer}
+                vat={product.vat}
+                massMenge={product.massMenge}
+                massEinheit={product.massEinheit}
+                incoming={product.incomingDate}
+                neu={product.neu}
+                thc={product.thc}
+                floweringWeeks={product.floweringWeeks}
+                versandklasse={product.versandklasse}
+                weight={product.weight}
+                socket={this.props.socket}
+                pictureList={product.pictureList}
+              />
             </Grid>
           ))}
         </Grid>
