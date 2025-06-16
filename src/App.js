@@ -69,6 +69,7 @@ const TelemetryInitializer = ({ socket }) => {
 const AppContent = () => {
   // State to manage chat visibility
   const [isChatOpen, setChatOpen] = useState(false);
+  const [authVersion, setAuthVersion] = useState(0);
   
   // Get current location
   const location = useLocation();
@@ -82,6 +83,16 @@ const AppContent = () => {
     }
   }, [location, navigate]);
   
+  useEffect(() => {
+    const handleLogin = () => {
+      setAuthVersion(v => v + 1);
+    };
+    window.addEventListener('userLoggedIn', handleLogin);
+    return () => {
+      window.removeEventListener('userLoggedIn', handleLogin);
+    };
+  }, []);
+
   // Extract categoryId from pathname if on category route
   const getCategoryId = () => {
     const match = location.pathname.match(/^\/category\/(.+)$/);
@@ -119,7 +130,7 @@ const AppContent = () => {
       <Suspense fallback={<Loading />}>
         <ScrollToTop />
         <TelemetryInitializer socket={socket} />
-        <Header active categoryId={categoryId} />
+        <Header active categoryId={categoryId} key={authVersion} />
         <Box sx={{ flexGrow: 1 }}>
           <Routes>
             {/* Home page with text only */}

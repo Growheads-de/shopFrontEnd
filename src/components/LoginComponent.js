@@ -187,6 +187,7 @@ export class LoginComponent extends Component {
       if (response.success) {
         // Store user info in sessionStorage
         sessionStorage.setItem('user', JSON.stringify(response.user));
+        window.dispatchEvent(new Event('userLoggedIn'));
         this.setState({
           user: response.user,
           isLoggedIn: true,
@@ -290,15 +291,19 @@ export class LoginComponent extends Component {
     this.props.socket.emit('logout', (response) => {
       if(response.success){
         sessionStorage.removeItem('user');
+        window.dispatchEvent(new Event('userLoggedIn'));
         this.setState({
           user: null,
           isLoggedIn: false,
           isAdmin: false,
           anchorEl: null,
         });
+        const { location, navigate } = this.props;
+        if (location.pathname === '/profile' || location.pathname === '/admin') {
+          navigate('/');
+        }
       }
     });
-
   };
 
   handleForgotPassword = () => {
@@ -345,6 +350,7 @@ export class LoginComponent extends Component {
     socket.emit('googleLogin', { credential: credentialResponse.credential }, (response) => {
       if (response.success) {
         sessionStorage.setItem('user', JSON.stringify(response.user));
+        window.dispatchEvent(new Event('userLoggedIn'));
         this.setState({
           isLoggedIn: true,
           isAdmin: !!response.user.admin,
