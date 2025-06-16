@@ -32,6 +32,24 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
   const subtotal = order.items.reduce((acc, item) => acc + item.price * item.quantity_ordered, 0);
   const total = subtotal + order.delivery_cost;
 
+  // Calculate VAT breakdown similar to CartDropdown
+  const vatCalculations = order.items.reduce((acc, item) => {
+    const totalItemPrice = item.price * item.quantity_ordered;
+    const netPrice = totalItemPrice / (1 + item.vat / 100);
+    const vatAmount = totalItemPrice - netPrice;
+    
+    acc.totalGross += totalItemPrice;
+    acc.totalNet += netPrice;
+    
+    if (item.vat === 7) {
+      acc.vat7 += vatAmount;
+    } else if (item.vat === 19) {
+      acc.vat19 += vatAmount;
+    }
+    
+    return acc;
+  }, { totalGross: 0, totalNet: 0, vat7: 0, vat19: 0 });
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Bestelldetails: {order.orderId}</DialogTitle>
@@ -50,6 +68,21 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
           <Typography>{order.invoice_address_street} {order.invoice_address_house_number}</Typography>
           <Typography>{order.invoice_address_postal_code} {order.invoice_address_city}</Typography>
           <Typography>{order.invoice_address_country}</Typography>
+        </Box>
+
+        {/* Order Details Section */}
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" gutterBottom>Bestelldetails</Typography>
+          <Box sx={{ display: 'flex', gap: 4 }}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Lieferart:</Typography>
+              <Typography variant="body1">{order.deliveryMethod || order.delivery_method || 'Nicht angegeben'}</Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Zahlungsart:</Typography>
+              <Typography variant="body1">{order.paymentMethod || order.payment_method || 'Nicht angegeben'}</Typography>
+            </Box>
+          </Box>
         </Box>
 
         <Typography variant="h6" gutterBottom>Bestellte Artikel</Typography>
@@ -72,6 +105,29 @@ const OrderDetailsDialog = ({ open, onClose, order }) => {
                   <TableCell align="right">{currencyFormatter.format(item.price * item.quantity_ordered)}</TableCell>
                 </TableRow>
               ))}
+              <TableRow>
+                <TableCell colSpan={2} />
+                <TableCell align="right">
+                  <Typography fontWeight="bold">Gesamtnettopreis</Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <Typography fontWeight="bold">{currencyFormatter.format(vatCalculations.totalNet)}</Typography>
+                </TableCell>
+              </TableRow>
+              {vatCalculations.vat7 > 0 && (
+                <TableRow>
+                  <TableCell colSpan={2} />
+                  <TableCell align="right">7% Mehrwertsteuer</TableCell>
+                  <TableCell align="right">{currencyFormatter.format(vatCalculations.vat7)}</TableCell>
+                </TableRow>
+              )}
+              {vatCalculations.vat19 > 0 && (
+                <TableRow>
+                  <TableCell colSpan={2} />
+                  <TableCell align="right">19% Mehrwertsteuer</TableCell>
+                  <TableCell align="right">{currencyFormatter.format(vatCalculations.vat19)}</TableCell>
+                </TableRow>
+              )}
               <TableRow>
                 <TableCell colSpan={2} />
                 <TableCell align="right">
