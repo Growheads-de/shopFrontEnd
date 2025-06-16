@@ -1,19 +1,21 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-const DeliveryMethodSelector = ({ deliveryMethod, onChange }) => {
+const DeliveryMethodSelector = ({ deliveryMethod, onChange, isPickupOnly }) => {
   const deliveryOptions = [
     {
       id: 'DHL',
       name: 'DHL',
-      description: 'Standardversand',
-      price: '€6,99'
+      description: isPickupOnly ? "nicht auswählbar weil ein oder mehrere Artikel nur abgeholt werden können" : 'Standardversand',
+      price: '€6,99',
+      disabled: isPickupOnly
     },
     {
       id: 'DPD',
       name: 'DPD',
-      description: 'Standardversand',
-      price: '€4,90'
+      description: isPickupOnly ? "nicht auswählbar weil ein oder mehrere Artikel nur abgeholt werden können" : 'Standardversand',
+      price: '€4,90',
+      disabled: isPickupOnly
     },
     {
       id: 'Sperrgut',
@@ -48,7 +50,7 @@ const DeliveryMethodSelector = ({ deliveryMethod, onChange }) => {
               border: '1px solid #e0e0e0', 
               borderRadius: 1,
               cursor: option.disabled ? 'not-allowed' : 'pointer',
-              opacity: option.disabled ? 0.6 : 1,
+              backgroundColor: option.disabled ? '#f5f5f5' : 'transparent',
               transition: 'all 0.2s ease-in-out',
               '&:hover': !option.disabled ? {
                 backgroundColor: '#f5f5f5',
@@ -77,16 +79,16 @@ const DeliveryMethodSelector = ({ deliveryMethod, onChange }) => {
                 htmlFor={option.id} 
                 style={{ 
                   cursor: option.disabled ? 'not-allowed' : 'pointer',
-                  color: option.disabled ? '#999' : 'inherit'
+                  color: option.disabled ? 'rgba(0, 0, 0, 0.54)' : 'inherit'
                 }}
               >
-                <Typography variant="body1" sx={{ color: option.disabled ? '#999' : 'inherit' }}>
+                <Typography variant="body1" sx={{ color: 'inherit' }}>
                   {option.name}
                 </Typography>
                 <Typography 
                   variant="body2" 
                   color="text.secondary"
-                  sx={{ color: option.disabled ? '#ccc' : 'text.secondary' }}
+                  sx={{ color: 'inherit' }}
                 >
                   {option.description}
                 </Typography>
@@ -94,7 +96,7 @@ const DeliveryMethodSelector = ({ deliveryMethod, onChange }) => {
             </Box>
             <Typography 
               variant="body1"
-              sx={{ color: option.disabled ? '#999' : 'inherit' }}
+              sx={{ color: option.disabled ? 'rgba(0, 0, 0, 0.54)' : 'inherit' }}
             >
               {option.price}
             </Typography>

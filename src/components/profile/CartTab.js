@@ -51,9 +51,15 @@ class CartTab extends Component {
   componentDidMount() { 
     this.cart = () => {
       console.log('Xcart', window.cart);
-      this.setState({ cartItems: Array.isArray(window.cart) ? window.cart : [] });
+      const cartItems = Array.isArray(window.cart) ? window.cart : [];
+      const isPickupOnly = cartItems.some(item => item.versandklasse === 'nur Abholung');
+      this.setState({ 
+        cartItems,
+        deliveryMethod: isPickupOnly ? 'Abholung' : this.state.deliveryMethod
+      });
     };
     window.addEventListener('cart', this.cart);
+    this.cart(); // Initial check
   }
 
   componentWillUnmount() {
@@ -239,6 +245,7 @@ class CartTab extends Component {
     } = this.state;
     
     const deliveryCost = this.getDeliveryCost();
+    const isPickupOnly = cartItems.some(item => item.versandklasse === 'nur Abholung');
     
     // Calculate subtotal from cart items
     const subtotal = cartItems.reduce(
@@ -264,6 +271,7 @@ class CartTab extends Component {
           <DeliveryMethodSelector
             deliveryMethod={deliveryMethod}
             onChange={this.handleDeliveryMethodChange}
+            isPickupOnly={isPickupOnly}
           />
           
           {(deliveryMethod === 'DHL' || deliveryMethod === 'DPD') && (
