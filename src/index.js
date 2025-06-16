@@ -9,11 +9,9 @@ import { BrowserRouter } from 'react-router-dom';
 // This avoids the "Invalid hook call" error from GoogleOAuthProvider
 const AppWithProviders = () => {
   return (
-    <React.StrictMode>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-    </React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   );
 }
 

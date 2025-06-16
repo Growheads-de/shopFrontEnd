@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Profiler } from 'react';
 import { Box, Container, Button, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
@@ -18,7 +18,6 @@ class CategoryList extends Component {
 
   componentDidMount() {
     this.fetchCategories();
-    console.log('CategoryList componentDidMount - activeCategoryId:', this.props.activeCategoryId);
   }
   
   componentDidUpdate(prevProps) {
@@ -35,8 +34,6 @@ class CategoryList extends Component {
     if (prevProps.activeCategoryId !== this.props.activeCategoryId && this.state.categoryTree) {
       this.processCategoryTree(this.state.categoryTree);
     }
-    
-    console.log('CategoryList componentDidUpdate - activeCategoryId:', this.props.activeCategoryId);
   }
   
   fetchCategories = () => {
@@ -68,8 +65,10 @@ class CategoryList extends Component {
         // If cache is less than 10 minutes old, use it
         if (cacheAge < tenMinutes && categoryTree) {
           //console.log('Using cached category tree, age:', Math.round(cacheAge/1000), 'seconds');
-          this.processCategoryTree(categoryTree);
-          this.setState({ fetchedCategories: true }); // Mark as fetched to prevent future calls
+          // Defer processing to next tick to avoid blocking
+          setTimeout(() => {
+            this.processCategoryTree(categoryTree);
+          }, 0);
           return;
         }
       }
@@ -199,7 +198,6 @@ class CategoryList extends Component {
   
   render() {
     const { level1Categories, level2Categories, level3Categories, activePath } = this.state;
-    //console.log('CategoryList render - levels:', {level1Categories, level2Categories, level3Categories, activePath});
     
     const renderCategoryRow = (categories, level = 1) => (
       <Box 
@@ -318,34 +316,42 @@ class CategoryList extends Component {
       </Box>
     );
     
+    const onRenderCallback = (id, phase, actualDuration) => {
+      if (actualDuration > 50) {
+        console.warn(`CategoryList render took ${actualDuration}ms in ${phase} phase`);
+      }
+    };
+    
     return (
-      <Box 
-        sx={{ 
-          width: '100%',
-          bgcolor: 'primary.dark',
-          px: 2,
-          display: { xs: 'none', md: 'block' }
-        }}
-      >
-        <Container maxWidth="lg">
-          {/* Level 1 Categories Row - Always shown */}
-          {renderCategoryRow(level1Categories, 1)}
-          
-          {/* Level 2 Categories Row - Show when level 1 is selected */}
-          {level2Categories.length > 0 && (
-            <Box sx={{ mt: 0.5 }}>
-              {renderCategoryRow(level2Categories, 2)}
-            </Box>
-          )}
-          
-          {/* Level 3 Categories Row - Show when level 2 is selected */}
-          {level3Categories.length > 0 && (
-            <Box sx={{ mt: 0.5 }}>
-              {renderCategoryRow(level3Categories, 3)}
-            </Box>
-          )}
-        </Container>
-      </Box>
+      <Profiler id="CategoryList" onRender={onRenderCallback}>
+        <Box 
+          sx={{ 
+            width: '100%',
+            bgcolor: 'primary.dark',
+            px: 2,
+            display: { xs: 'none', md: 'block' }
+          }}
+        >
+          <Container maxWidth="lg">
+            {/* Level 1 Categories Row - Always shown */}
+            {renderCategoryRow(level1Categories, 1)}
+            
+            {/* Level 2 Categories Row - Show when level 1 is selected */}
+            {level2Categories.length > 0 && (
+              <Box sx={{ mt: 0.5 }}>
+                {renderCategoryRow(level2Categories, 2)}
+              </Box>
+            )}
+            
+            {/* Level 3 Categories Row - Show when level 2 is selected */}
+            {level3Categories.length > 0 && (
+              <Box sx={{ mt: 0.5 }}>
+                {renderCategoryRow(level3Categories, 3)}
+              </Box>
+            )}
+          </Container>
+        </Box>
+      </Profiler>
     );
   }
 }

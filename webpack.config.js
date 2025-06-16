@@ -166,7 +166,7 @@ export default {
       scriptLoading: 'blocking',
     }),
     new GitCommitPlugin(),
-    new GitHashJsonPlugin(),
+    !isDevelopment && new GitHashJsonPlugin(),
     new webpack.DefinePlugin({
       'process.env.GIT_COMMIT_HASH': JSON.stringify(GIT_COMMIT_HASH)
     }),
