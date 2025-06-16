@@ -11,7 +11,7 @@ const PaymentMethodSelector = ({ paymentMethod, onChange, deliveryMethod }) => {
     {
       id: 'Nachnahme',
       name: 'Nachnahme',
-      description: 'Bezahlen Sie bei Lieferung (€8,99 Aufschlag)',
+      description: 'Bezahlen Sie bei Lieferung (8,99 € Aufschlag)',
       disabled: deliveryMethod !== 'DHL'
     },
     {

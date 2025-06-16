@@ -7,28 +7,28 @@ const DeliveryMethodSelector = ({ deliveryMethod, onChange, isPickupOnly }) => {
       id: 'DHL',
       name: 'DHL',
       description: isPickupOnly ? "nicht auswählbar weil ein oder mehrere Artikel nur abgeholt werden können" : 'Standardversand',
-      price: '€6,99',
+      price: '6,99 €',
       disabled: isPickupOnly
     },
     {
       id: 'DPD',
       name: 'DPD',
       description: isPickupOnly ? "nicht auswählbar weil ein oder mehrere Artikel nur abgeholt werden können" : 'Standardversand',
-      price: '€4,90',
+      price: '4,90 €',
       disabled: isPickupOnly
     },
     {
       id: 'Sperrgut',
       name: 'Sperrgut',
       description: 'Für große und schwere Artikel',
-      price: '€28,99',
+      price: '28,99 €',
       disabled: true
     },
     {
       id: 'Abholung',
       name: 'Abholung in der Filiale',
-      description: 'Verfügbar ab dem nächsten Werktag',
-      price: '€0,00'
+      description: '',
+      price: ''
     }
   ];
 
