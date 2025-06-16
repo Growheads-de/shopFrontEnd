@@ -4,7 +4,6 @@ import {
   Paper, 
   Typography, 
   Button,
-  Alert,
   TextField
 } from '@mui/material';
 import CartDropdown from '../CartDropdown.js';
@@ -45,9 +44,8 @@ class CartTab extends Component {
       useSameAddress: true,
       addressFormErrors: {},
       termsAccepted: false,
-      termsError: false,
       isCompletingOrder: false,
-      orderError: null,
+      completionError: null,
       note: ''
     };
   }
@@ -133,8 +131,7 @@ class CartTab extends Component {
 
   handleTermsAcceptedChange = (e) => {
     this.setState({ 
-      termsAccepted: e.target.checked,
-      termsError: false // Clear error when user checks the box
+      termsAccepted: e.target.checked
     });
   };
 
@@ -169,15 +166,16 @@ class CartTab extends Component {
   };
 
   handleCompleteOrder = () => {
-    this.setState({ orderError: null }); // Clear previous errors
+    this.setState({ completionError: null }); // Clear previous errors
     // Validate address form
     if (!this.validateAddressForm()) {
+      this.setState({ completionError: 'Bitte überprüfen Sie Ihre Eingaben in den Adressfeldern.' });
       return;
     }
     
     // Validate terms acceptance
     if (!this.state.termsAccepted) {
-      this.setState({ termsError: true });
+      this.setState({ completionError: 'Bitte akzeptieren Sie die AGBs, Datenschutzerklärung und Widerrufsrecht, um fortzufahren.' });
       return;
     }
     
@@ -219,7 +217,7 @@ class CartTab extends Component {
             isCheckingOut: false,
             cartItems: [],
             isCompletingOrder: false,
-            orderError: null
+            completionError: null
           });
           if (this.props.onOrderSuccess) {
             this.props.onOrderSuccess();
@@ -227,7 +225,7 @@ class CartTab extends Component {
         } else {
           this.setState({
             isCompletingOrder: false,
-            orderError: response.error || 'Failed to complete order. Please try again.'
+            completionError: response.error || 'Failed to complete order. Please try again.'
           });
         }
       });
@@ -236,7 +234,7 @@ class CartTab extends Component {
       console.error('Socket context not available');
       this.setState({ 
         isCompletingOrder: false,
-        orderError: 'Cannot connect to server. Please try again later.'
+        completionError: 'Cannot connect to server. Please try again later.'
       });
     }
   };
@@ -281,9 +279,8 @@ class CartTab extends Component {
       useSameAddress,
       addressFormErrors,
       termsAccepted,
-      termsError,
       isCompletingOrder,
-      orderError,
+      completionError,
       note
     } = this.state;
     
@@ -385,16 +382,10 @@ class CartTab extends Component {
               </label>
             </Box>
 
-            {termsError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                Bitte akzeptieren Sie die AGBs, Datenschutzerklärung und Widerrufsrecht, um fortzufahren.
-              </Alert>
-            )}
-
-            {orderError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {orderError}
-              </Alert>
+            {completionError && (
+              <Typography color="error" sx={{ mb: 2, textAlign: 'center' }}>
+                {completionError}
+              </Typography>
             )}
 
             {!showPaymentForm && (
