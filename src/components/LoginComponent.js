@@ -167,7 +167,7 @@ export class LoginComponent extends Component {
 
   handleLogin = () => {
     const { email, password } = this.state;
-    const { socket, navigate, location } = this.props;
+    const { socket, location } = this.props;
 
     if (!email || !password) {
       this.setState({ error: 'Bitte füllen Sie alle Felder aus' });
@@ -185,48 +185,46 @@ export class LoginComponent extends Component {
     socket.emit('verifyUser', { email, password }, (response) => {
       console.log('LoginComponent: verifyUser', response);
       if (response.success) {
-        // Store user info in sessionStorage
         sessionStorage.setItem('user', JSON.stringify(response.user));
-        window.dispatchEvent(new Event('userLoggedIn'));
         this.setState({
           user: response.user,
           isLoggedIn: true,
           isAdmin: !!response.user.admin
-        },()=>{
-          const redirectTo = location && location.hash ? `/profile${location.hash}` : '/profile';
-          try {
-            const newCart = JSON.parse(response.user.cart);
-            const localCartArr = window.cart ? Object.values(window.cart) : [];
-            const serverCartArr = newCart ? Object.values(newCart) : [];
-
-            if (serverCartArr.length === 0) {
-              socket.emit('updateCart', window.cart);
-              this.handleClose();
-              navigate(redirectTo);
-            } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
-              // Server-Cart übernehmen
-              window.cart = serverCartArr;
-              window.dispatchEvent(new CustomEvent('cart'));
-              this.handleClose();
-              navigate(redirectTo);
-            } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
-              this.handleClose();
-              navigate(redirectTo);
-            } else {
-              this.setState({
-                cartSyncOpen: true,
-                localCartSync: localCartArr,
-                serverCartSync: serverCartArr,
-                pendingNavigate: () => navigate(redirectTo)
-              });
-            }
-          } catch (error) {
-            console.error('Error parsing cart:', response.user, error);
-            this.handleClose(); // Close the dialog after successful login
-            navigate(redirectTo); // Navigate programmatically
-          }
         });
+        
+        const redirectTo = location && location.hash ? `/profile${location.hash}` : '/profile';
+        const dispatchLoginEvent = () => window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: { redirectTo } }));
 
+        try {
+          const newCart = JSON.parse(response.user.cart);
+          const localCartArr = window.cart ? Object.values(window.cart) : [];
+          const serverCartArr = newCart ? Object.values(newCart) : [];
+
+          if (serverCartArr.length === 0) {
+            socket.emit('updateCart', window.cart);
+            this.handleClose();
+            dispatchLoginEvent();
+          } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
+            window.cart = serverCartArr;
+            window.dispatchEvent(new CustomEvent('cart'));
+            this.handleClose();
+            dispatchLoginEvent();
+          } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
+            this.handleClose();
+            dispatchLoginEvent();
+          } else {
+            this.setState({
+              cartSyncOpen: true,
+              localCartSync: localCartArr,
+              serverCartSync: serverCartArr,
+              pendingNavigate: dispatchLoginEvent
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing cart:', response.user, error);
+          this.handleClose();
+          dispatchLoginEvent();
+        }
       } else {
         this.setState({
           loading: false,
@@ -291,17 +289,13 @@ export class LoginComponent extends Component {
     this.props.socket.emit('logout', (response) => {
       if(response.success){
         sessionStorage.removeItem('user');
-        window.dispatchEvent(new Event('userLoggedIn'));
+        window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: { redirectTo: '/' } }));
         this.setState({
           user: null,
           isLoggedIn: false,
           isAdmin: false,
           anchorEl: null,
         });
-        const { location, navigate } = this.props;
-        if (location.pathname === '/profile' || location.pathname === '/admin') {
-          navigate('/');
-        }
       }
     });
   };
@@ -344,50 +338,51 @@ export class LoginComponent extends Component {
 
   // Google login functionality
   handleGoogleLoginSuccess = (credentialResponse) => {
-    const { socket, navigate, location } = this.props;
+    const { socket, location } = this.props;
     this.setState({ loading: true, error: '' });
 
     socket.emit('googleLogin', { credential: credentialResponse.credential }, (response) => {
       if (response.success) {
         sessionStorage.setItem('user', JSON.stringify(response.user));
-        window.dispatchEvent(new Event('userLoggedIn'));
         this.setState({
           isLoggedIn: true,
           isAdmin: !!response.user.admin,
           user: response.user
-        },()=>{
-            const redirectTo = location && location.hash ? `/profile${location.hash}` : '/profile';
-            try {
-              const newCart = JSON.parse(response.user.cart);
-              const localCartArr = window.cart ? Object.values(window.cart) : [];
-              const serverCartArr = newCart ? Object.values(newCart) : [];
-              if (serverCartArr.length === 0) {
-                socket.emit('updateCart', window.cart);
-                this.handleClose();
-                navigate(redirectTo);
-              } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
-                // Server-Cart übernehmen
-                window.cart = serverCartArr;
-                window.dispatchEvent(new CustomEvent('cart'));
-                this.handleClose();
-                navigate(redirectTo);
-              } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
-                this.handleClose();
-                navigate(redirectTo);
-              } else {
-                this.setState({
-                  cartSyncOpen: true,
-                  localCartSync: localCartArr,
-                  serverCartSync: serverCartArr,
-                  pendingNavigate: () => navigate(redirectTo)
-                });
-              }
-            } catch (error) {
-              console.error('Error parsing cart:', response.user, error);
-              this.handleClose(); // Close the dialog after successful login
-              navigate(redirectTo); // Navigate programmatically
-            }
         });
+
+        const redirectTo = location && location.hash ? `/profile${location.hash}` : '/profile';
+        const dispatchLoginEvent = () => window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: { redirectTo } }));
+
+        try {
+          const newCart = JSON.parse(response.user.cart);
+          const localCartArr = window.cart ? Object.values(window.cart) : [];
+          const serverCartArr = newCart ? Object.values(newCart) : [];
+
+          if (serverCartArr.length === 0) {
+            socket.emit('updateCart', window.cart);
+            this.handleClose();
+            dispatchLoginEvent();
+          } else if (localCartArr.length === 0 && serverCartArr.length > 0) {
+            window.cart = serverCartArr;
+            window.dispatchEvent(new CustomEvent('cart'));
+            this.handleClose();
+            dispatchLoginEvent();
+          } else if (cartsAreIdentical(localCartArr, serverCartArr)) {
+            this.handleClose();
+            dispatchLoginEvent();
+          } else {
+            this.setState({
+              cartSyncOpen: true,
+              localCartSync: localCartArr,
+              serverCartSync: serverCartArr,
+              pendingNavigate: dispatchLoginEvent
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing cart:', response.user, error);
+          this.handleClose();
+          dispatchLoginEvent();
+        }
       } else {
         this.setState({ loading: false, error: 'Google-Anmeldung fehlgeschlagen' });
       }
@@ -422,7 +417,7 @@ export class LoginComponent extends Component {
     window.dispatchEvent(new CustomEvent('cart'));
     this.setState({ cartSyncOpen: false, localCartSync: [], serverCartSync: [], pendingNavigate: null });
     this.handleClose();
-    if (pendingNavigate) pendingNavigate('/profile');
+    if (pendingNavigate) pendingNavigate();
   };
 
   render() {

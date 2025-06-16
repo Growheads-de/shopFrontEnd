@@ -84,14 +84,17 @@ const AppContent = () => {
   }, [location, navigate]);
   
   useEffect(() => {
-    const handleLogin = () => {
+    const handleLogin = (event) => {
       setAuthVersion(v => v + 1);
+      if (event.detail && event.detail.redirectTo) {
+        navigate(event.detail.redirectTo);
+      }
     };
     window.addEventListener('userLoggedIn', handleLogin);
     return () => {
       window.removeEventListener('userLoggedIn', handleLogin);
     };
-  }, []);
+  }, [navigate]);
 
   // Extract categoryId from pathname if on category route
   const getCategoryId = () => {

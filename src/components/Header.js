@@ -40,7 +40,7 @@ class Header extends Component {
   render() {
     // Get socket directly from context in render method
     const socket = this.context;
-    const { isHomePage } = this.props;
+    const { isHomePage, isProfilePage } = this.props;
 
     return (
       <AppBar position="sticky" color="primary" elevation={0} sx={{ zIndex: 1100 }}>
@@ -79,7 +79,7 @@ class Header extends Component {
             </Box>
           </Container>
         </Toolbar>
-        {(isHomePage || this.props.categoryId) && <CategoryList categoryId={209} activeCategoryId={this.props.categoryId} socket={socket} />}
+        {(isHomePage || this.props.categoryId || isProfilePage) && <CategoryList categoryId={209} activeCategoryId={this.props.categoryId} socket={socket} />}
       </AppBar>
     );
   }
@@ -89,10 +89,11 @@ class Header extends Component {
 const HeaderWithContext = (props) => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const isProfilePage = location.pathname === '/profile';
   
   return (
     <SocketContext.Consumer>
-      {socket => <Header {...props} socket={socket} isHomePage={isHomePage} />}
+      {socket => <Header {...props} socket={socket} isHomePage={isHomePage} isProfilePage={isProfilePage} />}
     </SocketContext.Consumer>
   );
 };
