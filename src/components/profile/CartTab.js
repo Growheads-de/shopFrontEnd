@@ -140,7 +140,13 @@ class CartTab extends Component {
   };
 
   validateAddressForm = () => {
-    const { invoiceAddress, deliveryAddress, useSameAddress, deliveryMethod } = this.state;
+    const errors = this.getValidationErrorMessage(true);
+    this.setState({ addressFormErrors: errors });
+    return Object.keys(errors).length === 0;
+  };
+
+  getValidationErrorMessage = (isAddressOnly = false) => {
+    const { invoiceAddress, deliveryAddress, useSameAddress, deliveryMethod, termsAccepted } = this.state;
     const errors = {};
     
     // Validate invoice address
@@ -161,21 +167,29 @@ class CartTab extends Component {
       if (!deliveryAddress.city) errors.deliveryCity = 'Stadt erforderlich';
     }
     
-    this.setState({ addressFormErrors: errors });
-    return Object.keys(errors).length === 0;
+    if (isAddressOnly) {
+      return errors;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return 'Bitte überprüfen Sie Ihre Eingaben in den Adressfeldern.';
+    }
+    
+    // Validate terms acceptance
+    if (!termsAccepted) {
+      return 'Bitte akzeptieren Sie die AGBs, Datenschutzerklärung und Widerrufsrecht, um fortzufahren.';
+    }
+    
+    return null;
   };
 
   handleCompleteOrder = () => {
     this.setState({ completionError: null }); // Clear previous errors
-    // Validate address form
-    if (!this.validateAddressForm()) {
-      this.setState({ completionError: 'Bitte überprüfen Sie Ihre Eingaben in den Adressfeldern.' });
-      return;
-    }
     
-    // Validate terms acceptance
-    if (!this.state.termsAccepted) {
-      this.setState({ completionError: 'Bitte akzeptieren Sie die AGBs, Datenschutzerklärung und Widerrufsrecht, um fortzufahren.' });
+    const validationError = this.getValidationErrorMessage();
+    if (validationError) {
+      this.setState({ completionError: validationError });
+      this.validateAddressForm(); // To show field-specific errors
       return;
     }
     
@@ -200,7 +214,8 @@ class CartTab extends Component {
       deliveryMethod,
       paymentMethod,
       deliveryCost,
-      note
+      note,
+      domain: window.location.origin
     };
     
     // Emit order to backend via socket.io
@@ -292,6 +307,9 @@ class CartTab extends Component {
       (total, item) => total + (item.price * item.quantity), 
       0
     );
+    
+    const preSubmitError = this.getValidationErrorMessage();
+    const displayError = completionError || preSubmitError;
  
     return (
       <Box sx={{ p: 3 }}>
@@ -382,9 +400,9 @@ class CartTab extends Component {
               </label>
             </Box>
 
-            {completionError && (
+            {displayError && (
               <Typography color="error" sx={{ mb: 2, textAlign: 'center' }}>
-                {completionError}
+                {displayError}
               </Typography>
             )}
 
@@ -394,7 +412,7 @@ class CartTab extends Component {
                 fullWidth
                 sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
                 onClick={this.handleCompleteOrder}
-                disabled={isCompletingOrder}
+                disabled={isCompletingOrder || !!preSubmitError}
               >
                 {isCompletingOrder ? 'Bestellung wird verarbeitet...' : 'Bestellung abschließen'}
               </Button>
