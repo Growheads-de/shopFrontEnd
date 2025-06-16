@@ -64,7 +64,14 @@ class OrdersTab extends Component {
     if (this.context) {
       this.context.emit('getOrders', (response) => {
         if (response.success) {
-          this.setState({ orders: response.orders, loading: false });
+          this.setState({ orders: response.orders, loading: false }, () => {
+            if (this.props.orderIdFromHash) {
+              const orderExists = response.orders.some(order => order.orderId === this.props.orderIdFromHash);
+              if (orderExists) {
+                this.handleViewDetails(this.props.orderIdFromHash);
+              }
+            }
+          });
         } else {
           this.setState({ error: response.error || 'Failed to fetch orders.', loading: false });
         }

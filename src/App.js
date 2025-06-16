@@ -1,6 +1,6 @@
 import { ThemeProvider } from '@mui/material/styles';
-import React, { Suspense, useState, useEffect, useRef } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { Suspense, useState, useEffect, useRef, useContext } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -66,13 +66,21 @@ const TelemetryInitializer = ({ socket }) => {
   return null; // This component doesn't render anything
 };
 
-// Convert App to a functional component to use hooks
-const App = () => {
+const AppContent = () => {
   // State to manage chat visibility
   const [isChatOpen, setChatOpen] = useState(false);
   
   // Get current location
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.hash && location.hash.startsWith('#ORD-')) {
+      if (location.pathname !== '/profile') {
+        navigate(`/profile${location.hash}`, { replace: true });
+      }
+    }
+  }, [location, navigate]);
   
   // Extract categoryId from pathname if on category route
   const getCategoryId = () => {
@@ -94,7 +102,98 @@ const App = () => {
     window.messageDeletionTimeout = setTimeout(deleteMessages, 1000 * 60);
     setChatOpen(false);
   };
+  
+  const socket = useContext(SocketContext);
 
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        mb: 0,
+        pb: 0,
+        bgcolor: 'background.default'
+      }}
+    >
+      <Suspense fallback={<Loading />}>
+        <ScrollToTop />
+        <TelemetryInitializer socket={socket} />
+        <Header active categoryId={categoryId} />
+        <Box sx={{ flexGrow: 1 }}>
+          <Routes>
+            {/* Home page with text only */}
+            <Route path="/" element={<Home />} />
+
+            {/* Category page - Render Content in parallel */}
+            <Route 
+              path="/category/:categoryId" 
+              element={
+                  <Content socket={socket} />
+              }
+            />
+            {/* Single product page */}
+            <Route path="/product/:productId" element={<ProductDetailWithSocket />} />
+
+            {/* Search page - Render Content in parallel */}
+            <Route 
+              path="/search" 
+              element={
+                  <Content socket={socket} />
+              }
+            />
+
+            {/* Profile page */}
+            <Route path="/profile" element={<ProfilePageWithSocket />} />
+
+            {/* Reset password page */}
+            <Route path="/resetPassword" element={
+              <ResetPassword socket={socket} />
+            } />
+
+            {/* Admin page */ }
+            <Route path="/admin" element={<AdminPage socket={socket}/>}/>
+
+            {/* Legal pages */}
+            <Route path="/datenschutz" element={<Datenschutz />} />
+            <Route path="/agb" element={<AGB />} />
+            <Route path="/sitemap" element={<Sitemap />} />
+            <Route path="/impressum" element={<Impressum />} />
+            <Route path="/batteriegesetzhinweise" element={<Batteriegesetzhinweise />} />
+            <Route path="/widerrufsrecht" element={<Widerrufsrecht />} />
+            
+            {/* Fallback for undefined routes */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Box>
+        {/* Conditionally render the Chat Assistant */}
+        <ChatAssistant  open={isChatOpen} onClose={handleChatClose} socket={socket} />
+
+        {/* Chat AI Assistant FAB */}
+        <Fab 
+          color="primary" 
+          aria-label="chat"
+          size="small" 
+          sx={{ 
+            position: 'fixed', 
+            bottom: 31, 
+            right: 15 
+          }}
+          onClick={handleChatToggle} // Attach toggle handler
+        >
+          <SmartToyIcon sx={{ fontSize: '1.2rem' }} />
+        </Fab>
+
+        <Footer />
+
+
+      </Suspense>
+    </Box>
+  )
+}
+
+// Convert App to a functional component to use hooks
+const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -108,99 +207,7 @@ const App = () => {
             </Box>
           }
         >
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: '100vh',
-              mb: 0,
-              pb: 0,
-              bgcolor: 'background.default'
-            }}
-          >
-            <Suspense fallback={<Loading />}>
-              <ScrollToTop />
-              <SocketContext.Consumer>
-                {socket => <TelemetryInitializer socket={socket} />}
-              </SocketContext.Consumer>
-              <Header active categoryId={categoryId} />
-              <Box sx={{ flexGrow: 1 }}>
-                <Routes>
-                  {/* Home page with text only */}
-                  <Route path="/" element={<Home />} />
-
-                  {/* Category page - Render Content in parallel */}
-                  <Route 
-                    path="/category/:categoryId" 
-                    element={
-                        <SocketContext.Consumer>
-                          {socket => <Content socket={socket} />}
-                        </SocketContext.Consumer>
-                    }
-                  />
-                  {/* Single product page */}
-                  <Route path="/product/:productId" element={<ProductDetailWithSocket />} />
-
-                  {/* Search page - Render Content in parallel */}
-                  <Route 
-                    path="/search" 
-                    element={
-                        <SocketContext.Consumer>
-                          {socket => <Content socket={socket} />}
-                        </SocketContext.Consumer>
-                    }
-                  />
-
-                  {/* Profile page */}
-                  <Route path="/profile" element={<ProfilePageWithSocket />} />
-
-                  {/* Reset password page */}
-                  <Route path="/resetPassword" element={
-                    <SocketContext.Consumer>
-                      {socket => <ResetPassword socket={socket} />}
-                    </SocketContext.Consumer>
-                  } />
-
-                  {/* Admin page */ }
-                  <Route path="/admin" element={<SocketContext.Consumer>{socket =><AdminPage socket={socket}/>}</SocketContext.Consumer>}/>
-
-                  {/* Legal pages */}
-                  <Route path="/datenschutz" element={<Datenschutz />} />
-                  <Route path="/agb" element={<AGB />} />
-                  <Route path="/sitemap" element={<Sitemap />} />
-                  <Route path="/impressum" element={<Impressum />} />
-                  <Route path="/batteriegesetzhinweise" element={<Batteriegesetzhinweise />} />
-                  <Route path="/widerrufsrecht" element={<Widerrufsrecht />} />
-                  
-                  {/* Fallback for undefined routes */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </Box>
-              {/* Conditionally render the Chat Assistant */}
-              <SocketContext.Consumer>
-                {socket => <ChatAssistant  open={isChatOpen} onClose={handleChatClose} socket={socket} />}
-              </SocketContext.Consumer>
-
-              {/* Chat AI Assistant FAB */}
-              <Fab 
-                color="primary" 
-                aria-label="chat"
-                size="small" 
-                sx={{ 
-                  position: 'fixed', 
-                  bottom: 31, 
-                  right: 15 
-                }}
-                onClick={handleChatToggle} // Attach toggle handler
-              >
-                <SmartToyIcon sx={{ fontSize: '1.2rem' }} />
-              </Fab>
-
-              <Footer />
-
-
-            </Suspense>
-          </Box>
+          <AppContent />
         </SocketProvider>
       </Suspense>
     </ThemeProvider>

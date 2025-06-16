@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   Container, 
   Paper, 
@@ -7,7 +7,7 @@ import {
   Tabs, 
   Tab
 } from '@mui/material';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import SocketContext from '../contexts/SocketContext.js';
 
 // Import extracted components
@@ -15,152 +15,143 @@ import OrdersTab from '../components/profile/OrdersTab.js';
 import SettingsTab from '../components/profile/SettingsTab.js';
 import CartTab from '../components/profile/CartTab.js';
 
-// Main Profile Page Component
-class ProfilePage extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      tabValue: 0,
-      user: null,
-      loading: true,
-      redirect: false
-    };
-    this.checkLoginInterval = null;
-  }
+// Functional Profile Page Component
+const ProfilePage = (props) => {
+  const location = useLocation();
+  const [tabValue, setTabValue] = useState(0);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [redirect, setRedirect] = useState(false);
+  const [orderIdFromHash, setOrderIdFromHash] = useState(null);
 
-  componentDidMount() {
-    this.checkUserLoggedIn();
-    
-    // Set up interval to regularly check login status
-    this.checkLoginInterval = setInterval(this.checkUserLoggedIn, 1000);
-
-    // Add storage event listener to detect when user logs out in other tabs
-    window.addEventListener('storage', this.handleStorageChange);
-  }
-
-  componentWillUnmount() {
-    // Clear interval and remove event listeners
-    if (this.checkLoginInterval) {
-      clearInterval(this.checkLoginInterval);
+  useEffect(() => {
+    const hash = location.hash;
+    if (hash && hash.startsWith('#ORD-')) {
+      const orderId = hash.substring(1);
+      setOrderIdFromHash(orderId);
+      setTabValue(1); // Switch to Orders tab
     }
-    window.removeEventListener('storage', this.handleStorageChange);
-  }
+  }, [location.hash]);
 
-  checkUserLoggedIn = () => {
-    const storedUser = sessionStorage.getItem('user');
-    if (!storedUser) {
-      this.setState({ redirect: true, user: null });
-      return;
-    }
-    
-    try {
-      const userData = JSON.parse(storedUser);
-      if (!userData) {
-        this.setState({ redirect: true, user: null });
-      } else if (!this.state.user) {
-        // Only update user if it's not already set
-        this.setState({ user: userData, loading: false });
+  useEffect(() => {
+    const checkUserLoggedIn = () => {
+      const storedUser = sessionStorage.getItem('user');
+      if (!storedUser) {
+        setRedirect(true);
+        setUser(null);
+        return;
       }
-    } catch (error) {
-      console.error('Error parsing user from sessionStorage:', error);
-      this.setState({ redirect: true, user: null });
-    }
+      
+      try {
+        const userData = JSON.parse(storedUser);
+        if (!userData) {
+          setRedirect(true);
+          setUser(null);
+        } else if (!user) {
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Error parsing user from sessionStorage:', error);
+        setRedirect(true);
+        setUser(null);
+      }
 
-    // Once loading is complete
-    if (this.state.loading) {
-      this.setState({ loading: false });
-    }
-  }
+      if (loading) {
+        setLoading(false);
+      }
+    };
 
-  handleStorageChange = (e) => {
-    if (e.key === 'user' && !e.newValue) {
-      // User was removed from sessionStorage in another tab
-      this.setState({ redirect: true, user: null });
-    }
-  }
+    checkUserLoggedIn();
+    const checkLoginInterval = setInterval(checkUserLoggedIn, 1000);
 
-  handleTabChange = (event, newValue) => {
-    this.setState({ tabValue: newValue });
+    const handleStorageChange = (e) => {
+      if (e.key === 'user' && !e.newValue) {
+        setRedirect(true);
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      clearInterval(checkLoginInterval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [user, loading]);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
   };
 
-  handleGoToOrders = () => {
-    this.setState({ tabValue: 1 });
+  const handleGoToOrders = () => {
+    setTabValue(1);
+  };
+
+  if (redirect || (!loading && !user)) {
+    return <Navigate to="/" />;
   }
 
-  render() {
-    // Redirect to login if not logged in
-    if (this.state.redirect || (!this.state.loading && !this.state.user)) {
-      return <Navigate to="/" />;
-    }
-
-    return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-          <Box sx={{ bgcolor: '#2e7d32', p: 3, color: 'white' }}>
-            <Typography variant="h5" fontWeight="bold">
-              Mein Profil
+  return (
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+        <Box sx={{ bgcolor: '#2e7d32', p: 3, color: 'white' }}>
+          <Typography variant="h5" fontWeight="bold">
+            Mein Profil
+          </Typography>
+          {user && (
+            <Typography variant="body1" sx={{ mt: 1 }}>
+              {user.email}
             </Typography>
-            {this.state.user && (
-              <Typography variant="body1" sx={{ mt: 1 }}>
-                {this.state.user.email}
-              </Typography>
-            )}
-          </Box>
-          
-          <Box>
-            <Tabs
-              value={this.state.tabValue}
-              onChange={this.handleTabChange}
-              variant="fullWidth"
-              sx={{ borderBottom: 1, borderColor: 'divider' }}
-              TabIndicatorProps={{
-                style: { backgroundColor: '#2e7d32' }
+          )}
+        </Box>
+        
+        <Box>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            variant="fullWidth"
+            sx={{ borderBottom: 1, borderColor: 'divider' }}
+            TabIndicatorProps={{
+              style: { backgroundColor: '#2e7d32' }
+            }}
+          >
+            <Tab 
+              label="Warenkorb" 
+              sx={{ 
+                color: tabValue === 0 ? '#2e7d32' : 'inherit',
+                fontWeight: 'bold'
               }}
-            >
-              <Tab 
-                label="Warenkorb" 
-                sx={{ 
-                  color: this.state.tabValue === 0 ? '#2e7d32' : 'inherit',
-                  fontWeight: 'bold'
-                }}
-              />
-               <Tab 
-                label="Bestellungen" 
-                sx={{ 
-                  color: this.state.tabValue === 1 ? '#2e7d32' : 'inherit',
-                  fontWeight: 'bold'
-                }}
-              />
-              <Tab 
-                label="Einstellungen" 
-                sx={{ 
-                  color: this.state.tabValue === 2 ? '#2e7d32' : 'inherit',
-                  fontWeight: 'bold'
-                }}
-              />
- 
-            </Tabs>
+            />
+             <Tab 
+              label="Bestellungen" 
+              sx={{ 
+                color: tabValue === 1 ? '#2e7d32' : 'inherit',
+                fontWeight: 'bold'
+              }}
+            />
+            <Tab 
+              label="Einstellungen" 
+              sx={{ 
+                color: tabValue === 2 ? '#2e7d32' : 'inherit',
+                fontWeight: 'bold'
+              }}
+            />
+          </Tabs>
 
-            {this.state.tabValue === 0 && <CartTab onOrderSuccess={this.handleGoToOrders}/>}
-            {this.state.tabValue === 1 && <OrdersTab />}
-            {this.state.tabValue === 2 && <SettingsTab socket={this.props.socket} />}
+          {tabValue === 0 && <CartTab onOrderSuccess={handleGoToOrders}/>}
+          {tabValue === 1 && <OrdersTab orderIdFromHash={orderIdFromHash} />}
+          {tabValue === 2 && <SettingsTab socket={props.socket} />}
 
-          </Box>
-        </Paper>
-      </Container>
-    );
-  }
-}
+        </Box>
+      </Paper>
+    </Container>
+  );
+};
 
 // Wrap with socket context
-class ProfilePageWithSocket extends Component {
-  render() {
-    return (
-      <SocketContext.Consumer>
-        {socket => <ProfilePage {...this.props} socket={socket} />}
-      </SocketContext.Consumer>
-    );
-  }
-}
+const ProfilePageWithSocket = (props) => {
+  const socket = useContext(SocketContext);
+  return <ProfilePage {...props} socket={socket} />;
+};
 
 export default ProfilePageWithSocket; 
