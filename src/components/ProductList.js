@@ -297,13 +297,7 @@ class ProductList extends Component {
         <Grid container spacing={2}>
           {products.map((product) => (
             <Grid 
-              item 
               key={product.id} 
-              xs={12} 
-              sm={6} 
-              md={4}
-              lg={3}
-              xl={3}
               sx={{
                 display: 'flex', 
                 justifyContent: { xs: 'stretch', sm: 'center' },

@@ -49,13 +49,9 @@ const CategoryBoxGrid = ({
       <Grid container spacing={spacing} sx={{ mt: showTitle && title ? 0 : 2, ...gridProps.sx }} {...gridProps}>
         {categories.map((category) => (
           <Grid 
-          item 
+           
           key={category.id} 
-          xs={12} 
-          sm={6} 
-          md={4}
-          lg={3}
-          xl={3}
+  
         >
             <CategoryBox
               id={category.id}
