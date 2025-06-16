@@ -344,8 +344,12 @@ export class LoginComponent extends Component {
   handleGoogleLoginSuccess = (credentialResponse) => {
     const { socket, location, navigate } = this.props;
     this.setState({ loading: true, error: '' });
+    console.log('beforeG',credentialResponse)
 
-    socket.emit('googleLogin', { credential: credentialResponse.credential }, (response) => {
+
+    
+    socket.emit('verifyGoogleUser', { credential: credentialResponse.credential }, (response) => {
+      console.log('google respo',response);
       if (response.success) {
         sessionStorage.setItem('user', JSON.stringify(response.user));
         this.setState({

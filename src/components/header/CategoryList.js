@@ -58,9 +58,24 @@ class CategoryList extends Component {
       const cacheKey = 'categoryTree_209';
       const cachedData = window.productCache[cacheKey];
       if (cachedData) {
-        const { categoryTree, timestamp } = cachedData;
+        const { categoryTree, timestamp, fetching } = cachedData;
         const cacheAge = Date.now() - timestamp;
         const tenMinutes = 10 * 60 * 1000; // 10 minutes in milliseconds
+        
+        // If data is currently being fetched, wait for it
+        if (fetching) {
+          //console.log('CategoryList: Data is being fetched, waiting...');
+          const checkInterval = setInterval(() => {
+            const currentCache = window.productCache[cacheKey];
+            if (currentCache && !currentCache.fetching) {
+              clearInterval(checkInterval);
+              if (currentCache.categoryTree) {
+                this.processCategoryTree(currentCache.categoryTree);
+              }
+            }
+          }, 100);
+          return;
+        }
         
         // If cache is less than 10 minutes old, use it
         if (cacheAge < tenMinutes && categoryTree) {
@@ -77,6 +92,11 @@ class CategoryList extends Component {
     }
     
     // Mark as being fetched to prevent concurrent calls
+    const cacheKey = 'categoryTree_209';
+    window.productCache[cacheKey] = {
+      fetching: true,
+      timestamp: Date.now()
+    };
     this.setState({ fetchedCategories: true });
     
     //console.log('CategoryList: Fetching categories from socket');
@@ -89,7 +109,8 @@ class CategoryList extends Component {
           const cacheKey = 'categoryTree_209';
           window.productCache[cacheKey] = {
             categoryTree: response.categoryTree,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            fetching: false
           };
         } catch (err) {
           console.error('Error writing to cache:', err);
