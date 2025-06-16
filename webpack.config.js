@@ -41,7 +41,7 @@ class GitCommitPlugin {
 // Plugin to generate currentHash.json file
 class GitHashJsonPlugin {
   apply(compiler) {
-    compiler.hooks.afterEmit.tap('GitHashJsonPlugin', (compilation) => {
+    compiler.hooks.afterEmit.tap('GitHashJsonPlugin', (_compilation) => {
       const outputPath = path.join(compiler.options.output.path, 'currentHash.json');
       const content = JSON.stringify({
         gitCommit: GIT_COMMIT_HASH,
@@ -100,7 +100,7 @@ export default {
     path: path.resolve(__dirname, 'dist'),
     filename: isDevelopment ? 'js/[name].[contenthash].bundle.js' : 'js/[name].[contenthash].js',
     chunkFilename: isDevelopment ? 'js/[name].[contenthash].chunk.js' : 'js/[name].[contenthash].chunk.js',
-    clean: isDevelopment ? false : false,
+    clean: isDevelopment ? true : false,
     publicPath: '/'
   },
   devtool: isDevelopment ? 'source-map' : false,
@@ -166,7 +166,7 @@ export default {
       scriptLoading: 'blocking',
     }),
     new GitCommitPlugin(),
-    !isDevelopment && new GitHashJsonPlugin(),
+    new GitHashJsonPlugin(),
     new webpack.DefinePlugin({
       'process.env.GIT_COMMIT_HASH': JSON.stringify(GIT_COMMIT_HASH)
     }),
@@ -188,6 +188,9 @@ export default {
   ].filter(Boolean),
   devServer: {
     allowedHosts: 'all',
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
+    },
     static: [
       {
         directory: path.resolve(__dirname, 'dist'),
@@ -197,13 +200,26 @@ export default {
         publicPath: '/',
       }
     ],
+    setupMiddlewares: (middlewares, devServer) => {
+      if (!devServer) throw new Error('webpack-dev-server is not defined');
+      devServer.app.use((req, res, next) => {
+        if (req.url === '/' || req.url.startsWith('/index.html')) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+          res.setHeader('Expires', '0');
+        }
+        next();
+      });
+
+      return middlewares;
+    },
     hot: true,
     port: 9500,
     open: false,
     historyApiFallback: true,
-    client: {
-      webSocketURL: 'wss://dev.seedheads.de/ws',
-      logging: 'verbose',
+          client: {
+        webSocketURL: 'wss://dev.seedheads.de/ws',
+        logging: 'verbose',
       overlay: {
         errors: true,
         warnings: true,
