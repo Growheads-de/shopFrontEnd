@@ -29,12 +29,28 @@ const ProfilePage = (props) => {
 
   useEffect(() => {
     const hash = location.hash;
-    if (hash && hash.startsWith('#ORD-')) {
-      const orderId = hash.substring(1);
-      setOrderIdFromHash(orderId);
-      setTabValue(1); // Switch to Orders tab
-    } else {
-      setOrderIdFromHash(null);
+
+    switch (hash) {
+      case '#cart':
+        setTabValue(0);
+        setOrderIdFromHash(null);
+        break;
+      case '#orders':
+        setTabValue(1);
+        setOrderIdFromHash(null);
+        break;
+      case '#settings':
+        setTabValue(2);
+        setOrderIdFromHash(null);
+        break;
+      default:
+        if (hash && hash.startsWith('#ORD-')) {
+          const orderId = hash.substring(1);
+          setOrderIdFromHash(orderId);
+          setTabValue(1); // Switch to Orders tab
+        } else {
+          setOrderIdFromHash(null);
+        }
     }
   }, [location.hash]);
 

@@ -14,7 +14,8 @@ import {
   Alert,
   CircularProgress,
   MenuItem,
-  Menu
+  Menu,
+  Divider
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
@@ -471,6 +472,10 @@ export class LoginComponent extends Component {
                 }}
               >
                 <MenuItem component={Link} to="/profile" onClick={this.handleUserMenuClose}>Profil</MenuItem>
+                <MenuItem component={Link} to="/profile#cart" onClick={this.handleUserMenuClose} sx={{ pl: 4 }}>Bestellabschluss</MenuItem>
+                <MenuItem component={Link} to="/profile#orders" onClick={this.handleUserMenuClose} sx={{ pl: 4 }}>Bestellungen</MenuItem>
+                <MenuItem component={Link} to="/profile#settings" onClick={this.handleUserMenuClose} sx={{ pl: 4 }}>Einstellungen</MenuItem>
+                <Divider />
                 {isAdmin ? <MenuItem component={Link} to="/admin" onClick={this.handleUserMenuClose}>Admin</MenuItem> : null}
                 <MenuItem onClick={this.handleLogout}>Abmelden</MenuItem>
               </Menu>
