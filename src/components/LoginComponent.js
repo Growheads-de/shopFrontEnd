@@ -92,7 +92,8 @@ export class LoginComponent extends Component {
       cartSyncOpen: false,
       localCartSync: [],
       serverCartSync: [],
-      pendingNavigate: null
+      pendingNavigate: null,
+      privacyConfirmed: sessionStorage.getItem('privacyConfirmed') === 'true'
     };
   }
 
@@ -130,7 +131,8 @@ export class LoginComponent extends Component {
   handleOpen = () => {
     this.setState({
       open: true,
-      loading: false
+      loading: false,
+      privacyConfirmed: sessionStorage.getItem('privacyConfirmed') === 'true'
     });
     this.resetForm();
   };
@@ -436,7 +438,8 @@ export class LoginComponent extends Component {
       showGoogleAuth,
       cartSyncOpen,
       localCartSync,
-      serverCartSync
+      serverCartSync,
+      privacyConfirmed
     } = this.state;
 
     return (
@@ -529,14 +532,19 @@ export class LoginComponent extends Component {
 
 
             {/* Google Sign In Button */}
-            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mb: 2 }}>
+            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
+              {!privacyConfirmed && (
+                <Typography variant="caption" sx={{ mb: 1, textAlign: 'center' }}>
+                  Mit dem Click auf diesen Button akzeptiere ich die Datenschutzbestimmungen
+                </Typography>
+              )}
               {!showGoogleAuth && (
                 <Button
                   variant="contained"
                   startIcon={<PersonIcon />}
                   onClick={() => {
-                    // Dynamically import and initialize Google Auth when button is clicked
-                    this.setState({ showGoogleAuth: true });
+                    sessionStorage.setItem('privacyConfirmed', 'true');
+                    this.setState({ showGoogleAuth: true, privacyConfirmed: true });
                   }}
                   sx={{ width: '100%', backgroundColor: '#4285F4', color: 'white' }}
                 >
