@@ -174,7 +174,10 @@ class Content extends Component {
 
   componentDidMount() {
     if(this.props.params.categoryId) {this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
-      this.fetchCategoryData(this.props.params.categoryId);
+      const categoryId = this.getCurrentCategoryId();
+      if (categoryId) {
+        this.fetchCategoryData(categoryId);
+      }
     })}
     else if (this.props.searchParams?.get('q')) {
       this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
@@ -187,7 +190,10 @@ class Content extends Component {
     if(this.props.params.categoryId && (prevProps.params.categoryId !== this.props.params.categoryId)) {
         window.currentSearchQuery = null;
         this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
-        this.fetchCategoryData(this.props.params.categoryId);
+        const categoryId = this.getCurrentCategoryId();
+        if (categoryId) {
+          this.fetchCategoryData(categoryId);
+        }
       }); 
     } 
     else if (this.props.searchParams?.get('q') && (prevProps.searchParams?.get('q') !== this.props.searchParams?.get('q'))) {
@@ -307,8 +313,42 @@ class Content extends Component {
     });
   }
 
+  // Helper function to find category by seoName
+  findCategoryBySeoName = (categoryNode, seoName) => {
+    if (!categoryNode) return null;
+    
+    if (categoryNode.seoName === seoName) {
+      return categoryNode;
+    }
+    
+    if (categoryNode.children) {
+      for (const child of categoryNode.children) {
+        const found = this.findCategoryBySeoName(child, seoName);
+        if (found) return found;
+      }
+    }
+    
+    return null;
+  }
+
+  // Helper function to get current category ID from seoName
+  getCurrentCategoryId = () => {
+    const seoName = this.props.params.categoryId;
+    
+    // Get the category tree from cache
+    const categoryTreeCache = window.productCache && window.productCache['categoryTree_209'];
+    if (!categoryTreeCache || !categoryTreeCache.categoryTree) {
+      return null;
+    }
+
+    // Find the category by seoName
+    const category = this.findCategoryBySeoName(categoryTreeCache.categoryTree, seoName);
+    return category ? category.id : null;
+  }
+
   renderParentCategoryNavigation = () => {
-    const currentCategoryId = parseInt(this.props.params.categoryId);
+    const currentCategoryId = this.getCurrentCategoryId();
+    if (!currentCategoryId) return null;
     
     // Get the category tree from cache
     const categoryTreeCache = window.productCache && window.productCache['categoryTree_209'];
@@ -487,7 +527,7 @@ class Content extends Component {
               />
             </Box>
 
-            {(this.props.params.categoryId == 706 ||this.props.params.categoryId == 689) &&
+            {(this.getCurrentCategoryId() == 706 || this.getCurrentCategoryId() == 689) &&
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             <Typography variant="h6" sx={{mt:3}}>
               Andere Kategorien

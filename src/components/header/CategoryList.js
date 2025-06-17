@@ -7,6 +7,8 @@ class CategoryList extends Component {
   findCategoryById = (category, targetId) => {
     if (!category) return null;
     
+    console.log('findCategoryById', category.seoName, targetId);
+
     if (category.seoName === targetId) {
       return category;
     }
