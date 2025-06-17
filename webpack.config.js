@@ -188,6 +188,7 @@ export default {
   ].filter(Boolean),
   devServer: {
     allowedHosts: 'all',
+    compress: true,
     headers: {
       'Cache-Control': 'public, max-age=3600',
     },
@@ -217,9 +218,9 @@ export default {
     port: 9500,
     open: false,
     historyApiFallback: true,
-          client: {
-        webSocketURL: 'wss://dev.seedheads.de/ws',
-        logging: 'verbose',
+    client: {
+      webSocketURL: 'wss://dev.seedheads.de/ws',
+      logging: 'verbose',
       overlay: {
         errors: true,
         warnings: true,
