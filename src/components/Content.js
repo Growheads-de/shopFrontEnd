@@ -174,8 +174,9 @@ class Content extends Component {
 
   componentDidMount() {
     if(this.props.params.categoryId) {this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
-      if (this.props.params.categoryId) {
-        this.fetchCategoryData(this.props.params.categoryId);
+      const categoryId = this.getCurrentCategoryId();
+      if (categoryId) {
+        this.fetchCategoryData(categoryId);
       }
     })}
     else if (this.props.searchParams?.get('q')) {
@@ -189,8 +190,9 @@ class Content extends Component {
     if(this.props.params.categoryId && (prevProps.params.categoryId !== this.props.params.categoryId)) {
         window.currentSearchQuery = null;
         this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
-          if (this.props.params.categoryId) {
-            this.fetchCategoryData(this.props.params.categoryId);
+          const categoryId = this.getCurrentCategoryId();
+          if (categoryId) {
+            this.fetchCategoryData(categoryId);
           }
       }); 
     } 
