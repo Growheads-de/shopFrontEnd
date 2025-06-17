@@ -81,7 +81,7 @@ const Home = () => {
         <Grid size={{ xs: 12, sm: 6 }} sx={{ p: 2, width: '50%' }}>
           <Paper
             component={Link}
-            to="/category/689"
+            to="/Kategorie/Seeds"
             sx={{
               p: 0,
               textDecoration: 'none',
@@ -131,7 +131,7 @@ const Home = () => {
         <Grid size={{ xs: 12, sm: 6 }} sx={{ p: 2, width: '50%' }}>
           <Paper
             component={Link}
-            to="/category/706"
+            to="/Kategorie/Stecklinge"
             sx={{
               p: 0,
               textDecoration: 'none',

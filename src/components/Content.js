@@ -537,7 +537,7 @@ class Content extends Component {
           </Box>
           }
 
-          {this.props.params.categoryId == 706 && <Paper
+          {this.props.params.categoryId == 'Stecklinge' && <Paper
             component={Link}
             to="/Kategorie/Seeds"
             sx={{
@@ -584,7 +584,7 @@ class Content extends Component {
             </Paper>
           }
 
-            {this.props.params.categoryId == 689 && <Paper
+            {this.props.params.categoryId == 'Seeds' && <Paper
             component={Link}
             to="/Kategorie/Stecklinge"
             sx={{
