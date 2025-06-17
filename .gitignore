@@ -9,6 +9,9 @@
 # production
 /build
 /dist
+/public/index.prerender.html
+/public/assets/images/prod*.jpg
+/public/category*.html
 
 # misc
 .DS_Store
