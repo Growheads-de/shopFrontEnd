@@ -56,6 +56,7 @@ const CategoryBoxGrid = ({
             <CategoryBox
               id={category.id}
               name={category.name}
+              seoName={category.seoName}
               image={category.image}
               bgcolor={category.bgcolor}
               {...boxProps}

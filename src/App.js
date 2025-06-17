@@ -88,7 +88,7 @@ const AppContent = () => {
 
   // Extract categoryId from pathname if on category route
   const getCategoryId = () => {
-    const match = location.pathname.match(/^\/category\/(.+)$/);
+    const match = location.pathname.match(/^\/Kategorie\/(.+)$/);
     return match ? match[1] : null;
   };
   
@@ -131,7 +131,7 @@ const AppContent = () => {
 
             {/* Category page - Render Content in parallel */}
             <Route 
-              path="/category/:categoryId" 
+              path="/Kategorie/:categoryId" 
               element={
                   <Content socket={socket} />
               }

@@ -233,7 +233,7 @@ class Content extends Component {
       return;
     }
 
-    this.props.socket.emit("getCategoryProducts", { categoryId: parseInt(categoryId) },
+    this.props.socket.emit("getCategoryProducts", { categoryId: categoryId },
       (response) => {
         setCachedCategoryData(categoryId, response);
         if (response && response.products !== undefined) {
@@ -497,7 +497,7 @@ class Content extends Component {
 
           {this.props.params.categoryId == 706 && <Paper
             component={Link}
-            to="/category/689"
+            to="/Kategorie/Seeds"
             sx={{
               p:0,
               mt: 1,
@@ -544,7 +544,7 @@ class Content extends Component {
 
             {this.props.params.categoryId == 689 && <Paper
             component={Link}
-            to="/category/706"
+            to="/Kategorie/Stecklinge"
             sx={{
               p: 0,
               mt: 1,

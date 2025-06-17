@@ -18,6 +18,7 @@ if (typeof document !== 'undefined' && !document.getElementById('swashington-fon
 const CategoryBox = ({ 
   id, 
   name, 
+  seoName,
   image, 
   bgcolor, 
   height = 130,
@@ -70,7 +71,7 @@ const CategoryBox = ({
   return (
     <Paper
       component={Link}
-      to={`/category/${id}`}
+      to={`/Kategorie/${seoName}`}
       sx={{
         textDecoration: 'none',
         color: 'text.primary',

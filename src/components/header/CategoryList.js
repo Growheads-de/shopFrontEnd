@@ -7,7 +7,7 @@ class CategoryList extends Component {
   findCategoryById = (category, targetId) => {
     if (!category) return null;
     
-    if (category.id === targetId) {
+    if (category.seoName === targetId) {
       return category;
     }
     
@@ -26,7 +26,7 @@ class CategoryList extends Component {
     
     const newPath = [...currentPath, category];
     
-    if (category.id === targetId) {
+    if (category.seoName === targetId) {
       return newPath;
     }
     
@@ -74,9 +74,9 @@ class CategoryList extends Component {
             
             // Process active category path if needed
             if (props.activeCategoryId) {
-              const activeCategory = this.findCategoryById(categoryTree, parseInt(props.activeCategoryId));
+              const activeCategory = this.findCategoryById(categoryTree, props.activeCategoryId);
               if (activeCategory) {
-                const pathToActive = this.getPathToCategory(categoryTree, parseInt(props.activeCategoryId));
+                const pathToActive = this.getPathToCategory(categoryTree, props.activeCategoryId);
                 initialState.activePath = pathToActive ? pathToActive.slice(1) : [];
                 
                 if (initialState.activePath.length >= 1) {
@@ -234,10 +234,10 @@ class CategoryList extends Component {
     let activePath = [];
     
     if (this.props.activeCategoryId) {
-      const activeCategory = this.findCategoryById(categoryTree, parseInt(this.props.activeCategoryId));
+      const activeCategory = this.findCategoryById(categoryTree, this.props.activeCategoryId);
       if (activeCategory) {
         // Build the path from root to active category
-        const pathToActive = this.getPathToCategory(categoryTree, parseInt(this.props.activeCategoryId));
+        const pathToActive = this.getPathToCategory(categoryTree, this.props.activeCategoryId);
         activePath = pathToActive.slice(1); // Remove root (209) from path
         
         // Determine what to show at each level based on the path depth
@@ -330,7 +330,7 @@ class CategoryList extends Component {
                 <Button
                   key={category.id}
                   component={Link}
-                  to={`/category/${category.id}`}
+                  to={`/Kategorie/${category.seoName}`}
                   color="inherit"
                   size="small"
                   sx={{
