@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material/styles';
-import React, { Suspense, useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -32,13 +32,6 @@ import Widerrufsrecht from './pages/Widerrufsrecht.js';
 
 // Import theme from separate file to reduce main bundle size
 import theme from './theme.js';
-
-// Loading component for suspense fallback
-const Loading = () => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
-    <CircularProgress color="primary" />
-  </Box>
-);
 
 const deleteMessages = () => {
   console.log('Deleting messages');
@@ -127,7 +120,7 @@ const AppContent = () => {
         bgcolor: 'background.default'
       }}
     >
-      <Suspense fallback={<Loading />}>
+
         <ScrollToTop />
         <TelemetryInitializer socket={socket} />
         <Header active categoryId={categoryId} key={authVersion} />
@@ -198,7 +191,7 @@ const AppContent = () => {
         <Footer />
 
 
-      </Suspense>
+
     </Box>
   )
 }
@@ -208,7 +201,6 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Suspense fallback={<Loading />}>
         <SocketProvider
           url={config.apiBaseUrl}
           fallbackUrl={config.fallbackUrl}
@@ -220,9 +212,9 @@ const App = () => {
         >
           <AppContent />
         </SocketProvider>
-      </Suspense>
     </ThemeProvider>
   );
 }
 
 export default App;
+export { AppContent };
