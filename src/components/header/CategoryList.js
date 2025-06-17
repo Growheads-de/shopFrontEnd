@@ -4,9 +4,47 @@ import { Link } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
 
 class CategoryList extends Component {
+  findCategoryById = (category, targetId) => {
+    if (!category) return null;
+    
+    if (category.id === targetId) {
+      return category;
+    }
+    
+    if (category.children) {
+      for (let child of category.children) {
+        const found = this.findCategoryById(child, targetId);
+        if (found) return found;
+      }
+    }
+    
+    return null;
+  }
+
+  getPathToCategory = (category, targetId, currentPath = []) => {
+    if (!category) return null;
+    
+    const newPath = [...currentPath, category];
+    
+    if (category.id === targetId) {
+      return newPath;
+    }
+    
+    if (category.children) {
+      for (let child of category.children) {
+        const found = this.getPathToCategory(child, targetId, newPath);
+        if (found) return found;
+      }
+    }
+    
+    return null;
+  }
+
   constructor(props) {
     super(props);
-    this.state = {
+    
+    // Check for cached data during SSR/initial render
+    let initialState = {
       categoryTree: null,
       level1Categories: [], // Children of category 209 (Home) - always shown
       level2Categories: [], // Children of active level 1 category
@@ -14,6 +52,52 @@ class CategoryList extends Component {
       activePath: [], // Array of active category objects for each level
       fetchedCategories: false
     };
+    
+    // Try to get cached data for SSR
+    try {
+      if (typeof window !== 'undefined' && window.productCache) {
+        const cacheKey = 'categoryTree_209';
+        const cachedData = window.productCache[cacheKey];
+        if (cachedData && cachedData.categoryTree) {
+          const { categoryTree, timestamp } = cachedData;
+          const cacheAge = Date.now() - timestamp;
+          const tenMinutes = 10 * 60 * 1000;
+          
+          // Use cached data if it's fresh
+          if (cacheAge < tenMinutes) {
+            initialState.categoryTree = categoryTree;
+            initialState.fetchedCategories = true;
+            
+            // Process category tree to set up navigation
+            const level1Categories = categoryTree && categoryTree.id === 209 ? categoryTree.children || [] : [];
+            initialState.level1Categories = level1Categories;
+            
+            // Process active category path if needed
+            if (props.activeCategoryId) {
+              const activeCategory = this.findCategoryById(categoryTree, parseInt(props.activeCategoryId));
+              if (activeCategory) {
+                const pathToActive = this.getPathToCategory(categoryTree, parseInt(props.activeCategoryId));
+                initialState.activePath = pathToActive ? pathToActive.slice(1) : [];
+                
+                if (initialState.activePath.length >= 1) {
+                  const level1Category = initialState.activePath[0];
+                  initialState.level2Categories = level1Category.children || [];
+                }
+                
+                if (initialState.activePath.length >= 2) {
+                  const level2Category = initialState.activePath[1];
+                  initialState.level3Categories = level2Category.children || [];
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error reading cache in constructor:', err);
+    }
+    
+    this.state = initialState;
   }
 
   componentDidMount() {
@@ -181,42 +265,6 @@ class CategoryList extends Component {
     });
   }
 
-  findCategoryById = (category, targetId) => {
-    if (!category) return null;
-    
-    if (category.id === targetId) {
-      return category;
-    }
-    
-    if (category.children) {
-      for (let child of category.children) {
-        const found = this.findCategoryById(child, targetId);
-        if (found) return found;
-      }
-    }
-    
-    return null;
-  }
-
-  getPathToCategory = (category, targetId, currentPath = []) => {
-    if (!category) return null;
-    
-    const newPath = [...currentPath, category];
-    
-    if (category.id === targetId) {
-      return newPath;
-    }
-    
-    if (category.children) {
-      for (let child of category.children) {
-        const found = this.getPathToCategory(child, targetId, newPath);
-        if (found) return found;
-      }
-    }
-    
-    return null;
-  }
-  
   render() {
     const { level1Categories, level2Categories, level3Categories, activePath } = this.state;
     
