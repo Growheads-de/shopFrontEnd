@@ -174,9 +174,8 @@ class Content extends Component {
 
   componentDidMount() {
     if(this.props.params.categoryId) {this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
-      const categoryId = this.getCurrentCategoryId();
-      if (categoryId) {
-        this.fetchCategoryData(categoryId);
+      if (this.props.params.categoryId) {
+        this.fetchCategoryData(this.props.params.categoryId);
       }
     })}
     else if (this.props.searchParams?.get('q')) {
@@ -187,13 +186,13 @@ class Content extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    console.log('componentDidUpdate', this.props.params.categoryId, prevProps.params.categoryId);
     if(this.props.params.categoryId && (prevProps.params.categoryId !== this.props.params.categoryId)) {
         window.currentSearchQuery = null;
         this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
-        const categoryId = this.getCurrentCategoryId();
-        if (categoryId) {
-          this.fetchCategoryData(categoryId);
-        }
+          if (this.props.params.categoryId) {
+            this.fetchCategoryData(this.props.params.categoryId);
+          }
       }); 
     } 
     else if (this.props.searchParams?.get('q') && (prevProps.searchParams?.get('q') !== this.props.searchParams?.get('q'))) {
@@ -376,6 +375,7 @@ class Content extends Component {
     // Create parent category object for CategoryBox
     const parentCategoryForDisplay = {
       id: parentCategory.id,
+      seoName: parentCategory.seoName,
       name: parentCategory.name,
       image: parentCategory.image,
       isParentNav: true
@@ -417,6 +417,7 @@ class Content extends Component {
                         <Box sx={{ mt:2,position: 'relative', flexShrink: 0 }}>
                           <CategoryBox
                             id={parentCategory.id}
+                            seoName={parentCategory.seoName}
                             name={parentCategory.name}
                             image={parentCategory.image}
                             height={130}
@@ -474,6 +475,7 @@ class Content extends Component {
                     <Box sx={{ position: 'relative', width: 'fit-content' }}>
                       <CategoryBox
                         id={parentCategory.id}
+                        seoName={parentCategory.seoName}
                         name={parentCategory.name}
                         image={parentCategory.image}
                         height={130}

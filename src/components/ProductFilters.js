@@ -231,7 +231,7 @@ class ProductFilters extends Component {
         {this.generateAttributeFilters()}
 
         <Filter 
-          title="Manufacturer"
+          title="Hersteller"
           options={this.state.uniqueManufacturerArray}
           filterType="manufacturer"
           products={this.props.products}
