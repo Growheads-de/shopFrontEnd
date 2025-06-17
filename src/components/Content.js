@@ -174,10 +174,7 @@ class Content extends Component {
 
   componentDidMount() {
     if(this.props.params.categoryId) {this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
-      const categoryId = this.getCurrentCategoryId();
-      if (categoryId) {
-        this.fetchCategoryData(categoryId);
-      }
+        this.fetchCategoryData(this.props.params.categoryId);
     })}
     else if (this.props.searchParams?.get('q')) {
       this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
@@ -190,11 +187,8 @@ class Content extends Component {
     if(this.props.params.categoryId && (prevProps.params.categoryId !== this.props.params.categoryId)) {
         window.currentSearchQuery = null;
         this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
-          const categoryId = this.getCurrentCategoryId();
-          if (categoryId) {
-            this.fetchCategoryData(categoryId);
-          }
-      }); 
+          this.fetchCategoryData(this.props.params.categoryId);
+        }); 
     } 
     else if (this.props.searchParams?.get('q') && (prevProps.searchParams?.get('q') !== this.props.searchParams?.get('q'))) {
       this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
@@ -257,7 +251,11 @@ class Content extends Component {
     try {
       const categoryTreeCache = window.productCache && window.productCache['categoryTree_209'];
       if (categoryTreeCache && categoryTreeCache.categoryTree) {
-        const targetCategory = this.findCategoryById(categoryTreeCache.categoryTree, parseInt(categoryId));
+        // If categoryId is a string (SEO name), find by seoName, otherwise by ID
+        const targetCategory = typeof categoryId === 'string' 
+          ? this.findCategoryBySeoName(categoryTreeCache.categoryTree, categoryId)
+          : this.findCategoryById(categoryTreeCache.categoryTree, categoryId);
+        
         if (targetCategory && targetCategory.children) {
           childCategories = targetCategory.children;
         }
@@ -390,6 +388,7 @@ class Content extends Component {
     const showCategoryBoxes = this.state.loaded && 
                              this.state.unfilteredProducts.length === 0 && 
                              this.state.childCategories.length > 0;
+    
 
     return (
       <Container maxWidth="xl" sx={{ py: 2, flexGrow: 1, height: '100%', display: 'grid', gridTemplateRows: '1fr' }}>
