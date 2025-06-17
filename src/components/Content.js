@@ -186,7 +186,6 @@ class Content extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    console.log('componentDidUpdate', this.props.params.categoryId, prevProps.params.categoryId);
     if(this.props.params.categoryId && (prevProps.params.categoryId !== this.props.params.categoryId)) {
         window.currentSearchQuery = null;
         this.setState({loaded: false, unfilteredProducts: [], filteredProducts: [], attributes: [], categoryName: null, childCategories: []}, () => {
