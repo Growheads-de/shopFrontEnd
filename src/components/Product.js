@@ -68,7 +68,7 @@ class Product extends Component {
 
   render() {
     const { 
-      id, name, price, available, manufacturer,
+      id, name, price, available, manufacturer, seoName,
       currency, vat, massMenge, massEinheit, thc,
       floweringWeeks,incoming, neu, weight, versandklasse
     } = this.props;
@@ -244,7 +244,7 @@ class Product extends Component {
           
           <Box
             component={Link}
-            to={`/product/${id}`}
+            to={`/Artikel/${seoName}`}
             sx={{ 
               flexGrow: 1, 
               display: 'flex', 
@@ -350,13 +350,13 @@ class Product extends Component {
           <Box sx={{ p: 2, pt: 0, display: 'flex', alignItems: 'center' }}>
             <IconButton
               component={Link}
-              to={`/product/${id}`}
+              to={`/Artikel/${seoName}`}
               size="small"
               sx={{ mr: 1, color: 'text.secondary' }}
             >
               <ZoomInIcon />
             </IconButton>
-            <AddToCartButton cartButton={true} available={available} incoming={incoming} pictureList={this.props.pictureList} id={id} price={price} vat={vat} weight={weight} name={name} versandklasse={versandklasse}/>
+            <AddToCartButton cartButton={true} available={available} incoming={incoming} seoName={seoName} pictureList={this.props.pictureList} id={id} price={price} vat={vat} weight={weight} name={name} versandklasse={versandklasse}/>
           </Box>
         </Card>
       </Box>

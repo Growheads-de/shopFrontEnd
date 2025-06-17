@@ -77,7 +77,7 @@ class CartItem extends Component {
               component="div" 
               sx={{ fontWeight: 'bold', mb: 0.5 }}
             >
-              <Link to={`/product/${this.props.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link to={`/Artikel/${item.seoName}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 {item.name}
               </Link>
             </Typography>
@@ -138,7 +138,7 @@ class CartItem extends Component {
             )}
             
             <Box sx={{ width: '250px'}}>
-              <AddToCartButton available={1} id={this.props.id} price={item.price} name={item.name} weight={item.weight} vat={item.vat} versandklasse={item.versandklasse}/>
+              <AddToCartButton available={1} id={this.props.id} price={item.price} seoName={item.seoName} name={item.name} weight={item.weight} vat={item.vat} versandklasse={item.versandklasse}/>
             </Box>          
           </Box>         
         </ListItem>

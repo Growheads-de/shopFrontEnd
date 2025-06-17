@@ -307,6 +307,7 @@ class ProductList extends Component {
               <Product 
                 id={product.id}
                 name={product.name}
+                seoName={product.seoName}
                 price={product.price}
                 currency={product.currency}
                 available={product.available}

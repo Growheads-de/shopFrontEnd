@@ -5,13 +5,13 @@ import ProductDetailPage from './ProductDetailPage.js';
 
 // Wrapper component for individual product detail page with socket
 const ProductDetailWithSocket = () => {
-  const { productId } = useParams();
+  const { seoName } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
     <SocketContext.Consumer>
-      {socket => <ProductDetailPage productId={productId} navigate={navigate} location={location} socket={socket} />}
+      {socket => <ProductDetailPage seoName={seoName} navigate={navigate} location={location} socket={socket} />}
     </SocketContext.Consumer>
   );
 };

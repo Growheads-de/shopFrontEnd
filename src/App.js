@@ -137,7 +137,7 @@ const AppContent = () => {
               }
             />
             {/* Single product page */}
-            <Route path="/product/:productId" element={<ProductDetailWithSocket />} />
+            <Route path="/Artikel/:seoName" element={<ProductDetailWithSocket />} />
 
             {/* Search page - Render Content in parallel */}
             <Route 

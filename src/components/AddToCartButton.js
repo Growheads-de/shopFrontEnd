@@ -48,6 +48,7 @@ class AddToCartButton extends Component {
       window.cart.push({
         id: this.props.id,
         name: this.props.name,
+        seoName: this.props.seoName,
         pictureList: this.props.pictureList,
         price: this.props.price,
         quantity: 1,

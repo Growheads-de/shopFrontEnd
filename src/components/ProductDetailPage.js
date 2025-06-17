@@ -16,9 +16,9 @@ class ProductDetailPage extends Component {
   constructor(props) {
     super(props);
 
-    if(window.productDetailCache && window.productDetailCache[this.props.productId]){
+    if(window.productDetailCache && window.productDetailCache[this.props.seoName]){
       this.state = { 
-        product: window.productDetailCache[this.props.productId], 
+        product: window.productDetailCache[this.props.seoName], 
         loading: false, 
         error: null,
         attributeImages: {},
@@ -41,12 +41,12 @@ class ProductDetailPage extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.productId !== this.props.productId)
+    if (prevProps.seoName !== this.props.seoName)
       this.setState({product: null, loading: true, error: null, imageDialogOpen: false },this.loadProductData);
   }
 
   loadProductData = () => {
-    this.props.socket.emit('getProductView', { articleId: parseInt(this.props.productId) }, (res) => {
+    this.props.socket.emit('getProductView', { seoName: this.props.seoName }, (res) => {
       if (res.success) {        
         this.setState({ product: res.product, loading: false, error: null, imageDialogOpen: false });
 
@@ -318,7 +318,7 @@ class ProductDetailPage extends Component {
               </Box>
               
               <Box sx={{ p: 2, pt: 0 }}>
-                <AddToCartButton cartButton={true} pictureList={product.pictureList} available={product.available} id={product.id} price={product.price} vat={product.vat} weight={product.weight} name={product.name} versandklasse={product.versandklasse}/>
+                <AddToCartButton cartButton={true} seoName={product.seoName} pictureList={product.pictureList} available={product.available} id={product.id} price={product.price} vat={product.vat} weight={product.weight} name={product.name} versandklasse={product.versandklasse}/>
               </Box>
 
             </Box>
