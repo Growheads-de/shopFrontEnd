@@ -401,12 +401,12 @@ const renderApp = async (categoryData, socket) => {
   console.log('\n📄 Rendering static pages...');
   
   const staticPages = [
-    { component: Datenschutz, path: '/datenschutz', filename: 'datenschutz.html', description: 'Datenschutz page' },
-    { component: Impressum, path: '/impressum', filename: 'impressum.html', description: 'Impressum page' },
-    { component: Batteriegesetzhinweise, path: '/batteriegesetzhinweise', filename: 'batteriegesetzhinweise.html', description: 'Batteriegesetzhinweise page' },
-    { component: Widerrufsrecht, path: '/widerrufsrecht', filename: 'widerrufsrecht.html', description: 'Widerrufsrecht page' },
-    { component: Sitemap, path: '/sitemap', filename: 'sitemap.html', description: 'Sitemap page' },
-    { component: AGB, path: '/agb', filename: 'agb.html', description: 'AGB page' }
+    { component: Datenschutz, path: '/datenschutz', filename: 'datenschutz', description: 'Datenschutz page' },
+    { component: Impressum, path: '/impressum', filename: 'impressum', description: 'Impressum page' },
+    { component: Batteriegesetzhinweise, path: '/batteriegesetzhinweise', filename: 'batteriegesetzhinweise', description: 'Batteriegesetzhinweise page' },
+    { component: Widerrufsrecht, path: '/widerrufsrecht', filename: 'widerrufsrecht', description: 'Widerrufsrecht page' },
+    { component: Sitemap, path: '/sitemap', filename: 'sitemap', description: 'Sitemap page' },
+    { component: AGB, path: '/agb', filename: 'agb', description: 'AGB page' }
   ];
 
   let staticPagesRendered = 0;
