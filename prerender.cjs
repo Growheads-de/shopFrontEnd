@@ -167,7 +167,7 @@ const renderPage = (component, location, filename, description, metaTags = '', n
 
   // Use appropriate template path based on mode
   const templatePath = isProduction 
-    ? path.resolve(__dirname, 'dist', 'index.html')
+    ? path.resolve(__dirname, 'dist', 'index_template.html')
     : path.resolve(__dirname, 'public', 'index.html');
   let template = fs.readFileSync(templatePath, 'utf8');
 
@@ -382,7 +382,8 @@ const renderApp = async (categoryData, socket) => {
   console.log('🏠 Rendering home page...');
   const PrerenderHome = require('./src/PrerenderHome.js').default;
   const homeComponent = React.createElement(PrerenderHome, null);
-  const homeSuccess = renderPage(homeComponent, '/', 'index.prerender.html', 'Home page', '', true);
+  const homeFilename = isProduction ? 'index.html' : 'index.prerender.html';
+  const homeSuccess = renderPage(homeComponent, '/', homeFilename, 'Home page', '', true);
 
   if (!homeSuccess) {
     process.exit(1);
