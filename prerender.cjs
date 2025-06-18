@@ -220,7 +220,7 @@ const renderPage = (component, location, filename, description, metaTags = '', n
 };
 
 const generateProductMetaTags = (product) => {
-  const baseUrl = 'https://dev.seedheads.de'; // Replace with your actual domain
+  const baseUrl = 'https://seedheads.de'; // Replace with your actual domain
   const productUrl = `${baseUrl}/Artikel/${product.seoName}`;
   const imageUrl = product.pictureList && product.pictureList.trim() 
     ? `${baseUrl}/assets/images/prod${product.pictureList.split(',')[0].trim()}.jpg`
@@ -242,7 +242,7 @@ const generateProductMetaTags = (product) => {
     <meta property="og:image" content="${imageUrl}">
     <meta property="og:url" content="${productUrl}">
     <meta property="og:type" content="product">
-    <meta property="og:site_name" content="GrowHeads.de">
+    <meta property="og:site_name" content="SeedHeads.de">
     <meta property="product:price:amount" content="${product.price}">
     <meta property="product:price:currency" content="EUR">
     <meta property="product:availability" content="${product.available ? 'in stock' : 'out of stock'}">
