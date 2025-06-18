@@ -182,6 +182,8 @@ const renderPage = (component, location, filename, description, metaTags = '', n
     webpackEntrypoints.js.forEach(jsFile => {
       additionalTags += `<script src="${jsFile}"></script>`;
     });
+    // Also include prerender CSS in production
+    additionalTags += `<link rel="stylesheet" href="/prerender.css">`;
   } else {
     // In development, include prerender CSS
     additionalTags += `<link rel="stylesheet" href="/prerender.css">`;
