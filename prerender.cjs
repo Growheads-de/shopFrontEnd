@@ -521,6 +521,46 @@ const generateXmlSitemap = (allCategories = [], allProducts = []) => {
   return sitemap;
 };
 
+const generateRobotsTxt = () => {
+  const baseUrl = 'https://seedheads.de';
+  
+  const robotsTxt = `User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: ${baseUrl}/sitemap.xml
+
+# Crawl-delay (optional - adjust as needed)
+Crawl-delay: 0
+
+# Disallow admin/internal paths (if any exist)
+# Disallow: /admin/
+# Disallow: /api/
+# Disallow: /private/
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+`;
+
+  return robotsTxt;
+};
+
 const writeCombinedCssFile = () => {
   const combinedCss = Array.from(globalCssCollection).join('\n');
   const cssFilePath = path.resolve(__dirname, outputDir, 'prerender.css');
@@ -833,6 +873,17 @@ const renderApp = async (categoryData, socket) => {
   console.log(`   - Category pages: ${allCategories.length} URLs`);
   console.log(`   - Product pages: ${allProductsArray.length} URLs`);
   console.log(`   - Total URLs: ${1 + 6 + allCategories.length + allProductsArray.length}`);
+
+  // Generate robots.txt
+  console.log('\n🤖 Generating robots.txt...');
+  const robotsTxtContent = generateRobotsTxt();
+  const robotsTxtPath = path.resolve(__dirname, outputDir, 'robots.txt');
+  fs.writeFileSync(robotsTxtPath, robotsTxtContent);
+  
+  console.log(`✅ robots.txt generated: ${robotsTxtPath}`);
+  console.log(`   - Allows all crawlers`);
+  console.log(`   - References sitemap.xml`);
+  console.log(`   - Includes crawl-delay directive`);
 };
 
 const fetchCategoryDataAndRender = () => {
