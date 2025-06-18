@@ -23,6 +23,14 @@ const { StaticRouter } = require('react-router');
 const PrerenderCategory = require('./src/PrerenderCategory.js').default;
 const PrerenderProduct = require('./src/PrerenderProduct.js').default;
 const createEmotionCache = require('./createEmotionCache.js').default;
+
+// Import static page components
+const Datenschutz = require('./src/pages/Datenschutz.js').default;
+const Impressum = require('./src/pages/Impressum.js').default;
+const Batteriegesetzhinweise = require('./src/pages/Batteriegesetzhinweise.js').default;
+const Widerrufsrecht = require('./src/pages/Widerrufsrecht.js').default;
+const Sitemap = require('./src/pages/Sitemap.js').default;
+const AGB = require('./src/pages/AGB.js').default;
 const { CacheProvider } = require('@emotion/react');
 const { ThemeProvider } = require('@mui/material/styles');
 const theme = require('./src/theme.js').default;
@@ -388,6 +396,29 @@ const renderApp = async (categoryData, socket) => {
   if (!homeSuccess) {
     process.exit(1);
   }
+
+  // Render static pages
+  console.log('\n📄 Rendering static pages...');
+  
+  const staticPages = [
+    { component: Datenschutz, path: '/datenschutz', filename: 'datenschutz.html', description: 'Datenschutz page' },
+    { component: Impressum, path: '/impressum', filename: 'impressum.html', description: 'Impressum page' },
+    { component: Batteriegesetzhinweise, path: '/batteriegesetzhinweise', filename: 'batteriegesetzhinweise.html', description: 'Batteriegesetzhinweise page' },
+    { component: Widerrufsrecht, path: '/widerrufsrecht', filename: 'widerrufsrecht.html', description: 'Widerrufsrecht page' },
+    { component: Sitemap, path: '/sitemap', filename: 'sitemap.html', description: 'Sitemap page' },
+    { component: AGB, path: '/agb', filename: 'agb.html', description: 'AGB page' }
+  ];
+
+  let staticPagesRendered = 0;
+  for (const page of staticPages) {
+    const pageComponent = React.createElement(page.component, null);
+    const success = renderPage(pageComponent, page.path, page.filename, page.description, '', true);
+    if (success) {
+      staticPagesRendered++;
+    }
+  }
+  
+  console.log(`✅ Successfully rendered ${staticPagesRendered}/${staticPages.length} static pages!`);
 
   // Collect all products for product page generation
   const allProducts = new Set();
