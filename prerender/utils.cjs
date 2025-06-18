@@ -27,7 +27,7 @@ const collectAllCategories = (categoryNode, categories = []) => {
 
 const writeCombinedCssFile = (globalCssCollection, outputDir) => {
   const combinedCss = Array.from(globalCssCollection).join('\n');
-  const cssFilePath = path.resolve(outputDir, 'prerender.css');
+  const cssFilePath = path.resolve(__dirname, '..', outputDir, 'prerender.css');
   fs.writeFileSync(cssFilePath, combinedCss);
   
   console.log(`✅ Combined CSS file written to ${cssFilePath}`);

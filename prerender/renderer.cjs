@@ -64,7 +64,7 @@ const renderPage = (component, location, filename, description, metaTags = '', n
 
   // Use appropriate template path based on mode
   const templatePath = isProduction 
-    ? path.resolve(__dirname, '..', 'dist', 'index_template.html')
+    ? path.resolve(__dirname, '..', 'dist', 'index.html')
     : path.resolve(__dirname, '..', 'public', 'index.html');
   let template = fs.readFileSync(templatePath, 'utf8');
 
@@ -99,7 +99,7 @@ const renderPage = (component, location, filename, description, metaTags = '', n
     newHtml = template.replace('<body>', `<body>${replacementHtml}`);
   }
 
-  const outputPath = path.resolve(outputDir, filename);
+  const outputPath = path.resolve(__dirname, '..', outputDir, filename);
   
   // Ensure directory exists for nested paths
   const outputDirPath = path.dirname(outputPath);

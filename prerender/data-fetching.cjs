@@ -55,7 +55,7 @@ const fetchProductImage = (socket, bildId) => {
 const saveProductImages = async (socket, products, categoryName, outputDir) => {
   if (!products || products.length === 0) return;
 
-  const assetsPath = path.resolve(outputDir, 'assets', 'images');
+  const assetsPath = path.resolve(__dirname, '..', outputDir, 'assets', 'images');
   
   // Ensure assets/images directory exists
   if (!fs.existsSync(assetsPath)) {

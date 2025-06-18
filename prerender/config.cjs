@@ -12,7 +12,7 @@ console.log(`📁 Output directory: ${outputDir}`);
 const getWebpackEntrypoints = () => {
   if (!isProduction) return { js: [], css: [] };
   
-  const distPath = path.resolve(__dirname, 'dist');
+  const distPath = path.resolve(__dirname, '..', 'dist');
   const entrypoints = { js: [], css: [] };
   
   try {
@@ -51,7 +51,7 @@ const getWebpackEntrypoints = () => {
 };
 
 // Read global CSS styles and fix font paths for prerender
-let globalCss = fs.readFileSync(path.resolve(__dirname, 'src', 'index.css'), 'utf8');
+let globalCss = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'index.css'), 'utf8');
 // Fix relative font paths for prerendered HTML (remove ../public to make them relative to public root)
 globalCss = globalCss.replace(/url\('\.\.\/public/g, "url('");
 
