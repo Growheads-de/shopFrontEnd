@@ -11,8 +11,9 @@
 /dist
 /public/index.prerender.html
 /public/assets/images/prod*.jpg
-/public/category*.html
-
+/public/prerender.css
+/public/Artikel/*
+/public/Kategorie/*
 # misc
 .DS_Store
 .env.local

@@ -203,12 +203,28 @@ export default {
     ],
     setupMiddlewares: (middlewares, devServer) => {
       if (!devServer) throw new Error('webpack-dev-server is not defined');
+      
+      // Middleware to serve prerendered files as HTML
       devServer.app.use((req, res, next) => {
+        // Check if this is a request for a prerendered file
+        if (req.url.startsWith('/Kategorie/') || req.url.startsWith('/Artikel/')) {
+          const filePath = path.resolve(__dirname, 'public', req.url.slice(1));
+          
+          // Check if the prerendered file exists
+          if (fs.existsSync(filePath)) {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.setHeader('Cache-Control', 'public, max-age=3600');
+            return res.sendFile(filePath);
+          }
+        }
+        
+        // Handle root index file
         if (req.url === '/' || req.url.startsWith('/index.html')) {
           res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
           res.setHeader('Pragma', 'no-cache');
           res.setHeader('Expires', '0');
         }
+        
         next();
       });
 
