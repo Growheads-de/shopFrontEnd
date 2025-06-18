@@ -36,38 +36,6 @@ class PrerenderProduct extends React.Component {
       ? `/assets/images/prod${product.pictureList.split(',')[0].trim()}.jpg`
       : '/assets/images/nopicture.jpg';
 
-    // JSON-LD structured data for SEO
-    const priceValidDate = new Date();
-    priceValidDate.setMonth(priceValidDate.getMonth() + 3);
-    
-    const jsonLd = {
-      "@context": "https://schema.org/",
-      "@type": "Product",
-      "name": product.name,
-      "image": [
-        `https://seedheads.de${mainImage}`
-      ],
-      "description": product.description ? product.description.replace(/<[^>]*>/g, '') : product.name,
-      "sku": product.articleNumber,
-      "brand": {
-        "@type": "Brand",
-        "name": product.manufacturer || "Unknown"
-      },
-      "offers": {
-        "@type": "Offer",
-        "url": `https://seedheads.de/product/${product.articleNumber}`,
-        "priceCurrency": "EUR",
-        "price": product.price.toString(),
-        "priceValidUntil": priceValidDate.toISOString().split('T')[0],
-        "itemCondition": "https://schema.org/NewCondition",
-        "availability": product.available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-        "seller": {
-          "@type": "Organization",
-          "name": "SeedHeads"
-        }
-      }
-    };
-
     return React.createElement(
       Box,
       {
@@ -80,15 +48,7 @@ class PrerenderProduct extends React.Component {
           bgcolor: 'background.default'
         }
       },
-      // JSON-LD structured data script
-      React.createElement(
-        'script',
-        {
-          type: 'application/ld+json',
-          dangerouslySetInnerHTML: { __html: JSON.stringify(jsonLd) }
-        }
-      ),
-      React.createElement(
+        React.createElement(
         AppBar,
         { position: 'sticky', color: 'primary', elevation: 0, sx: { zIndex: 1100 } },
         React.createElement(

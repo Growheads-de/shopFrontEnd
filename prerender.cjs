@@ -267,6 +267,51 @@ const generateProductMetaTags = (product) => {
   `;
 };
 
+const generateProductJsonLd = (product) => {
+  const baseUrl = 'https://seedheads.de';
+  const productUrl = `${baseUrl}/Artikel/${product.seoName}`;
+  const imageUrl = product.pictureList && product.pictureList.trim() 
+    ? `${baseUrl}/assets/images/prod${product.pictureList.split(',')[0].trim()}.jpg`
+    : `${baseUrl}/assets/images/nopicture.jpg`;
+  
+  // Clean description for JSON-LD (remove HTML tags)
+  const cleanDescription = product.description 
+    ? product.description.replace(/<[^>]*>/g, '').replace(/\n/g, ' ')
+    : product.name;
+
+  // Calculate price valid date (current date + 3 months)
+  const priceValidDate = new Date();
+  priceValidDate.setMonth(priceValidDate.getMonth() + 3);
+  
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": [imageUrl],
+    "description": cleanDescription,
+    "sku": product.articleNumber,
+    "brand": {
+      "@type": "Brand",
+      "name": product.manufacturer || "Unknown"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": productUrl,
+      "priceCurrency": "EUR",
+      "price": product.price.toString(),
+      "priceValidUntil": priceValidDate.toISOString().split('T')[0],
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": product.available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "SeedHeads"
+      }
+    }
+  };
+
+  return `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
+};
+
 const writeCombinedCssFile = () => {
   const combinedCss = Array.from(globalCssCollection).join('\n');
   const cssFilePath = path.resolve(__dirname, outputDir, 'prerender.css');
@@ -526,8 +571,13 @@ const renderApp = async (categoryData, socket) => {
             ...productDetails.product, 
             seoName: actualSeoName
           });
+          const jsonLdScript = generateProductJsonLd({
+            ...productDetails.product, 
+            seoName: actualSeoName
+          });
+          const combinedMetaTags = metaTags + '\n' + jsonLdScript;
           
-          const success = renderPage(productComponent, location, filename, description, metaTags, true);
+          const success = renderPage(productComponent, location, filename, description, combinedMetaTags, true);
           if (success) {
             productPagesRendered++;
           }
