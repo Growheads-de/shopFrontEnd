@@ -312,6 +312,215 @@ const generateProductJsonLd = (product) => {
   return `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
 };
 
+const generateCategoryJsonLd = (category, products = []) => {
+  const baseUrl = 'https://seedheads.de';
+  const categoryUrl = `${baseUrl}/Kategorie/${category.seoName}`;
+  
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "CollectionPage",
+    "name": category.name,
+    "url": categoryUrl,
+    "description": `${category.name} - Entdecken Sie unsere Auswahl an hochwertigen Produkten`,
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": baseUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": category.name,
+          "item": categoryUrl
+        }
+      ]
+    }
+  };
+
+  // Add product list if products are available
+  if (products && products.length > 0) {
+    jsonLd.mainEntity = {
+      "@type": "ItemList",
+      "numberOfItems": products.length,
+      "itemListElement": products.slice(0, 20).map((product, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Product",
+          "name": product.name,
+          "url": `${baseUrl}/Artikel/${product.seoName}`,
+          "image": product.pictureList && product.pictureList.trim() 
+            ? `${baseUrl}/assets/images/prod${product.pictureList.split(',')[0].trim()}.jpg`
+            : `${baseUrl}/assets/images/nopicture.jpg`,
+          "offers": {
+            "@type": "Offer",
+            "price": product.price.toString(),
+            "priceCurrency": "EUR",
+            "availability": product.available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+          }
+        }
+      }))
+    };
+  }
+
+  return `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
+};
+
+const generateHomepageJsonLd = () => {
+  const baseUrl = 'https://seedheads.de';
+  
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "WebSite",
+    "name": "SeedHeads",
+    "url": baseUrl,
+    "description": "SeedHeads - Ihr Online-Shop für hochwertige Samen, Pflanzen und Gartenbedarf",
+    "publisher": {
+      "@type": "Organization",
+      "name": "SeedHeads",
+      "url": baseUrl,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${baseUrl}/assets/images/sh.png`
+      }
+    },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${baseUrl}/search?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    },
+    "mainEntity": {
+      "@type": "WebPage",
+      "name": "Sitemap",
+      "url": `${baseUrl}/sitemap`,
+      "description": "Vollständige Sitemap mit allen Kategorien und Seiten"
+    },
+    "sameAs": [
+      // Add your social media URLs here if available
+    ]
+  };
+
+  return `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
+};
+
+const generateSitemapJsonLd = (allCategories = []) => {
+  const baseUrl = 'https://seedheads.de';
+  
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "WebPage",
+    "name": "Sitemap",
+    "url": `${baseUrl}/sitemap`,
+    "description": "Sitemap - Übersicht aller Kategorien und Seiten auf SeedHeads.de",
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": baseUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Sitemap",
+          "item": `${baseUrl}/sitemap`
+        }
+      ]
+    }
+  };
+
+  // Add all categories as site navigation elements
+  if (allCategories && allCategories.length > 0) {
+    jsonLd.mainEntity = {
+      "@type": "SiteNavigationElement",
+      "name": "Kategorien",
+      "hasPart": allCategories.map(category => ({
+        "@type": "SiteNavigationElement",
+        "name": category.name,
+        "url": `${baseUrl}/Kategorie/${category.seoName}`,
+        "description": `${category.name} Kategorie`
+      }))
+    };
+  }
+
+  return `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
+};
+
+const generateXmlSitemap = (allCategories = [], allProducts = []) => {
+  const baseUrl = 'https://seedheads.de';
+  const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  
+  let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+`;
+
+  // Homepage
+  sitemap += `  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+`;
+
+  // Static pages
+  const staticPages = [
+    { path: '/datenschutz', changefreq: 'monthly', priority: '0.3' },
+    { path: '/impressum', changefreq: 'monthly', priority: '0.3' },
+    { path: '/batteriegesetzhinweise', changefreq: 'monthly', priority: '0.3' },
+    { path: '/widerrufsrecht', changefreq: 'monthly', priority: '0.3' },
+    { path: '/sitemap', changefreq: 'weekly', priority: '0.5' },
+    { path: '/agb', changefreq: 'monthly', priority: '0.3' }
+  ];
+
+  staticPages.forEach(page => {
+    sitemap += `  <url>
+    <loc>${baseUrl}${page.path}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>
+`;
+  });
+
+  // Category pages
+  allCategories.forEach(category => {
+    if (category.seoName) {
+      sitemap += `  <url>
+    <loc>${baseUrl}/Kategorie/${category.seoName}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+`;
+    }
+  });
+
+  // Product pages
+  allProducts.forEach(productSeoName => {
+    sitemap += `  <url>
+    <loc>${baseUrl}/Artikel/${productSeoName}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+`;
+  });
+
+  sitemap += `</urlset>`;
+  
+  return sitemap;
+};
+
 const writeCombinedCssFile = () => {
   const combinedCss = Array.from(globalCssCollection).join('\n');
   const cssFilePath = path.resolve(__dirname, outputDir, 'prerender.css');
@@ -436,7 +645,8 @@ const renderApp = async (categoryData, socket) => {
   const PrerenderHome = require('./src/PrerenderHome.js').default;
   const homeComponent = React.createElement(PrerenderHome, null);
   const homeFilename = isProduction ? 'index.html' : 'index.prerender.html';
-  const homeSuccess = renderPage(homeComponent, '/', homeFilename, 'Home page', '', true);
+  const homeJsonLd = generateHomepageJsonLd();
+  const homeSuccess = renderPage(homeComponent, '/', homeFilename, 'Home page', homeJsonLd, true);
 
   if (!homeSuccess) {
     process.exit(1);
@@ -457,7 +667,15 @@ const renderApp = async (categoryData, socket) => {
   let staticPagesRendered = 0;
   for (const page of staticPages) {
     const pageComponent = React.createElement(page.component, null);
-    const success = renderPage(pageComponent, page.path, page.filename, page.description, '', true);
+    let metaTags = '';
+    
+    // Special handling for Sitemap page to include category data
+    if (page.filename === 'sitemap' && categoryData) {
+      const allCategories = collectAllCategories(categoryData);
+      metaTags = generateSitemapJsonLd(allCategories);
+    }
+    
+    const success = renderPage(pageComponent, page.path, page.filename, page.description, metaTags, true);
     if (success) {
       staticPagesRendered++;
     }
@@ -526,8 +744,9 @@ const renderApp = async (categoryData, socket) => {
         const filename = `Kategorie/${category.seoName}`;
         const location = `/Kategorie/${category.seoName}`;
         const description = `Category "${category.name}" (ID: ${category.id})`;
+        const categoryJsonLd = generateCategoryJsonLd(category, productData?.products || []);
         
-        const success = renderPage(categoryComponent, location, filename, description, '', true);
+        const success = renderPage(categoryComponent, location, filename, description, categoryJsonLd, true);
         if (success) {
           categoryPagesRendered++;
         }
@@ -598,6 +817,22 @@ const renderApp = async (categoryData, socket) => {
 
   // Write the combined CSS file after all pages are rendered
   writeCombinedCssFile();
+
+  // Generate XML sitemap with all rendered pages
+  console.log('\n🗺️ Generating XML sitemap...');
+  const allCategories = categoryData ? collectAllCategories(categoryData) : [];
+  const allProductsArray = Array.from(allProducts);
+  const xmlSitemap = generateXmlSitemap(allCategories, allProductsArray);
+  
+  const sitemapPath = path.resolve(__dirname, outputDir, 'sitemap.xml');
+  fs.writeFileSync(sitemapPath, xmlSitemap);
+  
+  console.log(`✅ XML sitemap generated: ${sitemapPath}`);
+  console.log(`   - Homepage: 1 URL`);
+  console.log(`   - Static pages: 6 URLs`);
+  console.log(`   - Category pages: ${allCategories.length} URLs`);
+  console.log(`   - Product pages: ${allProductsArray.length} URLs`);
+  console.log(`   - Total URLs: ${1 + 6 + allCategories.length + allProductsArray.length}`);
 };
 
 const fetchCategoryDataAndRender = () => {
