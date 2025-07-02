@@ -17,7 +17,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "0BSD",
   "description": "",
   "dependencies": {
     "@emotion/react": "^11.14.0",
