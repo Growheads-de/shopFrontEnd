@@ -11,8 +11,10 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Fab from "@mui/material/Fab";
+import Tooltip from "@mui/material/Tooltip";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import PaletteIcon from "@mui/icons-material/Palette";
+import BugReportIcon from "@mui/icons-material/BugReport";
 
 import SocketProvider from "./providers/SocketProvider.js";
 import SocketContext from "./contexts/SocketContext.js";
@@ -136,6 +138,29 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
     setThemeCustomizerOpen(!isThemeCustomizerOpen);
   };
 
+  // Handler to open GitHub issue reporting
+  const handleReportIssue = () => {
+    const issueTitle = encodeURIComponent("Fehlerbericht");
+    const issueBody = encodeURIComponent(
+      `**Seite:** ${window.location.href}
+**Browser:** ${navigator.userAgent.split(' ')[0]}
+**Datum:** ${new Date().toLocaleDateString('de-DE')}
+
+**Problem:**
+[Beschreibe kurz das Problem]
+
+**So ist es passiert:**
+1. 
+2. 
+
+**Was sollte passieren:**
+[Was erwartet wurde]`
+    );
+    
+    const githubIssueUrl = `https://github.com/Growheads-de/shopFrontEnd/issues/new?title=${issueTitle}&body=${issueBody}`;
+    window.open(githubIssueUrl, '_blank');
+  };
+
   // Check if we're in development mode
   const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -235,35 +260,56 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
       )}
 
       {/* Chat AI Assistant FAB */}
-      <Fab
-        color="primary"
-        aria-label="chat"
-        size="small"
-        sx={{
-          position: "fixed",
-          bottom: 31,
-          right: 15,
-        }}
-        onClick={handleChatToggle} // Attach toggle handler
-      >
-        <SmartToyIcon sx={{ fontSize: "1.2rem" }} />
-      </Fab>
-
-      {/* Development-only Theme Customizer FAB */}
-      {isDevelopment && (
+      <Tooltip title="KI-Assistent öffnen" placement="left">
         <Fab
-          color="secondary"
-          aria-label="theme customizer"
+          color="primary"
+          aria-label="chat"
           size="small"
           sx={{
             position: "fixed",
             bottom: 31,
-            right: 75,
+            right: 15,
           }}
-          onClick={handleThemeCustomizerToggle}
+          onClick={handleChatToggle} // Attach toggle handler
         >
-          <PaletteIcon sx={{ fontSize: "1.2rem" }} />
+          <SmartToyIcon sx={{ fontSize: "1.2rem" }} />
         </Fab>
+      </Tooltip>
+
+      {/* GitHub Issue Reporter FAB */}
+      <Tooltip title="Fehler oder Problem melden" placement="left">
+        <Fab
+          color="error"
+          aria-label="report issue"
+          size="small"
+          sx={{
+            position: "fixed",
+            bottom: 31,
+            right: 135,
+          }}
+          onClick={handleReportIssue}
+        >
+          <BugReportIcon sx={{ fontSize: "1.2rem" }} />
+        </Fab>
+      </Tooltip>
+
+      {/* Development-only Theme Customizer FAB */}
+      {isDevelopment && (
+        <Tooltip title="Theme anpassen" placement="left">
+          <Fab
+            color="secondary"
+            aria-label="theme customizer"
+            size="small"
+            sx={{
+              position: "fixed",
+              bottom: 31,
+              right: 75,
+            }}
+            onClick={handleThemeCustomizerToggle}
+          >
+            <PaletteIcon sx={{ fontSize: "1.2rem" }} />
+          </Fab>
+        </Tooltip>
       )}
 
       {/* Development-only Theme Customizer Dialog */}
