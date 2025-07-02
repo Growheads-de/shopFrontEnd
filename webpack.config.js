@@ -91,6 +91,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const isAnalyze = process.env.ANALYZE === 'true';
+const proxyTarget = process.env.PROXY_TARGET || 'http://localhost:9303';
 
 export default {
   mode: isDevelopment ? 'development' : 'production',
@@ -267,16 +268,18 @@ export default {
     proxy: [
       {
         context: ['/socket.io'],
-        target: 'http://localhost:9303',
+        target: proxyTarget,
         changeOrigin: true,
         ws: true,
-        logLevel: 'debug'
+        logLevel: 'debug',
+        secure: proxyTarget.startsWith('https')
       },
       {
         context: ['/api'],
-        target: 'http://localhost:9303',
+        target: proxyTarget,
         changeOrigin: true,
-        logLevel: 'debug'
+        logLevel: 'debug',
+        secure: proxyTarget.startsWith('https')
       }
     ],
     setupMiddlewares: (middlewares, devServer) => {

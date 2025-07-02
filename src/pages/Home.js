@@ -372,6 +372,7 @@ const Home = () => {
       animationIdRef.current = requestAnimationFrame(animate);
     }, 3000);
   };
+ 
 
   return (
     <Container maxWidth="lg" sx={{ pt: 4, pb: 2, maxWidth: '1200px !important' }}>

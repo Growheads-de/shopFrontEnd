@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack serve --progress --mode development --no-open",
+    "start:seedheads": "cross-env PROXY_TARGET=https://seedheads.de webpack serve --progress --mode development --no-open",
     "prod": "webpack serve --progress --mode production --no-client-overlay --no-client --no-web-socket-server --no-open --no-live-reload --no-hot --compress --no-devtool",
     "build:client": "cross-env NODE_ENV=production webpack --progress --mode production && shx cp dist/index.html dist/index_template.html",
     "build": "npm run build:client",
