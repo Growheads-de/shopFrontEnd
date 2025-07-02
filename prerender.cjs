@@ -72,6 +72,7 @@ const Batteriegesetzhinweise =
 const Widerrufsrecht = require("./src/pages/Widerrufsrecht.js").default;
 const Sitemap = require("./src/pages/Sitemap.js").default;
 const AGB = require("./src/pages/AGB.js").default;
+const NotFound404 = require("./src/pages/NotFound404.js").default;
 
 // Worker function for parallel product rendering  
 const renderProductWorker = async (productSeoNames, workerId, progressCallback) => {
@@ -362,6 +363,7 @@ const renderApp = async (categoryData, socket) => {
       description: "Sitemap page",
     },
     { component: AGB, path: "/agb", filename: "agb", description: "AGB page" },
+    { component: NotFound404, path: "/404", filename: "404", description: "404 Not Found page" },
     {
       component: PrerenderKonfigurator,
       path: "/Konfigurator",

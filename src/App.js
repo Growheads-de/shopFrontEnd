@@ -40,6 +40,7 @@ const ServerLogsPage = lazy(() => import(/* webpackChunkName: "admin-logs" */ ".
 // Lazy load legal pages - rarely accessed
 const Datenschutz = lazy(() => import(/* webpackChunkName: "legal" */ "./pages/Datenschutz.js"));
 const AGB = lazy(() => import(/* webpackChunkName: "legal" */ "./pages/AGB.js"));
+const NotFound404 = lazy(() => import(/* webpackChunkName: "legal" */ "./pages/NotFound404.js"));
 const Sitemap = lazy(() => import(/* webpackChunkName: "sitemap" */ "./pages/Sitemap.js"));
 const Impressum = lazy(() => import(/* webpackChunkName: "legal" */ "./pages/Impressum.js"));
 const Batteriegesetzhinweise = lazy(() => import(/* webpackChunkName: "legal" */ "./pages/Batteriegesetzhinweise.js"));
@@ -232,6 +233,7 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
             {/* Legal pages */}
             <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/agb" element={<AGB />} />
+            <Route path="/404" element={<NotFound404 />} />
             <Route path="/sitemap" element={<Sitemap />} />
             <Route path="/impressum" element={<Impressum />} />
             <Route

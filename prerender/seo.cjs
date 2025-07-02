@@ -307,6 +307,7 @@ const generateXmlSitemap = (allCategories = [], allProducts = [], baseUrl) => {
     { path: "/widerrufsrecht", changefreq: "monthly", priority: "0.3" },
     { path: "/sitemap", changefreq: "weekly", priority: "0.5" },
     { path: "/agb", changefreq: "monthly", priority: "0.3" },
+    { path: "/404", changefreq: "monthly", priority: "0.1" },
     { path: "/Konfigurator", changefreq: "weekly", priority: "0.8" },
   ];
 
