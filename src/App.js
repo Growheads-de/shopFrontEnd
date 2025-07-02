@@ -285,7 +285,7 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
           sx={{
             position: "fixed",
             bottom: 31,
-            right: 135,
+            right: 75,
           }}
           onClick={handleReportIssue}
         >
@@ -303,7 +303,7 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
             sx={{
               position: "fixed",
               bottom: 31,
-              right: 75,
+              right: 135,
             }}
             onClick={handleThemeCustomizerToggle}
           >
