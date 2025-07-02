@@ -1,0 +1,21 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "browsers": [
+            "Chrome >= 91",
+            "Firefox >= 90",
+            "Safari >= 14",
+            "Edge >= 91"
+          ]
+        },
+        "modules": false,
+        "useBuiltIns": false
+      }
+    ],
+    ["@babel/preset-react", { "runtime": "automatic" }]
+  ],
+  "plugins": []
+} 

@@ -1,0 +1,12 @@
+# Modern browsers only - no legacy support
+# This configuration targets browsers that support ES6+ natively
+Chrome >= 91
+Firefox >= 90
+Safari >= 14
+Edge >= 91
+
+# Alternative: Use this more conservative approach if you need broader support
+# last 2 Chrome versions
+# last 2 Firefox versions  
+# last 2 Safari versions
+# last 2 Edge versions 

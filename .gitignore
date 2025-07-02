@@ -1,0 +1,61 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.cursor/
+
+# testing
+/coverage
+
+# production
+/build
+/dist
+/public/index.prerender.html
+/public/assets/images/prod*.jpg
+/public/assets/images/cat*.jpg
+/public/prerender.css
+/public/Artikel/*
+/public/Kategorie/*
+/public/agb
+/public/batteriegesetzhinweise
+/public/datenschutz
+/public/impressum
+/public/sitemap
+/public/widerrufsrecht
+/public/robots.txt
+/public/sitemap.xml
+/public/index.prerender.html
+/public/Konfigurator
+/public/profile
+
+/public/products.xml
+/public/llms*
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+.hintrc
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.vscode
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local configuration
+src/config.local.js
+
+# Local development notes
+dev-notes.md
+dev-notes.local.md 

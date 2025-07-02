@@ -1,0 +1,59 @@
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: url('../public/assets/fonts/roboto/Roboto-Light.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../public/assets/fonts/roboto/Roboto-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: url('../public/assets/fonts/roboto/Roboto-Medium.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../public/assets/fonts/roboto/Roboto-Bold.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SwashingtonCP';
+  font-style: normal;
+  font-weight: normal;
+  src: url('../public/assets/fonts/SwashingtonCP.ttf') format('truetype');
+  font-display: swap;
+} 
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-y: scroll; /* Always show vertical scrollbar */
+}
+
+/* Prevent Material-UI from changing scrollbar when modals open */
+body.MuiModal-open {
+  overflow-y: scroll !important;
+  padding-right: 0 !important;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+} 
