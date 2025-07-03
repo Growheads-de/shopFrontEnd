@@ -269,24 +269,24 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
     "url": baseUrl,
     "logo": `${baseUrl}${config.images.logo}`,
     "image": `${baseUrl}${config.images.logo}`,
-    "telephone": "+49 351 79773070",
+    "telephone": "015208491860",
     "email": "info@growheads.de",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Alaunstraße 47",
+      "streetAddress": "Trachenberger Strasse 14",
       "addressLocality": "Dresden",
-      "postalCode": "01099",
+      "postalCode": "01129",
       "addressCountry": "DE",
       "addressRegion": "Sachsen"
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": "51.0645",
-      "longitude": "13.7539"
+      "latitude": "51.083675",
+      "longitude": "13.727215"
     },
     "openingHours": [
-      "Mo-Fr 10:00-18:00",
-      "Sa 10:00-16:00"
+      "Mo-Fr 10:00-20:00",
+      "Sa 11:00-19:00"
     ],
     "paymentAccepted": "Cash, Credit Card, PayPal, Bank Transfer",
     "currenciesAccepted": "EUR",
@@ -311,14 +311,14 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
     "contactPoint": [
       {
         "@type": "ContactPoint",
-        "telephone": "+49 351 79773070",
+        "telephone": "015208491860",
         "contactType": "customer service",
         "availableLanguage": "German",
         "hoursAvailable": {
           "@type": "OpeningHoursSpecification",
           "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
           "opens": "10:00",
-          "closes": "18:00"
+          "closes": "20:00"
         }
       },
       {
@@ -353,7 +353,7 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
         "name": "Liefert GrowHeads deutschlandweit?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Ja, wir liefern deutschlandweit. Zusätzlich haben wir einen Laden in Dresden (Alaunstraße 47) für lokale Kunden."
+          "text": "Ja, wir liefern deutschlandweit. Zusätzlich haben wir einen Laden in Dresden (Trachenberger Strasse 14) für lokale Kunden."
         }
       },
       {
@@ -369,7 +369,7 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
         "name": "Hat GrowHeads einen physischen Laden?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Ja, unser Laden befindet sich in Dresden, Alaunstraße 47. Öffnungszeiten: Mo-Fr 10-18 Uhr, Sa 10-16 Uhr. Sie können auch online bestellen."
+          "text": "Ja, unser Laden befindet sich in Dresden, Trachenberger Strasse 14. Öffnungszeiten: Mo-Fr 10-20 Uhr, Sa 11-19 Uhr. Sie können auch online bestellen."
         }
       },
       {
@@ -377,7 +377,7 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
         "name": "Bietet GrowHeads Beratung zum Indoor-Anbau?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Ja, unser erfahrenes Team berät Sie gerne zu allen Aspekten des Indoor-Anbaus. Kontaktieren Sie uns telefonisch unter +49 351 79773070 oder besuchen Sie unseren Laden."
+          "text": "Ja, unser erfahrenes Team berät Sie gerne zu allen Aspekten des Indoor-Anbaus. Kontaktieren Sie uns telefonisch unter 015208491860 oder besuchen Sie unseren Laden."
         }
       }
     ]
