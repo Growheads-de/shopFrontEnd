@@ -175,13 +175,27 @@ const generateCategoryJsonLd = (category, products = [], baseUrl, config) => {
                   .split(",")[0]
                   .trim()}.jpg`
               : `${baseUrl}/assets/images/nopicture.jpg`,
+          description: product.description 
+            ? product.description.replace(/<[^>]*>/g, "").substring(0, 200)
+            : `${product.name} - Hochwertiges Growshop Produkt`,
+          sku: product.articleNumber || product.seoName,
+          brand: {
+            "@type": "Brand",
+            name: product.manufacturer || config.brandName,
+          },
           offers: {
             "@type": "Offer",
-            price: product.price.toString(),
+            url: `${baseUrl}/Artikel/${product.seoName}`,
+            price: product.price && !isNaN(product.price) ? product.price.toString() : "0.00",
             priceCurrency: config.currency,
             availability: product.available
               ? "https://schema.org/InStock"
               : "https://schema.org/OutOfStock",
+            seller: {
+              "@type": "Organization",
+              name: config.brandName,
+            },
+            itemCondition: "https://schema.org/NewCondition",
           },
         },
       })),
@@ -270,7 +284,7 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
     "logo": `${baseUrl}${config.images.logo}`,
     "image": `${baseUrl}${config.images.logo}`,
     "telephone": "015208491860",
-    "email": "info@growheads.de",
+    "email": "service@growheads.de",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Trachenberger Strasse 14",
@@ -302,9 +316,10 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
       "itemListElement": categories.filter(cat => cat.seoName).slice(0, 10).map(category => ({
         "@type": "Offer",
         "itemOffered": {
-          "@type": "Product",
+          "@type": "ProductGroup",
           "name": category.name,
-          "url": `${baseUrl}/Kategorie/${category.seoName}`
+          "url": `${baseUrl}/Kategorie/${category.seoName}`,
+          "description": `${category.name} Kategorie - Entdecken Sie unsere Produkte`
         }
       }))
     },
@@ -323,7 +338,7 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
       },
       {
         "@type": "ContactPoint",
-        "email": "info@growheads.de",
+        "email": "service@growheads.de",
         "contactType": "customer service",
         "availableLanguage": "German"
       }
