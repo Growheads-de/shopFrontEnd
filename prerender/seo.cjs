@@ -310,19 +310,6 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
       "name": "Germany"
     },
     "areaServed": "DE",
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "Growshop Produkte",
-      "itemListElement": categories.filter(cat => cat.seoName).slice(0, 10).map(category => ({
-        "@type": "Offer",
-        "itemOffered": {
-          "@type": "ProductGroup",
-          "name": category.name,
-          "url": `${baseUrl}/Kategorie/${category.seoName}`,
-          "description": `${category.name} Kategorie - Entdecken Sie unsere Produkte`
-        }
-      }))
-    },
     "contactPoint": [
       {
         "@type": "ContactPoint",
