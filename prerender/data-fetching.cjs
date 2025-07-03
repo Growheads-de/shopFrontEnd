@@ -39,7 +39,7 @@ const fetchCategoryProducts = (socket, categoryId) => {
 
     socket.emit(
       "getCategoryProducts",
-      { categoryId: parseInt(categoryId) },
+      { full:true, categoryId: parseInt(categoryId) },
       (response) => {
         clearTimeout(timeout);
         if (response && response.products !== undefined) {

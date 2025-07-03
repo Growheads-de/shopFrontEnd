@@ -238,6 +238,8 @@ class Content extends Component {
     });
   }
 
+
+
   fetchCategoryData(categoryId) {
     const cachedData = getCachedCategoryData(categoryId);
     if (cachedData) {
@@ -251,14 +253,36 @@ class Content extends Component {
       console.log("Socket not connected yet, waiting for connection to fetch category data");
       return;
     }
+    console.log(`productList:${categoryId}`);
+    this.props.socket.off(`productList:${categoryId}`);
+
+    // Track if we've received the full response to ignore stub response if needed
+    let receivedFullResponse = false;
+
+    this.props.socket.on(`productList:${categoryId}`,(response) => {
+      console.log("getCategoryProducts full response", response);
+      receivedFullResponse = true;
+      setCachedCategoryData(categoryId, response);
+      if (response && response.products !== undefined) {
+        this.processDataWithCategoryTree(response, categoryId);
+      } else {
+        console.log("fetchCategoryData in Content failed", response);
+      }
+    });
 
     this.props.socket.emit("getCategoryProducts", { categoryId: categoryId },
       (response) => {
-        setCachedCategoryData(categoryId, response);
-        if (response && response.products !== undefined) {
-          this.processDataWithCategoryTree(response, categoryId);
+        console.log("getCategoryProducts stub response", response);
+        // Only process stub response if we haven't received the full response yet
+        if (!receivedFullResponse) {
+          setCachedCategoryData(categoryId, response);
+          if (response && response.products !== undefined) {
+            this.processDataWithCategoryTree(response, categoryId);
+          } else {
+            console.log("fetchCategoryData in Content failed", response);
+          }
         } else {
-          console.log("fetchCategoryData in Content failed", response);
+          console.log("Ignoring stub response - full response already received");
         }
       }
     );
