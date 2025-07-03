@@ -648,6 +648,12 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
         ? `${parseFloat(product.price).toFixed(2)} ${config.currency}`
         : `0.00 ${config.currency}`;
 
+      // Skip products with price == 0
+      if (!product.price || parseFloat(product.price) === 0) {
+        skippedCount++;
+        return;
+      }
+
       // Generate GTIN/EAN if available (using articleNumber as fallback)
       const rawGtin = product.gtin || "";
       const gtin = escapeXml(rawGtin.toString().trim());
