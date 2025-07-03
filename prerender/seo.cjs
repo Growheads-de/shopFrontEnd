@@ -196,9 +196,9 @@ const generateHomepageMetaTags = (baseUrl, config) => {
   `;
 };
 
-const generateHomepageJsonLd = (baseUrl, config) => {
+const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
 
-  const jsonLd = {
+  const websiteJsonLd = {
     "@context": "https://schema.org/",
     "@type": "WebSite",
     name: config.brandName,
@@ -232,9 +232,27 @@ const generateHomepageJsonLd = (baseUrl, config) => {
     ],
   };
 
-  return `<script type="application/ld+json">${JSON.stringify(
-    jsonLd
-  )}</script>`;
+  // Generate BreadcrumbList for all categories
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": categories
+      .filter(category => category.seoName) // Only include categories with seoName
+      .map((category, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": category.name,
+        "item": `${baseUrl}/Kategorie/${category.seoName}`
+      }))
+  };
+
+  // Return both JSON-LD scripts
+  const websiteScript = `<script type="application/ld+json">${JSON.stringify(websiteJsonLd)}</script>`;
+  const breadcrumbScript = categories.length > 0 
+    ? `<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}</script>`
+    : '';
+
+  return websiteScript + (breadcrumbScript ? '\n' + breadcrumbScript : '');
 };
 
 const generateSitemapJsonLd = (allCategories = [], baseUrl, config) => {

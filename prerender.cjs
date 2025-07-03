@@ -313,7 +313,8 @@ const renderApp = async (categoryData, socket) => {
     ? "index.html"
     : "index.prerender.html";
   const homeMetaTags = generateHomepageMetaTags(shopConfig.baseUrl, shopConfig);
-  const homeJsonLd = generateHomepageJsonLd(shopConfig.baseUrl, shopConfig);
+  const homepageCategories = categoryData ? collectAllCategories(categoryData) : [];
+  const homeJsonLd = generateHomepageJsonLd(shopConfig.baseUrl, shopConfig, homepageCategories);
   const combinedHomeMeta = homeMetaTags + "\n" + homeJsonLd;
   const homeSuccess = render(
     homeComponent,
@@ -385,8 +386,8 @@ const renderApp = async (categoryData, socket) => {
 
     // Special handling for Sitemap page to include category data
     if (page.filename === "sitemap" && categoryData) {
-      const allCategories = collectAllCategories(categoryData);
-      metaTags = generateSitemapJsonLd(allCategories, shopConfig.baseUrl, shopConfig);
+      const sitemapCategories = collectAllCategories(categoryData);
+      metaTags = generateSitemapJsonLd(sitemapCategories, shopConfig.baseUrl, shopConfig);
     }
 
     // Special handling for Konfigurator page to include SEO tags
