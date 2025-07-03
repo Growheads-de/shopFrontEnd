@@ -22,7 +22,7 @@ const CategoryBox = ({
   const [imageUrl, setImageUrl] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const socket = useContext(SocketContext);
+  const {socket} = useContext(SocketContext);
 
   useEffect(() => {
     let objectUrl = null;

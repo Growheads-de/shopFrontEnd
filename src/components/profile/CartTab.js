@@ -67,8 +67,8 @@ class CartTab extends Component {
 
   // @note Add method to fetch and apply order template prefill data
   fetchOrderTemplate = () => {
-    if (this.context && this.context.connected) {
-      this.context.emit('getOrderTemplate', (response) => {
+    if (this.context && this.context.socket && this.context.socket.connected) {
+      this.context.socket.emit('getOrderTemplate', (response) => {
         if (response.success && response.orderTemplate) {
           const template = response.orderTemplate;
           
@@ -433,7 +433,7 @@ class CartTab extends Component {
         {!showPaymentConfirmation && (
           <CartDropdown 
             cartItems={cartItems} 
-            socket={this.context}
+            socket={this.context.socket}
             showDetailedSummary={showStripePayment}
             deliveryMethod={deliveryMethod}
             deliveryCost={deliveryCost}

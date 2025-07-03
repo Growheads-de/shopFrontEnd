@@ -7,8 +7,10 @@ class SocketProvider extends Component {
   constructor(props) {
     super(props);
     this.socket = null;
+    this.socketB = null;
     this.state = {
       connected: false,
+      connectedB: false,
       showPrerenderFallback: true,
     };
   }
@@ -77,6 +79,66 @@ class SocketProvider extends Component {
       console.error("SocketProvider: Failed to reconnect");
       this.handleConnectionFailure();
     });
+
+    this.socketB = io(url, {
+      transports: ["websocket"],
+    });
+
+    this.socketB.on("connect", () => {
+      console.log("SocketProvider: connectedB");
+      //this.setState({ connectedB: true });
+    });
+
+    this.socketB.on("disconnect", () => {
+      //this.setState({ connectedB: false });
+      console.log("SocketProvider: Socket disconnectedB");
+    });
+
+    this.socketB.on("connect_error", (error) => {
+      console.error("SocketProvider: Connection errorB:", error);
+    });
+
+    this.socketB.on("reconnect_attempt", (attemptNumber) => {
+      console.log(`SocketProvider: Reconnection attemptB ${attemptNumber}`);
+    });
+
+    this.socketB.on("reconnect_failed", () => {
+      console.error("SocketProvider: Failed to reconnectB");
+    });
+    this.socketB.waitForConnect = (timeout = 10000) => {
+      return new Promise((resolve, reject) => {
+        if (this.socketB.connected) {
+          resolve();
+          return;
+        }
+
+        let timeoutId;
+        const connectHandler = () => {
+          clearTimeout(timeoutId);
+          this.socketB.off("connect", connectHandler);
+          this.socketB.off("connect_error", errorHandler);
+          resolve();
+        };
+
+        const errorHandler = (error) => {
+          clearTimeout(timeoutId);
+          this.socketB.off("connect", connectHandler);
+          this.socketB.off("connect_error", errorHandler);
+          reject(new Error(`Socket connection failed: ${error.message}`));
+        };
+
+        // Set up timeout
+        timeoutId = setTimeout(() => {
+          this.socketB.off("connect", connectHandler);
+          this.socketB.off("connect_error", errorHandler);
+          reject(new Error(`Socket connection timeout after ${timeout}ms`));
+        }, timeout);
+
+        // Add event listeners
+        this.socketB.on("connect", connectHandler);
+        this.socketB.on("connect_error", errorHandler);
+      });
+    };
   }
 
   handleConnectionFailure() {
@@ -96,6 +158,10 @@ class SocketProvider extends Component {
       console.log("SocketProvider: Disconnecting socket");
       this.socket.disconnect();
     }
+    if (this.socketB) {
+      console.log("SocketProvider: Disconnecting socketB");
+      this.socketB.disconnect();
+    }
   }
 
   render() {
@@ -104,7 +170,7 @@ class SocketProvider extends Component {
       window.__PRERENDER_FALLBACK__;
 
     return (
-      <SocketContext.Provider value={this.socket}>
+      <SocketContext.Provider value={{socket:this.socket,socketB:this.socketB}}>
         {/* Always render children but control visibility */}
         <div style={{ display: this.state.connected ? 'block' : 'none' }}>
           {this.props.children}

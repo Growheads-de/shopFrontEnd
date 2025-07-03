@@ -26,7 +26,8 @@ class Product extends Component {
         this.state = {image:window.smallPicCache[bildId],loading:false, error: false}
       }else{
         this.state = {image: null, loading: true, error: false};
-        this.props.socket.emit('getPic', { bildId, size:'small' }, (res) => {
+        console.log("Product: Fetching image from socketB", this.props.socketB);
+        this.props.socketB.emit('getPic', { bildId, size:'small' }, (res) => {
           if(res.success){
             window.smallPicCache[bildId] = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
             if (this._isMounted) {

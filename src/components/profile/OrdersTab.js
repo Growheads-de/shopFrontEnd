@@ -68,7 +68,7 @@ const OrdersTab = ({ orderIdFromHash }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
-  const socket = useContext(SocketContext);
+  const {socket} = useContext(SocketContext);
   const navigate = useNavigate();
 
   const handleViewDetails = useCallback(

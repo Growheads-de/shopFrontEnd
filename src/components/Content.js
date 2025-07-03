@@ -685,6 +685,7 @@ class Content extends Component {
             <Box>
               <ProductList
                 socket={this.props.socket}
+                socketB={this.props.socketB}
                 totalProductCount={(this.state.unfilteredProducts || []).length}
                 products={this.state.filteredProducts || []}
                 activeAttributeFilters={this.state.activeAttributeFilters || []}

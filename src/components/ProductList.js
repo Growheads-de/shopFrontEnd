@@ -331,6 +331,7 @@ class ProductList extends Component {
                 versandklasse={product.versandklasse}
                 weight={product.weight}
                 socket={this.props.socket}
+                socketB={this.props.socketB}
                 pictureList={product.pictureList}
                 availableSupplier={product.availableSupplier}
               />

@@ -124,11 +124,13 @@ class CategoryList extends Component {
 
   componentDidUpdate(prevProps) {
     // Handle socket connection changes
+
     const wasConnected = prevProps.socket && prevProps.socket.connected;
     const isNowConnected = this.props.socket && this.props.socket.connected;
     
     if (!wasConnected && isNowConnected && !this.state.fetchedCategories) {
       // Socket just connected and we haven't fetched categories yet
+      
       this.setState(
         {
           fetchedCategories: false,
@@ -158,7 +160,7 @@ class CategoryList extends Component {
     }
 
     if (this.state.fetchedCategories) {
-      //console.log('Categories already fetched, skipping');
+      console.log('Categories already fetched, skipping');
       return;
     }
 
@@ -222,7 +224,6 @@ class CategoryList extends Component {
     //console.log('CategoryList: Fetching categories from socket');
     socket.emit("categoryList", { categoryId: 209 }, (response) => {
       if (response && response.categoryTree) {
-        //console.log('Category tree received:', response.categoryTree);
 
         // Store in global cache with timestamp
         try {
@@ -237,7 +238,6 @@ class CategoryList extends Component {
         } catch (err) {
           console.error("Error writing to cache:", err);
         }
-
         this.processCategoryTree(response.categoryTree);
       } else {
         try {

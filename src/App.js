@@ -165,7 +165,8 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
   // Check if we're in development mode
   const isDevelopment = process.env.NODE_ENV === "development";
 
-  const socket = useContext(SocketContext);
+  const {socket,socketB} = useContext(SocketContext);
+  console.log("AppContent: socket", socket);
 
   return (
     <Box
@@ -201,7 +202,7 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
             {/* Category page - Render Content in parallel */}
             <Route
               path="/Kategorie/:categoryId"
-              element={<Content socket={socket} />}
+              element={<Content socket={socket} socketB={socketB} />}
             />
             {/* Single product page */}
             <Route
@@ -210,7 +211,7 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
             />
 
             {/* Search page - Render Content in parallel */}
-            <Route path="/search" element={<Content socket={socket} />} />
+            <Route path="/search" element={<Content socket={socket} socketB={socketB} />} />
 
             {/* Profile page */}
             <Route path="/profile" element={<ProfilePageWithSocket />} />
@@ -218,17 +219,17 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
             {/* Reset password page */}
             <Route
               path="/resetPassword"
-              element={<ResetPassword socket={socket} />}
+              element={<ResetPassword socket={socket} socketB={socketB} />}
             />
 
             {/* Admin page */}
-            <Route path="/admin" element={<AdminPage socket={socket} />} />
+            <Route path="/admin" element={<AdminPage socket={socket} socketB={socketB} />} />
             
             {/* Admin Users page */}
-            <Route path="/admin/users" element={<UsersPage socket={socket} />} />
+            <Route path="/admin/users" element={<UsersPage socket={socket} socketB={socketB} />} />
             
             {/* Admin Server Logs page */}
-            <Route path="/admin/logs" element={<ServerLogsPage socket={socket} />} />
+            <Route path="/admin/logs" element={<ServerLogsPage socket={socket} socketB={socketB} />} />
 
             {/* Legal pages */}
             <Route path="/datenschutz" element={<Datenschutz />} />

@@ -11,7 +11,7 @@ const ProductDetailWithSocket = () => {
 
   return (
     <SocketContext.Consumer>
-      {socket => <ProductDetailPage seoName={seoName} navigate={navigate} location={location} socket={socket} />}
+      {({socket,socketB}) => <ProductDetailPage seoName={seoName} navigate={navigate} location={location} socket={socket} socketB={socketB} />}
     </SocketContext.Consumer>
   );
 };

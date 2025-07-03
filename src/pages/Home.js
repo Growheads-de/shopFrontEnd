@@ -151,7 +151,7 @@ const Home = () => {
   const [rootCategories, setRootCategories] = useState(() =>
     initializeCategories()
   );
-  const socket = useContext(SocketContext);
+  const {socket} = useContext(SocketContext);
 
   useEffect(() => {
     // Only fetch from socket if we don't already have categories and we're in browser

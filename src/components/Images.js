@@ -77,7 +77,7 @@ class Images extends Component {
   }
 
   loadPic = (size,bildId,index) => {
-    this.props.socket.emit('getPic', { bildId, size }, (res) => {
+    this.props.socketB.emit('getPic', { bildId, size }, (res) => {
       if(res.success){
         const url = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
 

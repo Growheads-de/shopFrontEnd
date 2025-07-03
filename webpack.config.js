@@ -314,7 +314,11 @@ export default {
     hot: true,
     port: 9500,
     open: false,
-    historyApiFallback: true,
+    historyApiFallback: {
+      index: '/index.html',
+      disableDotRule: true,
+      htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
+    },
     client: {
       logging: 'verbose',
       overlay: {

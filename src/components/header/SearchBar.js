@@ -15,7 +15,7 @@ import SocketContext from "../../contexts/SocketContext.js";
 const SearchBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const socket = React.useContext(SocketContext);
+  const {socket} = React.useContext(SocketContext);
   const searchParams = new URLSearchParams(location.search);
 
   // State management

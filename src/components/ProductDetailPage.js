@@ -110,8 +110,8 @@ class ProductDetailPage extends Component {
                 }
               } else {
                 // Not in cache, fetch from server
-                if (this.props.socket && this.props.socket.connected) {
-                  this.props.socket.emit(
+                if (this.props.socketB && this.props.socketB.connected) {
+                  this.props.socketB.emit(
                     "getAttributePicture",
                     { id: cacheKey },
                     (res) => {
@@ -334,6 +334,7 @@ class ProductDetailPage extends Component {
             {product.pictureList && (
               <Images
                 socket={this.props.socket}
+                socketB={this.props.socketB}
                 pictureList={product.pictureList}
                 fullscreenOpen={this.state.imageDialogOpen}
                 onOpenFullscreen={this.handleOpenDialog}

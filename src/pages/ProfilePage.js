@@ -225,8 +225,8 @@ const ProfilePage = (props) => {
 
 // Wrap with socket context
 const ProfilePageWithSocket = (props) => {
-  const socket = useContext(SocketContext);
-  return <ProfilePage {...props} socket={socket} />;
+  const {socket,socketB} = useContext(SocketContext);
+  return <ProfilePage {...props} socket={socket} socketB={socketB} />;
 };
 
 export default ProfilePageWithSocket; 

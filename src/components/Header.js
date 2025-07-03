@@ -37,7 +37,7 @@ class Header extends Component {
 
   render() {
     // Get socket directly from context in render method
-    const socket = this.context;
+    const {socket,socketB} = this.context;
     const { isHomePage, isProfilePage } = this.props;
 
     return (
@@ -77,7 +77,7 @@ class Header extends Component {
             </Box>
           </Container>
         </Toolbar>
-        {(isHomePage || this.props.categoryId || isProfilePage) && <CategoryList categoryId={209} activeCategoryId={this.props.categoryId} socket={socket} />}
+        {(isHomePage || this.props.categoryId || isProfilePage) && <CategoryList categoryId={209} activeCategoryId={this.props.categoryId} socket={socket} socketB={socketB} />}
       </AppBar>
     );
   }
@@ -91,7 +91,7 @@ const HeaderWithContext = (props) => {
   
   return (
     <SocketContext.Consumer>
-      {socket => <Header {...props} socket={socket} isHomePage={isHomePage} isProfilePage={isProfilePage} />}
+      {({socket,socketB}) => <Header {...props} socket={socket} socketB={socketB} isHomePage={isHomePage} isProfilePage={isProfilePage} />}
     </SocketContext.Consumer>
   );
 };

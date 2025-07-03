@@ -120,7 +120,7 @@ class OrderProcessingService {
 
     // If socket is ready, process immediately
     const context = this.getContext();
-    if (context && context.connected) {
+    if (context && context.socket && context.socket.connected) {
       const { isLoggedIn: isAuthenticated } = isUserLoggedIn();
       if (isAuthenticated) {
         this.sendStripeOrder();
@@ -131,7 +131,7 @@ class OrderProcessingService {
     // Wait for socket to be ready
     this.socketHandler = () => {
       const context = this.getContext();
-      if (context && context.connected) {
+      if (context && context.socket && context.socket.connected) {
         const { isLoggedIn: isAuthenticated } = isUserLoggedIn();
         const state = this.getState();
         
@@ -189,7 +189,7 @@ class OrderProcessingService {
 
     // Emit stripe order to backend via socket.io
     const context = this.getContext();
-    context.emit("issueStripeOrder", orderData, (response) => {
+    context.socket.emit("issueStripeOrder", orderData, (response) => {
       if (response.success) {
         this.setState({
           isCompletingOrder: false,
@@ -208,8 +208,8 @@ class OrderProcessingService {
   // Process regular (non-Stripe) orders
   processRegularOrder(orderData) {
     const context = this.getContext();
-    if (context) {
-      context.emit("issueOrder", orderData, (response) => {
+    if (context && context.socket && context.socket.connected) {
+      context.socket.emit("issueOrder", orderData, (response) => {
         if (response.success) {
           // Clear the cart
           window.cart = [];
@@ -246,8 +246,8 @@ class OrderProcessingService {
   // Create Stripe payment intent
   createStripeIntent(totalAmount, loadStripeComponent) {
     const context = this.getContext();
-    if (context) {
-      context.emit(
+    if (context && context.socket && context.socket.connected) {
+      context.socket.emit(
         "createStripeIntent",
         { amount: totalAmount },
         (response) => {

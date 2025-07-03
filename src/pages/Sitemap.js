@@ -36,7 +36,8 @@ const collectAllCategories = (categoryNode, categories = [], level = 0) => {
 const Sitemap = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const socket = useContext(SocketContext);
+  const {socket} = useContext(SocketContext);
+
 
   const sitemapLinks = [
     { title: 'Startseite', url: '/' },
