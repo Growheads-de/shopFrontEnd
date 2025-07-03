@@ -50,7 +50,7 @@ const generateProductMetaTags = (product, baseUrl, config) => {
   `;
 };
 
-const generateProductJsonLd = (product, baseUrl, config) => {
+const generateProductJsonLd = (product, baseUrl, config, categoryInfo = null) => {
   const productUrl = `${baseUrl}/Artikel/${product.seoName}`;
   const imageUrl =
     product.pictureList && product.pictureList.trim()
@@ -96,6 +96,33 @@ const generateProductJsonLd = (product, baseUrl, config) => {
       },
     },
   };
+
+  // Add breadcrumb if category information is available
+  if (categoryInfo && categoryInfo.name && categoryInfo.seoName) {
+    jsonLd.breadcrumb = {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: baseUrl,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: categoryInfo.name,
+          item: `${baseUrl}/Kategorie/${categoryInfo.seoName}`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: product.name,
+          item: productUrl,
+        },
+      ],
+    };
+  }
 
   return `<script type="application/ld+json">${JSON.stringify(
     jsonLd

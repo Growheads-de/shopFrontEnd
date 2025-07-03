@@ -75,7 +75,7 @@ const AGB = require("./src/pages/AGB.js").default;
 const NotFound404 = require("./src/pages/NotFound404.js").default;
 
 // Worker function for parallel product rendering  
-const renderProductWorker = async (productSeoNames, workerId, progressCallback) => {
+const renderProductWorker = async (productSeoNames, workerId, progressCallback, categoryMap = {}) => {
   const socketUrl = "http://127.0.0.1:9303";
   const workerSocket = io(socketUrl, {
     path: "/socket.io/",
@@ -114,10 +114,13 @@ const renderProductWorker = async (productSeoNames, workerId, progressCallback) 
           ...productDetails.product,
           seoName: actualSeoName,
         }, shopConfig.baseUrl, shopConfig);
+        // Get category info from categoryMap if available
+        const categoryInfo = productDetails.product.categoryId ? categoryMap[productDetails.product.categoryId] : null;
+        
         const jsonLdScript = generateProductJsonLd({
           ...productDetails.product,
           seoName: actualSeoName,
-        }, shopConfig.baseUrl, shopConfig);
+        }, shopConfig.baseUrl, shopConfig, categoryInfo);
         const combinedMetaTags = metaTags + "\n" + jsonLdScript;
 
         const success = renderPage(
@@ -183,7 +186,7 @@ const renderProductWorker = async (productSeoNames, workerId, progressCallback) 
 };
 
 // Function to render products in parallel
-const renderProductsInParallel = async (allProductsArray, maxWorkers, totalProducts) => {
+const renderProductsInParallel = async (allProductsArray, maxWorkers, totalProducts, categoryMap = {}) => {
   // Shared progress tracking
   let completedProducts = 0;
   let totalSuccessCount = 0;
@@ -245,7 +248,7 @@ const renderProductsInParallel = async (allProductsArray, maxWorkers, totalProdu
         
         // Update progress bar with worker stats
         updateProgressBar(completedProducts, totalProducts, lastProductName);
-      });
+      }, categoryMap);
       
       workerPromises.push(promise);
     }
@@ -534,6 +537,15 @@ const renderApp = async (categoryData, socket) => {
       const numCPUs = os.cpus().length;
       const maxWorkers = Math.min(numCPUs, totalProducts, 8); // Cap at 8 workers to avoid overwhelming the server
       
+      // Create category map for breadcrumbs
+      const categoryMap = {};
+      allCategories.forEach(category => {
+        categoryMap[category.id] = {
+          name: category.name,
+          seoName: category.seoName
+        };
+      });
+      
       console.log(
         `\n📦 Rendering ${totalProducts} individual product pages using ${maxWorkers} parallel workers...`
       );
@@ -541,7 +553,8 @@ const renderApp = async (categoryData, socket) => {
       const productPagesRendered = await renderProductsInParallel(
         Array.from(allProducts),
         maxWorkers,
-        totalProducts
+        totalProducts,
+        categoryMap
       );
 
       console.log(
