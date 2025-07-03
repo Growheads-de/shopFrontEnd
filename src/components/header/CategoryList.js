@@ -3,8 +3,11 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import Collapse from "@mui/material/Collapse";
 import { Link } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 
 class CategoryList extends Component {
   findCategoryById = (category, targetId) => {
@@ -54,6 +57,7 @@ class CategoryList extends Component {
       level3Categories: [], // Children of active level 2 category
       activePath: [], // Array of active category objects for each level
       fetchedCategories: false,
+      mobileMenuOpen: false, // State for mobile collapsible menu
     };
 
     // Try to get cached data for SSR
@@ -313,18 +317,32 @@ class CategoryList extends Component {
     });
   };
 
+  handleMobileMenuToggle = () => {
+    this.setState(prevState => ({
+      mobileMenuOpen: !prevState.mobileMenuOpen
+    }));
+  };
+
+  handleMobileCategoryClick = () => {
+    // Close the mobile menu when a category is selected
+    this.setState({
+      mobileMenuOpen: false
+    });
+  };
+
   render() {
-    const { level1Categories, level2Categories, level3Categories, activePath } =
+    const { level1Categories, activePath, mobileMenuOpen } =
       this.state;
 
-    const renderCategoryRow = (categories, level = 1) => (
+    const renderCategoryRow = (categories, level = 1, isMobile = false) => (
       <Box
         sx={{
           display: "flex",
           justifyContent: "flex-start",
           alignItems: "center",
-          flexWrap: "nowrap",
-          overflowX: "auto",
+          flexWrap: isMobile ? "wrap" : "nowrap",
+          overflowX: isMobile ? "visible" : "auto",
+          flexDirection: isMobile ? "column" : "row",
           py: 0.5, // Add vertical padding to prevent border clipping
           "&::-webkit-scrollbar": {
             display: "none",
@@ -340,17 +358,19 @@ class CategoryList extends Component {
             color="inherit"
             size="small"
             aria-label="Zur Startseite"
+            onClick={isMobile ? this.handleMobileCategoryClick : undefined}
             sx={{
               fontSize: "0.75rem",
               fontWeight: "normal",
               textTransform: "none",
               whiteSpace: "nowrap",
               opacity: 0.9,
-              mx: 0.5,
+              mx: isMobile ? 0 : 0.5,
               my: 0.25, // Add consistent vertical margin to account for borders
-              minWidth: "auto",
+              minWidth: isMobile ? "100%" : "auto",
               border: "2px solid transparent", // Always have border space
               borderRadius: 1, // Always have border radius
+              justifyContent: isMobile ? "flex-start" : "center",
               ...(this.props.activeCategoryId === null && {
                 boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
                 transform: "translateY(-2px)",
@@ -367,7 +387,8 @@ class CategoryList extends Component {
               },
             }}
           >
-            <HomeIcon sx={{ fontSize: "1rem" }} />
+            <HomeIcon sx={{ fontSize: "1rem", mr: isMobile ? 1 : 0 }} />
+            {isMobile && "Startseite"}
           </Button>
         )}
         {this.state.fetchedCategories && categories.length > 0 ? (
@@ -385,16 +406,19 @@ class CategoryList extends Component {
                   to={`/Kategorie/${category.seoName}`}
                   color="inherit"
                   size="small"
+                  onClick={isMobile ? this.handleMobileCategoryClick : undefined}
                   sx={{
                     fontSize: "0.75rem",
                     fontWeight: "normal",
                     textTransform: "none",
                     whiteSpace: "nowrap",
                     opacity: 0.9,
-                    mx: 0.5,
+                    mx: isMobile ? 0 : 0.5,
                     my: 0.25, // Add consistent vertical margin to account for borders
+                    minWidth: isMobile ? "100%" : "auto",
                     border: "2px solid transparent", // Always have border space
                     borderRadius: 1, // Always have border radius
+                    justifyContent: isMobile ? "flex-start" : "center",
                     ...(isActiveAtThisLevel && {
                       boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
                       transform: "translateY(-2px)",
@@ -417,7 +441,7 @@ class CategoryList extends Component {
             })}
           </>
         ) : (
-          level === 1 && (
+          level === 1 && !isMobile && (
             <Typography
               variant="caption"
               color="inherit"
@@ -447,30 +471,84 @@ class CategoryList extends Component {
 
     return (
       <Profiler id="CategoryList" onRender={onRenderCallback}>
+        {/* Desktop Menu - Hidden on xs, shown on sm and up */}
         <Box
           sx={{
             width: "100%",
             bgcolor: "primary.dark",
-            display: { xs: "none", md: "block" },
+            display: { xs: "none", sm: "block" },
           }}
         >
           <Container maxWidth="lg" sx={{ px: 2 }}>
             {/* Level 1 Categories Row - Always shown */}
-            {renderCategoryRow(level1Categories, 1)}
+            {renderCategoryRow(level1Categories, 1, false)}
 
             {/* Level 2 Categories Row - Show when level 1 is selected */}
+            {/* DISABLED FOR NOW
             {level2Categories.length > 0 && (
               <Box sx={{ mt: 0.5 }}>
-                {renderCategoryRow(level2Categories, 2)}
+                {renderCategoryRow(level2Categories, 2, false)}
               </Box>
             )}
 
             {/* Level 3 Categories Row - Show when level 2 is selected */}
+            {/* DISABLED FOR NOW
             {level3Categories.length > 0 && (
               <Box sx={{ mt: 0.5 }}>
-                {renderCategoryRow(level3Categories, 3)}
+                {renderCategoryRow(level3Categories, 3, false)}
               </Box>
             )}
+            */}
+          </Container>
+        </Box>
+
+        {/* Mobile Menu - Shown only on xs screens */}
+        <Box
+          sx={{
+            width: "100%",
+            bgcolor: "primary.dark",
+            display: { xs: "block", sm: "none" },
+          }}
+        >
+          <Container maxWidth="lg" sx={{ px: 2 }}>
+            {/* Toggle Button */}
+            <Box 
+              sx={{ 
+                display: "flex", 
+                justifyContent: "space-between", 
+                alignItems: "center", 
+                py: 1,
+                cursor: "pointer",
+                "&:hover": {
+                  bgcolor: "rgba(255,255,255,0.1)"
+                }
+              }}
+              onClick={this.handleMobileMenuToggle}
+              role="button"
+              tabIndex={0}
+              aria-label={mobileMenuOpen ? "Kategorien schließen" : "Kategorien öffnen"}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  this.handleMobileMenuToggle();
+                }
+              }}
+            >
+              <Typography variant="subtitle2" color="inherit" sx={{ fontWeight: "bold" }}>
+                Kategorien
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+              </Box>
+            </Box>
+
+            {/* Collapsible Menu Content */}
+            <Collapse in={mobileMenuOpen}>
+              <Box sx={{ pb: 2 }}>
+                {/* Level 1 Categories - Only level shown in mobile menu */}
+                {renderCategoryRow(level1Categories, 1, true)}
+              </Box>
+            </Collapse>
           </Container>
         </Box>
       </Profiler>

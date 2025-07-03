@@ -543,7 +543,7 @@ export class LoginComponent extends Component {
               onClick={this.handleOpen}
               sx={{ my: 1, mx: 1.5 }}
             >
-              Anmelden
+              Login
             </Button>
           )
         )}
