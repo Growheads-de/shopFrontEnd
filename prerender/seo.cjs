@@ -263,7 +263,7 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
     potentialAction: {
       "@type": "SearchAction",
       target: `${canonicalUrl}/search?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
+      query: "required name=search_term_string"
     },
     mainEntity: {
       "@type": "WebPage",
