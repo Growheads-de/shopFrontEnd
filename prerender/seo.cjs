@@ -738,7 +738,7 @@ Generated: ${currentDate}
 Base URL: ${baseUrl}
 
 ## About ${config.brandName}
-SeedHeads is a German online shop specializing in high-quality seeds, plants, and gardening supplies. We offer a comprehensive range of products for indoor and outdoor growing, including seeds, cuttings, grow equipment, lighting, ventilation, fertilizers, and accessories.
+GrowHeads.de is a German online shop and local store in Dresden specializing in high-quality seeds, plants, and gardening supplies for cannabis cultivation. 
 
 ## Site Structure
 
