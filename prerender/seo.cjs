@@ -833,9 +833,8 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
         return;
       }
 
-      // Generate GTIN/EAN if available (using articleNumber as fallback)
-      const rawGtin = product.gtin || "";
-      const gtin = escapeXml(rawGtin.toString().trim());
+      // Generate GTIN/EAN if available
+      const gtin = product.gtin ? escapeXml(product.gtin.toString().trim()) : null;
 
       // Generate product ID (using articleNumber or seoName)
       const rawProductId = product.articleNumber || product.seoName || `product_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
