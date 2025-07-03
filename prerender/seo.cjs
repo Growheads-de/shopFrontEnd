@@ -259,6 +259,130 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
     ],
   };
 
+  // Organization/LocalBusiness Schema for rich results
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": config.brandName,
+    "alternateName": config.siteName,
+    "description": config.descriptions.long,
+    "url": baseUrl,
+    "logo": `${baseUrl}${config.images.logo}`,
+    "image": `${baseUrl}${config.images.logo}`,
+    "telephone": "+49 351 79773070",
+    "email": "info@growheads.de",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Alaunstraße 47",
+      "addressLocality": "Dresden",
+      "postalCode": "01099",
+      "addressCountry": "DE",
+      "addressRegion": "Sachsen"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "51.0645",
+      "longitude": "13.7539"
+    },
+    "openingHours": [
+      "Mo-Fr 10:00-18:00",
+      "Sa 10:00-16:00"
+    ],
+    "paymentAccepted": "Cash, Credit Card, PayPal, Bank Transfer",
+    "currenciesAccepted": "EUR",
+    "priceRange": "€€",
+    "serviceArea": {
+      "@type": "Country",
+      "name": "Germany"
+    },
+    "areaServed": "DE",
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Growshop Produkte",
+      "itemListElement": categories.filter(cat => cat.seoName).slice(0, 10).map(category => ({
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": category.name,
+          "url": `${baseUrl}/Kategorie/${category.seoName}`
+        }
+      }))
+    },
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "telephone": "+49 351 79773070",
+        "contactType": "customer service",
+        "availableLanguage": "German",
+        "hoursAvailable": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "10:00",
+          "closes": "18:00"
+        }
+      },
+      {
+        "@type": "ContactPoint",
+        "email": "info@growheads.de",
+        "contactType": "customer service",
+        "availableLanguage": "German"
+      }
+    ],
+    "sameAs": [
+      // Add social media URLs when available
+      // "https://www.facebook.com/growheads",
+      // "https://www.instagram.com/growheads"
+         ]
+   };
+
+  // FAQPage Schema for common questions
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Welche Zahlungsmethoden akzeptiert GrowHeads?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Wir akzeptieren Kreditkarten, PayPal, Banküberweisung, Nachnahme und Barzahlung bei Abholung in unserem Laden in Dresden."
+        }
+      },
+      {
+        "@type": "Question", 
+        "name": "Liefert GrowHeads deutschlandweit?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ja, wir liefern deutschlandweit. Zusätzlich haben wir einen Laden in Dresden (Alaunstraße 47) für lokale Kunden."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Welche Produkte bietet GrowHeads?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Wir bieten ein komplettes Sortiment für den Indoor-Anbau: Beleuchtung, Belüftung, Dünger, Töpfe, Zelte, Messgeräte und vieles mehr für professionelle Zuchtanlagen."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Hat GrowHeads einen physischen Laden?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ja, unser Laden befindet sich in Dresden, Alaunstraße 47. Öffnungszeiten: Mo-Fr 10-18 Uhr, Sa 10-16 Uhr. Sie können auch online bestellen."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Bietet GrowHeads Beratung zum Indoor-Anbau?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ja, unser erfahrenes Team berät Sie gerne zu allen Aspekten des Indoor-Anbaus. Kontaktieren Sie uns telefonisch unter +49 351 79773070 oder besuchen Sie unseren Laden."
+        }
+      }
+    ]
+  };
+
   // Generate ItemList for all categories (more appropriate for homepage)
   const categoriesListJsonLd = {
     "@context": "https://schema.org",
@@ -279,13 +403,15 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
       }))
   };
 
-  // Return both JSON-LD scripts
+  // Return all JSON-LD scripts
   const websiteScript = `<script type="application/ld+json">${JSON.stringify(websiteJsonLd)}</script>`;
+  const organizationScript = `<script type="application/ld+json">${JSON.stringify(organizationJsonLd)}</script>`;
+  const faqScript = `<script type="application/ld+json">${JSON.stringify(faqJsonLd)}</script>`;
   const categoriesScript = categories.length > 0 
     ? `<script type="application/ld+json">${JSON.stringify(categoriesListJsonLd)}</script>`
     : '';
 
-  return websiteScript + (categoriesScript ? '\n' + categoriesScript : '');
+  return websiteScript + '\n' + organizationScript + '\n' + faqScript + (categoriesScript ? '\n' + categoriesScript : '');
 };
 
 const generateSitemapJsonLd = (allCategories = [], baseUrl, config) => {
