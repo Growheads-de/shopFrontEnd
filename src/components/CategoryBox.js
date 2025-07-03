@@ -22,7 +22,7 @@ const CategoryBox = ({
   const [imageUrl, setImageUrl] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const {socket} = useContext(SocketContext);
+  const context = useContext(SocketContext);
 
   useEffect(() => {
     let objectUrl = null;
@@ -61,10 +61,10 @@ const CategoryBox = ({
     }
 
     // If socket is available and connected, fetch the image
-    if (socket && socket.connected && id && !isLoading) {
+    if (context && context.socket && context.socket.connected && id && !isLoading) {
       setIsLoading(true);
       
-      socket.emit('getCategoryPic', { categoryId: id }, (response) => {
+      context.socket.emit('getCategoryPic', { categoryId: id }, (response) => {
         setIsLoading(false);
         
         if (response.success) {
@@ -119,7 +119,7 @@ const CategoryBox = ({
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [socket, socket?.connected, id, isLoading]);
+  }, [context, context?.socket?.connected, id, isLoading]);
 
   return (
     <Paper

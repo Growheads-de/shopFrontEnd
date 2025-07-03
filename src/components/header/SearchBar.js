@@ -15,7 +15,7 @@ import SocketContext from "../../contexts/SocketContext.js";
 const SearchBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const {socket} = React.useContext(SocketContext);
+  const context = React.useContext(SocketContext);
   const searchParams = new URLSearchParams(location.search);
 
   // State management
@@ -58,7 +58,7 @@ const SearchBar = () => {
   // @note Autocomplete function using getSearchProducts Socket.io API - returns objects with name and seoName
   const fetchAutocomplete = React.useCallback(
     (query) => {
-      if (!socket || !query || query.length < 2) {
+      if (!context || !context.socket || !context.socket.connected || !query || query.length < 2) {
         setSuggestions([]);
         setShowSuggestions(false);
         setLoadingSuggestions(false);
@@ -67,7 +67,7 @@ const SearchBar = () => {
 
       setLoadingSuggestions(true);
 
-      socket.emit(
+      context.socket.emit(
         "getSearchProducts",
         {
           query: query.trim(),
@@ -90,7 +90,7 @@ const SearchBar = () => {
         }
       );
     },
-    [socket]
+    [context]
   );
 
   const handleSearchChange = (e) => {

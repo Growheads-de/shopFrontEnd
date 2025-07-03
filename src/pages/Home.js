@@ -151,16 +151,16 @@ const Home = () => {
   const [rootCategories, setRootCategories] = useState(() =>
     initializeCategories()
   );
-  const {socket} = useContext(SocketContext);
+  const context = useContext(SocketContext);
 
   useEffect(() => {
     // Only fetch from socket if we don't already have categories and we're in browser
     if (
       rootCategories.length === 0 &&
-      socket &&
+      context && context.socket && context.socket.connected &&
       typeof window !== "undefined"
     ) {
-      socket.emit("categoryList", { categoryId: 209 }, (response) => {
+      context.socket.emit("categoryList", { categoryId: 209 }, (response) => {
         if (response && response.categoryTree) {
           // Store in cache
           try {
@@ -176,7 +176,7 @@ const Home = () => {
         }
       });
     }
-  }, [socket, rootCategories.length]);
+  }, [context, context?.socket?.connected, rootCategories.length]);
 
   // Filter categories (excluding specific IDs)
   const filteredCategories = rootCategories.filter(
