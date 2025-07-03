@@ -244,8 +244,6 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
       .map((category, index) => ({
         "@type": "ListItem",
         "position": index + 1,
-        "name": category.name,
-        "url": `${baseUrl}/Kategorie/${category.seoName}`,
         "item": {
           "@type": "Thing",
           "name": category.name,
