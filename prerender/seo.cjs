@@ -232,27 +232,35 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
     ],
   };
 
-  // Generate BreadcrumbList for all categories
-  const breadcrumbJsonLd = {
+  // Generate ItemList for all categories (more appropriate for homepage)
+  const categoriesListJsonLd = {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+    "@type": "ItemList",
+    "name": "Produktkategorien",
+    "description": "Alle verfügbaren Produktkategorien in unserem Online-Shop",
+    "numberOfItems": categories.filter(category => category.seoName).length,
     "itemListElement": categories
       .filter(category => category.seoName) // Only include categories with seoName
       .map((category, index) => ({
         "@type": "ListItem",
         "position": index + 1,
         "name": category.name,
-        "item": `${baseUrl}/Kategorie/${category.seoName}`
+        "url": `${baseUrl}/Kategorie/${category.seoName}`,
+        "item": {
+          "@type": "Thing",
+          "name": category.name,
+          "url": `${baseUrl}/Kategorie/${category.seoName}`
+        }
       }))
   };
 
   // Return both JSON-LD scripts
   const websiteScript = `<script type="application/ld+json">${JSON.stringify(websiteJsonLd)}</script>`;
-  const breadcrumbScript = categories.length > 0 
-    ? `<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}</script>`
+  const categoriesScript = categories.length > 0 
+    ? `<script type="application/ld+json">${JSON.stringify(categoriesListJsonLd)}</script>`
     : '';
 
-  return websiteScript + (breadcrumbScript ? '\n' + breadcrumbScript : '');
+  return websiteScript + (categoriesScript ? '\n' + categoriesScript : '');
 };
 
 const generateSitemapJsonLd = (allCategories = [], baseUrl, config) => {
