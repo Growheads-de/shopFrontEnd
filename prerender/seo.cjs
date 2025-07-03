@@ -211,6 +211,9 @@ const generateHomepageMetaTags = (baseUrl, config) => {
   const description = config.descriptions.long;
   const keywords = config.keywords;
   const imageUrl = `${baseUrl}${config.images.logo}`;
+  
+  // Ensure URLs are properly formatted
+  const canonicalUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 
   return `
     <!-- SEO Meta Tags -->
@@ -221,7 +224,7 @@ const generateHomepageMetaTags = (baseUrl, config) => {
     <meta property="og:title" content="${config.descriptions.short}">
     <meta property="og:description" content="${description}">
     <meta property="og:image" content="${imageUrl}">
-    <meta property="og:url" content="${baseUrl}">
+    <meta property="og:url" content="${canonicalUrl}">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="${config.siteName}">
     
@@ -233,39 +236,39 @@ const generateHomepageMetaTags = (baseUrl, config) => {
     
     <!-- Additional Meta Tags -->
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="${baseUrl}">
+    <link rel="canonical" href="${canonicalUrl}">
   `;
 };
 
 const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
+  // Ensure URLs are properly formatted
+  const canonicalUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const logoUrl = `${canonicalUrl}${config.images.logo}`;
 
   const websiteJsonLd = {
     "@context": "https://schema.org/",
     "@type": "WebSite",
     name: config.brandName,
-    url: baseUrl,
+    url: canonicalUrl,
     description: config.descriptions.long,
     publisher: {
       "@type": "Organization",
       name: config.brandName,
-      url: baseUrl,
+      url: canonicalUrl,
       logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}${config.images.logo}`,
+        url: logoUrl,
       },
     },
     potentialAction: {
       "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${baseUrl}/search?q={search_term_string}`,
-      },
+      target: `${canonicalUrl}/search?q={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
     mainEntity: {
       "@type": "WebPage",
       name: "Sitemap",
-      url: `${baseUrl}/sitemap`,
+      url: `${canonicalUrl}/sitemap`,
       description: "Vollständige Sitemap mit allen Kategorien und Seiten",
     },
     sameAs: [
@@ -280,9 +283,9 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
     "name": config.brandName,
     "alternateName": config.siteName,
     "description": config.descriptions.long,
-    "url": baseUrl,
-    "logo": `${baseUrl}${config.images.logo}`,
-    "image": `${baseUrl}${config.images.logo}`,
+    "url": canonicalUrl,
+    "logo": logoUrl,
+    "image": logoUrl,
     "telephone": "015208491860",
     "email": "service@growheads.de",
     "address": {
@@ -299,17 +302,16 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
       "longitude": "13.727215"
     },
     "openingHours": [
-      "Mo-Fr 10:00-20:00",
-      "Sa 11:00-19:00"
+      "Mo-Fr 10:00:00-20:00:00",
+      "Sa 11:00:00-19:00:00"
     ],
     "paymentAccepted": "Cash, Credit Card, PayPal, Bank Transfer",
     "currenciesAccepted": "EUR",
     "priceRange": "€€",
-    "serviceArea": {
+    "areaServed": {
       "@type": "Country",
       "name": "Germany"
     },
-    "areaServed": "DE",
     "contactPoint": [
       {
         "@type": "ContactPoint",
@@ -319,8 +321,8 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
         "hoursAvailable": {
           "@type": "OpeningHoursSpecification",
           "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-          "opens": "10:00",
-          "closes": "20:00"
+          "opens": "10:00:00",
+          "closes": "20:00:00"
         }
       },
       {
@@ -400,7 +402,7 @@ const generateHomepageJsonLd = (baseUrl, config, categories = []) => {
         "item": {
           "@type": "Thing",
           "name": category.name,
-          "url": `${baseUrl}/Kategorie/${category.seoName}`
+          "url": `${canonicalUrl}/Kategorie/${category.seoName}`
         }
       }))
   };
@@ -532,7 +534,10 @@ const generateXmlSitemap = (allCategories = [], allProducts = [], baseUrl) => {
 const generateKonfiguratorMetaTags = (baseUrl, config) => {
   const description = "Unser interaktiver Growbox Konfigurator hilft dir dabei, das perfekte Indoor Growing Setup zusammenzustellen. Wähle aus verschiedenen Growbox-Größen, Beleuchtung, Belüftung und Extras. Bundle-Rabatte bis 36%!";
   const keywords = "Growbox Konfigurator, Indoor Growing, Growzelt, Beleuchtung, Belüftung, Growbox Setup, Indoor Garden";
-  const imageUrl = `${baseUrl}${config.images.placeholder}`; // Placeholder image
+  
+  // Ensure URLs are properly formatted
+  const canonicalUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const imageUrl = `${canonicalUrl}${config.images.placeholder}`; // Placeholder image
 
   return `
     <!-- SEO Meta Tags -->
@@ -543,7 +548,7 @@ const generateKonfiguratorMetaTags = (baseUrl, config) => {
     <meta property="og:title" content="Growbox Konfigurator - Stelle dein perfektes Indoor Grow Setup zusammen">
     <meta property="og:description" content="${description}">
     <meta property="og:image" content="${imageUrl}">
-    <meta property="og:url" content="${baseUrl}/Konfigurator">
+    <meta property="og:url" content="${canonicalUrl}/Konfigurator">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="${config.siteName}">
     
@@ -555,15 +560,17 @@ const generateKonfiguratorMetaTags = (baseUrl, config) => {
     
     <!-- Additional Meta Tags -->
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="${baseUrl}/Konfigurator">
+    <link rel="canonical" href="${canonicalUrl}/Konfigurator">
   `;
 };
 
 const generateRobotsTxt = (baseUrl) => {
+  // Ensure URLs are properly formatted
+  const canonicalUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 
   const robotsTxt = `User-agent: *
 Allow: /
-Sitemap: ${baseUrl}/sitemap.xml
+Sitemap: ${canonicalUrl}/sitemap.xml
 Crawl-delay: 0
 `;
 
