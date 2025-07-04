@@ -361,7 +361,7 @@ class CategoryList extends Component {
             onClick={isMobile ? this.handleMobileCategoryClick : undefined}
             sx={{
               fontSize: "0.75rem",
-              fontWeight: "normal",
+              fontWeight: "bold",
               textTransform: "none",
               whiteSpace: "nowrap",
               opacity: 0.9,
@@ -372,12 +372,14 @@ class CategoryList extends Component {
               justifyContent: isMobile ? "flex-start" : "center",
               transition: "all 0.2s ease",
               ...(this.props.activeCategoryId === null && {
-                bgcolor: "rgba(255,255,255,0.3)",
+                bgcolor: "#fff",
+                color: "#2e7d32",
                 opacity: 1,
               }),
               "&:hover": {
                 opacity: 1,
-                bgcolor: "rgba(255,255,255,0.15)",
+                bgcolor: "#fff",
+                color: "#2e7d32",
               },
             }}
           >
@@ -403,7 +405,7 @@ class CategoryList extends Component {
                   onClick={isMobile ? this.handleMobileCategoryClick : undefined}
                   sx={{
                     fontSize: "0.75rem",
-                    fontWeight: "normal",
+                    fontWeight: "bold",
                     textTransform: "none",
                     whiteSpace: "nowrap",
                     opacity: 0.9,
@@ -414,12 +416,14 @@ class CategoryList extends Component {
                     justifyContent: isMobile ? "flex-start" : "center",
                     transition: "all 0.2s ease",
                     ...(isActiveAtThisLevel && {
-                      bgcolor: "rgba(255,255,255,0.3)",
+                      bgcolor: "#fff",
+                      color: "#2e7d32",
                       opacity: 1,
                     }),
                     "&:hover": {
                       opacity: 1,
-                      bgcolor: "rgba(255,255,255,0.15)",
+                      bgcolor: "#fff",
+                      color: "#2e7d32",
                     },
                   }}
                 >
