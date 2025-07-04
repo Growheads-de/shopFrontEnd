@@ -235,8 +235,8 @@ class SettingsTab extends Component {
   
   render() {
     return (
-      <Box sx={{ p: 3 }}>
-        <Paper sx={{ p: 3}}>
+      <Box sx={{ p: { xs: 1, sm: 3 } }}>
+        <Paper sx={{ p: { xs: 2, sm: 3 } }}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
             Passwort ändern
           </Typography>
@@ -289,7 +289,7 @@ class SettingsTab extends Component {
         
         <Divider sx={{ my: 4 }} />
         
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3 } }}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
             E-Mail-Adresse ändern
           </Typography>
@@ -332,7 +332,7 @@ class SettingsTab extends Component {
         
         <Divider sx={{ my: 4 }} />
         
-        <Paper sx={{ p: 3 }}>
+        <Paper sx={{ p: { xs: 2, sm: 3 } }}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
             API-Schlüssel
           </Typography>

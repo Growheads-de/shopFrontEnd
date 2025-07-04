@@ -142,7 +142,7 @@ class ButtonGroup extends Component {
           onClose={this.toggleCart}
           disableScrollLock={true}
         >
-          <Box sx={{ width: 420, p: 2 }}>
+          <Box sx={{ width: { xs: '100vw', sm: 420 }, p: { xs: 1, sm: 2 } }}>
             <Box 
               sx={{ 
                 display: 'flex', 

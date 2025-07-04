@@ -167,11 +167,16 @@ const ProfilePage = (props) => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Box sx={{ bgcolor: '#2e7d32', p: 3, color: 'white' }}>
+    <Container maxWidth="md" sx={{ py: { xs: 0, sm: 4 }, px: { xs: 0, sm: 3 } }}>
+      <Paper elevation={{ xs: 0, sm: 2 }} sx={{ borderRadius: { xs: 0, sm: 2 }, overflow: 'hidden' }}>
+        <Box sx={{ bgcolor: '#2e7d32', p: { xs: 2, sm: 3 }, color: 'white' }}>
           <Typography variant="h5" fontWeight="bold">
-            Mein Profil
+            {window.innerWidth < 600 ? 
+              (tabValue === 0 ? 'Bestellabschluss' : 
+               tabValue === 1 ? 'Bestellungen' : 
+               tabValue === 2 ? 'Einstellungen' : 'Mein Profil') 
+              : 'Mein Profil'
+            }
           </Typography>
           {user && (
             <Typography variant="body1" sx={{ mt: 1 }}>
@@ -185,7 +190,11 @@ const ProfilePage = (props) => {
             value={tabValue}
             onChange={handleTabChange}
             variant="fullWidth"
-            sx={{ borderBottom: 1, borderColor: 'divider' }}
+            sx={{ 
+              borderBottom: 1, 
+              borderColor: 'divider',
+              display: { xs: 'none', sm: 'flex' }
+            }}
             TabIndicatorProps={{
               style: { backgroundColor: '#2e7d32' }
             }}

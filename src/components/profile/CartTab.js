@@ -409,7 +409,7 @@ class CartTab extends Component {
     const displayError = completionError || preSubmitError;
 
     return (
-      <Box sx={{ p: 3 }}>
+              <Box sx={{ p: { xs: 1, sm: 3 } }}>
         {/* Payment Confirmation */}
         {showPaymentConfirmation && (
           <PaymentConfirmationDialog

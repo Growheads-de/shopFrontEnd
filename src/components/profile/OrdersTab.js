@@ -139,7 +139,7 @@ const OrdersTab = ({ orderIdFromHash }) => {
 
   if (loading) {
     return (
-      <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
+              <Box sx={{ p: { xs: 1, sm: 3 }, display: "flex", justifyContent: "center" }}>
         <CircularProgress />
       </Box>
     );
@@ -147,14 +147,14 @@ const OrdersTab = ({ orderIdFromHash }) => {
 
   if (error) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: { xs: 1, sm: 3 } }}>
         <Alert severity="error">{error}</Alert>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+            <Box sx={{ p: { xs: 1, sm: 3 } }}>
       {orders.length > 0 ? (
         <TableContainer component={Paper}>
           <Table>
