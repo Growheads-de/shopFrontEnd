@@ -366,24 +366,18 @@ class CategoryList extends Component {
               whiteSpace: "nowrap",
               opacity: 0.9,
               mx: isMobile ? 0 : 0.5,
-              my: 0.25, // Add consistent vertical margin to account for borders
+              my: 0.25,
               minWidth: isMobile ? "100%" : "auto",
-              border: "2px solid transparent", // Always have border space
-              borderRadius: 1, // Always have border radius
+              borderRadius: 1,
               justifyContent: isMobile ? "flex-start" : "center",
+              transition: "all 0.2s ease",
               ...(this.props.activeCategoryId === null && {
-                boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-                transform: "translateY(-2px)",
-                bgcolor: "rgba(255,255,255,0.25)",
-                borderColor: "rgba(255,255,255,0.6)", // Change border color instead of adding border
-                fontWeight: "bold",
+                bgcolor: "rgba(255,255,255,0.3)",
                 opacity: 1,
               }),
               "&:hover": {
                 opacity: 1,
                 bgcolor: "rgba(255,255,255,0.15)",
-                transform: "translateY(-1px)",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
               },
             }}
           >
@@ -414,24 +408,18 @@ class CategoryList extends Component {
                     whiteSpace: "nowrap",
                     opacity: 0.9,
                     mx: isMobile ? 0 : 0.5,
-                    my: 0.25, // Add consistent vertical margin to account for borders
+                    my: 0.25,
                     minWidth: isMobile ? "100%" : "auto",
-                    border: "2px solid transparent", // Always have border space
-                    borderRadius: 1, // Always have border radius
+                    borderRadius: 1,
                     justifyContent: isMobile ? "flex-start" : "center",
+                    transition: "all 0.2s ease",
                     ...(isActiveAtThisLevel && {
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-                      transform: "translateY(-2px)",
-                      bgcolor: "rgba(255,255,255,0.25)",
-                      borderColor: "rgba(255,255,255,0.6)", // Change border color instead of adding border
-                      fontWeight: "bold",
+                      bgcolor: "rgba(255,255,255,0.3)",
                       opacity: 1,
                     }),
                     "&:hover": {
                       opacity: 1,
                       bgcolor: "rgba(255,255,255,0.15)",
-                      transform: "translateY(-1px)",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
                     },
                   }}
                 >
