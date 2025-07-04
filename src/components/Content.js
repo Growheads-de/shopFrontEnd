@@ -441,7 +441,7 @@ class Content extends Component {
     
 
     return (
-      <Container maxWidth="xl" sx={{ py: 2, flexGrow: 1, display: 'grid', gridTemplateRows: '1fr' }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 0, sm: 2 }, px: { xs: 0, sm: 3 }, flexGrow: 1, display: 'grid', gridTemplateRows: '1fr' }}>
 
         {showCategoryBoxes ? (
           // Show category boxes layout when no products but have child categories
@@ -491,30 +491,20 @@ class Content extends Component {
                         </Box>
                         
                         {/* Subcategories Grid */}
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <CategoryBoxGrid 
-                            categories={this.state.childCategories}
-                            showTitle={false}
-                            spacing={3}
-                          />
+                        <Box sx={{ flexGrow: 1 }}>
+                          <CategoryBoxGrid categories={this.state.childCategories} />
                         </Box>
                       </Box>
                     );
                   } else {
-                    // Just show subcategories without parent
-                    return (
-                      <CategoryBoxGrid 
-                        categories={this.state.childCategories}
-                        showTitle={false}
-                        spacing={3}
-                      />
-                    );
+                    // No parent category, just show subcategories
+                    return <CategoryBoxGrid categories={this.state.childCategories} />;
                   }
                 })()}
               </Box>
             )}
 
-            {/* Show parent category navigation when in 2nd or 3rd level but no subcategories */}
+            {/* Show standalone parent category navigation when there are only products */}
             {this.state.loaded && 
              this.props.params.categoryId && 
              !(this.state.unfilteredProducts.length > 0 && this.state.childCategories.length > 0) && (() => {
@@ -558,7 +548,7 @@ class Content extends Component {
             <Box sx={{ 
               display: 'grid', 
               gridTemplateColumns: { xs: '1fr', sm: '1fr 2fr', md: '1fr 3fr', lg: '1fr 4fr', xl: '1fr 4fr' }, 
-              gap: 3
+              gap: { xs: 0, sm: 3 }
             }}>
 
             <Stack direction="row" spacing={0} sx={{ 

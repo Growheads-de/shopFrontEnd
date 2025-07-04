@@ -123,8 +123,14 @@ class ProductList extends Component {
 
   renderPagination = (pages, page) => {
     return (
-      <Box sx={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'left' }}>
-        {((this.state.itemsPerPage==='all')||(this.props.products.length<this.state.itemsPerPage))?null:
+      <Box sx={{ 
+        height: 64, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'left',
+        width: '100%'
+      }}>
+        {(this.state.itemsPerPage==='all')?null:
           <Pagination 
             count={pages} 
             page={page} 
@@ -164,15 +170,28 @@ class ProductList extends Component {
     const products = this.state.itemsPerPage==='all'?[...filteredProducts]:filteredProducts.slice((this.state.page - 1) * this.state.itemsPerPage , this.state.page * this.state.itemsPerPage);
 
     return (
-      <Box sx={{ height: '100%' }}>
+      <Box sx={{ height: '100%', px: { xs: 0, sm: 0 } }}>
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center'
+          alignItems: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 },
+          px: { xs: 0, sm: 0 },
+          py: { xs: 1, sm: 0 },
+          bgcolor: { xs: '#e8f5e8', sm: 'transparent' },
+          mb: { xs: 0, sm: 0 }
         }}>
 
 
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: { xs: 0.5, sm: 1 }, 
+              alignItems: 'center', 
+              flexWrap: 'wrap',
+              order: { xs: 2, sm: 1 },
+              px: { xs: 1, sm: 0 }
+            }}>
               {this.props.activeAttributeFilters.map((filter,index) => (
                 <Chip 
                   size="medium"                
@@ -207,9 +226,23 @@ class ProductList extends Component {
               ))}
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: { xs: 1, sm: 2 }, 
+              alignItems: 'center',
+              order: { xs: 1, sm: 2 },
+              width: { xs: '100%', sm: 'auto' },
+              justifyContent: { xs: 'space-between', sm: 'flex-end' },
+              px: { xs: 1, sm: 0 }
+            }}>
               {/* Sort Dropdown */}
-              <FormControl variant="outlined" size="small" sx={{ minWidth: 140 }}>
+              <FormControl 
+                variant={window.innerWidth < 600 ? 'standard' : 'outlined'} 
+                size="small" 
+                sx={{ 
+                  minWidth: { xs: 120, sm: 140 }
+                }}
+              >
                 <InputLabel id="sort-by-label">Sortierung</InputLabel>
                 <Select
                   size="small"
@@ -244,7 +277,13 @@ class ProductList extends Component {
               </FormControl>
               
               {/* Per Page Dropdown */}
-              <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+              <FormControl 
+                variant={window.innerWidth < 600 ? 'standard' : 'outlined'} 
+                size="small" 
+                sx={{ 
+                  minWidth: { xs: 80, sm: 100 }
+                }}
+              >
                 <InputLabel id="products-per-page-label">pro Seite</InputLabel>
                 <Select
                   labelId="products-per-page-label"
@@ -278,16 +317,37 @@ class ProductList extends Component {
                   <MenuItem value="all">Alle</MenuItem>
                 </Select>
               </FormControl>
+              
+              {/* Product count info - mobile only */}
+              <Box sx={{ 
+                display: { xs: 'block', sm: 'none' },
+                ml: 1
+              }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                  {
+                    this.props.totalProductCount==this.props.products.length && this.props.totalProductCount>0 ?
+                    `${this.props.totalProductCount} Produkte`
+                    :
+                    `${this.props.products.length} von ${this.props.totalProductCount} Produkte`
+                  }
+                </Typography>
+              </Box>
             </Box>
         </Box>
  
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'center'
+          alignItems: 'center',
+          px: { xs: 0, sm: 0 },
+          py: { xs: 1, sm: 0 },
+          bgcolor: { xs: '#e8f5e8', sm: 'transparent' },
+          mt: { xs: 0, sm: 0 }
         }}>
-        { this.renderPagination(Math.ceil(filteredProducts.length / this.state.itemsPerPage), this.state.page) }
-        <Stack direction="row" spacing={2}>
+        <Box sx={{ px: { xs: 1, sm: 0 }, width: '100%' }}>
+          { this.renderPagination(Math.ceil(filteredProducts.length / this.state.itemsPerPage), this.state.page) }
+        </Box>
+        <Stack direction="row" spacing={2} sx={{ display: { xs: 'none', sm: 'flex' }, px: { xs: 1, sm: 0 } }}>
           <Typography variant="body2" color="text.secondary">
                 {/*this.props.dataType == 'category' && (<>Kategorie: {this.props.dataParam}</>)}*/}
                 {this.props.dataType == 'search' && (<>Suchergebnisse für: "{this.props.dataParam}"</>)}
@@ -303,14 +363,19 @@ class ProductList extends Component {
         </Stack>
         </Box>
 
-        <Grid container spacing={2}>
-          {products.map((product) => (
+        <Grid container spacing={{ xs: 0, sm: 2 }}>
+          {products.map((product, index) => (
             <Grid 
-              key={product.id} 
+              key={product.id}
               sx={{
                 display: 'flex', 
                 justifyContent: { xs: 'stretch', sm: 'center' },
-                mb: 1
+                mb: { xs: 0, sm: 1 },
+                width: { xs: '100%', sm: 'auto' },
+                borderBottom: { 
+                  xs: index < products.length - 1 ? '16px solid #e8f5e8' : 'none', 
+                  sm: 'none' 
+                }
               }}
             > 
               <Product 
@@ -338,8 +403,18 @@ class ProductList extends Component {
             </Grid>
           ))}
         </Grid>
-
-        {this.renderPagination(Math.ceil(filteredProducts.length / this.state.itemsPerPage), this.state.page)}
+        
+        {/* Bottom pagination */}
+        <Box sx={{ 
+          px: { xs: 0, sm: 0 },
+          py: { xs: 1, sm: 1 },
+          bgcolor: { xs: '#e8f5e8', sm: 'transparent' },
+          mt: { xs: 0, sm: 2 }
+        }}>
+          <Box sx={{ px: { xs: 1, sm: 0 } }}>
+            {this.renderPagination(Math.ceil(filteredProducts.length / this.state.itemsPerPage), this.state.page)}
+          </Box>
+        </Box>
       </Box>
     );
   }

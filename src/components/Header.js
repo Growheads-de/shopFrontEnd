@@ -42,8 +42,12 @@ class Header extends Component {
 
     return (
       <AppBar position="sticky" color="primary" elevation={0} sx={{ zIndex: 1100 }}>
-        <Toolbar sx={{ minHeight: 64 }}>
-          <Container maxWidth="lg" sx={{ display: 'flex', alignItems: 'center' }}>
+        <Toolbar sx={{ minHeight: 64, py: { xs: 0.5, sm: 0 } }}>
+          <Container maxWidth="lg" sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            px: { xs: 0, sm: 3 }
+          }}>
             {/* First row: Logo and ButtonGroup on xs, all items on larger screens */}
             <Box sx={{ 
               display: 'flex', 
@@ -56,23 +60,36 @@ class Header extends Component {
                 display: 'flex', 
                 alignItems: 'center', 
                 width: '100%',
-                justifyContent: { xs: 'space-between', sm: 'flex-start' }
+                justifyContent: { xs: 'space-between', sm: 'flex-start' },
+                minHeight: { xs: 52, sm: 'auto' },
+                px: { xs: 0, sm: 0 }
               }}>
                 <Logo />
                 {/* SearchBar visible on sm and up */}
                 <Box sx={{ display: { xs: 'none', sm: 'block' }, flexGrow: 1 }}>
                   <SearchBar />
                 </Box>
-                <ButtonGroupWithRouter socket={socket}/>
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: { xs: 'flex-end', sm: 'center' },
+                  transform: { xs: 'translateY(4px) translateX(9px)', sm: 'none' },
+                  ml: { xs: 0, sm: 0 }
+                }}>
+                  <ButtonGroupWithRouter socket={socket}/>
+                </Box>
               </Box>
               
-              {/* Second row: SearchBar only on xs */}
+              {/* Second row: SearchBar only on xs - make it wider */}
               <Box sx={{ 
                 display: { xs: 'block', sm: 'none' }, 
                 width: '100%',
-                mt: 1,mb: 1
+                mt: { xs: 1, sm: 0 },
+                mb: { xs: 0.5, sm: 0 },
+                px: { xs: 0, sm: 0 }
               }}>
-                <SearchBar />
+                <Box sx={{ width: '100%' }}>
+                  <SearchBar />
+                </Box>
               </Box>
             </Box>
           </Container>

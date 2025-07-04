@@ -180,18 +180,21 @@ class Product extends Component {
         
         <Card 
           sx={{ 
-            width: { xs: 'calc(100vw - 48px)', sm: '250px' },
-            minWidth: { xs: 'calc(100vw - 48px)', sm: '250px' },
+            width: { xs: '100vw', sm: '250px' },
+            minWidth: { xs: '100vw', sm: '250px' },
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
             transition: 'transform 0.3s ease, box-shadow 0.3s ease',
             position: 'relative',
             overflow: 'hidden',
-            borderRadius: '8px',
+            borderRadius: { xs: 0, sm: '8px' },
+            border: { xs: 'none', sm: 'inherit' },
+            boxShadow: { xs: 'none', sm: 'inherit' },
+            mx: { xs: 0, sm: 'auto' },
             '&:hover': {
-              transform: 'translateY(-5px)',
-              boxShadow: '0px 10px 20px rgba(0,0,0,0.1)'
+              transform: { xs: 'none', sm: 'translateY(-5px)' },
+              boxShadow: { xs: 'none', sm: '0px 10px 20px rgba(0,0,0,0.1)' }
             }
           }}
         >

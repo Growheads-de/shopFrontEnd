@@ -162,13 +162,17 @@ class ProductFilters extends Component {
     return (
       <Paper 
         id="filters-paper"
-        elevation={1} 
+        elevation={window.innerWidth < 600 ? 0 : 1} 
         sx={{ 
-          p: 2, 
-          borderRadius: 2, 
+          p: { xs: 1, sm: 2 }, 
+          borderRadius: { xs: 0, sm: 2 }, 
           bgcolor: 'background.paper',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          border: { xs: 'none', sm: 'inherit' },
+          boxShadow: { xs: 'none', sm: 'inherit' },
+          mx: { xs: 0, sm: 'auto' },
+          width: { xs: '100%', sm: 'auto' }
         }}
       >
 

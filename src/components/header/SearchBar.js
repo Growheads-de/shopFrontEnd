@@ -219,7 +219,7 @@ const SearchBar = () => {
       onSubmit={handleSearch}
       sx={{
         flexGrow: 1,
-        mx: { xs: 1, sm: 2, md: 4 },
+        mx: { xs: 0, sm: 2, md: 4 },
         position: "relative",
       }}
     >
