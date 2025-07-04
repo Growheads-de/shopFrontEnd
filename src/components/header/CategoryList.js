@@ -361,7 +361,6 @@ class CategoryList extends Component {
             onClick={isMobile ? this.handleMobileCategoryClick : undefined}
             sx={{
               fontSize: "0.75rem",
-              fontWeight: "bold",
               textTransform: "none",
               whiteSpace: "nowrap",
               opacity: 0.9,
@@ -371,20 +370,64 @@ class CategoryList extends Component {
               borderRadius: 1,
               justifyContent: isMobile ? "flex-start" : "center",
               transition: "all 0.2s ease",
+              textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+              position: "relative",
               ...(this.props.activeCategoryId === null && {
                 bgcolor: "#fff",
-                color: "#2e7d32",
+                textShadow: "none",
                 opacity: 1,
               }),
               "&:hover": {
                 opacity: 1,
                 bgcolor: "#fff",
-                color: "#2e7d32",
+                textShadow: "none",
+                "& .MuiSvgIcon-root": {
+                  color: "#2e7d32 !important",
+                },
+                "& .bold-text": {
+                  color: "#2e7d32 !important",
+                },
+                "& .thin-text": {
+                  color: "transparent !important",
+                },
               },
             }}
           >
-            <HomeIcon sx={{ fontSize: "1rem", mr: isMobile ? 1 : 0 }} />
-            {isMobile && "Startseite"}
+            <HomeIcon sx={{ 
+              fontSize: "1rem", 
+              mr: isMobile ? 1 : 0,
+              color: this.props.activeCategoryId === null ? "#2e7d32" : "inherit"
+            }} />
+            {isMobile && (
+              <Box sx={{ position: "relative", display: "inline-block" }}>
+                {/* Bold text (always rendered to set width) */}
+                <Box
+                  className="bold-text"
+                  sx={{
+                    fontWeight: "bold",
+                    color: this.props.activeCategoryId === null ? "#2e7d32" : "transparent",
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                >
+                  Startseite
+                </Box>
+                {/* Thin text (positioned on top) */}
+                <Box
+                  className="thin-text"
+                  sx={{
+                    fontWeight: "400",
+                    color: this.props.activeCategoryId === null ? "transparent" : "inherit",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    zIndex: 1,
+                  }}
+                >
+                  Startseite
+                </Box>
+              </Box>
+            )}
           </Button>
         )}
         {this.state.fetchedCategories && categories.length > 0 ? (
@@ -405,7 +448,6 @@ class CategoryList extends Component {
                   onClick={isMobile ? this.handleMobileCategoryClick : undefined}
                   sx={{
                     fontSize: "0.75rem",
-                    fontWeight: "bold",
                     textTransform: "none",
                     whiteSpace: "nowrap",
                     opacity: 0.9,
@@ -415,19 +457,54 @@ class CategoryList extends Component {
                     borderRadius: 1,
                     justifyContent: isMobile ? "flex-start" : "center",
                     transition: "all 0.2s ease",
+                    textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                    position: "relative",
                     ...(isActiveAtThisLevel && {
                       bgcolor: "#fff",
-                      color: "#2e7d32",
+                      textShadow: "none",
                       opacity: 1,
                     }),
                     "&:hover": {
                       opacity: 1,
                       bgcolor: "#fff",
-                      color: "#2e7d32",
+                      textShadow: "none",
+                      "& .bold-text": {
+                        color: "#2e7d32 !important",
+                      },
+                      "& .thin-text": {
+                        color: "transparent !important",
+                      },
                     },
                   }}
                 >
-                  {category.name}
+                  <Box sx={{ position: "relative", display: "inline-block" }}>
+                    {/* Bold text (always rendered to set width) */}
+                    <Box
+                      className="bold-text"
+                      sx={{
+                        fontWeight: "bold",
+                        color: isActiveAtThisLevel ? "#2e7d32" : "transparent",
+                        position: "relative",
+                        zIndex: 2,
+                      }}
+                    >
+                      {category.name}
+                    </Box>
+                    {/* Thin text (positioned on top) */}
+                    <Box
+                      className="thin-text"
+                      sx={{
+                        fontWeight: "400",
+                        color: isActiveAtThisLevel ? "transparent" : "inherit",
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        zIndex: 1,
+                      }}
+                    >
+                      {category.name}
+                    </Box>
+                  </Box>
                 </Button>
               );
             })}
@@ -526,7 +603,10 @@ class CategoryList extends Component {
                 }
               }}
             >
-              <Typography variant="subtitle2" color="inherit" sx={{ fontWeight: "bold" }}>
+              <Typography variant="subtitle2" color="inherit" sx={{ 
+                fontWeight: "bold",
+                textShadow: "0 1px 2px rgba(0,0,0,0.3)"
+              }}>
                 Kategorien
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center" }}>
