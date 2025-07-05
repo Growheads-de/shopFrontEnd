@@ -122,6 +122,11 @@ class ProductList extends Component {
   }
 
   renderPagination = (pages, page) => {
+    // Don't show pagination when there are zero products
+    if (this.props.products.length === 0) {
+      return null;
+    }
+    
     return (
       <Box sx={{ 
         height: 64, 
@@ -154,6 +159,57 @@ class ProductList extends Component {
         }
       </Box>
     );
+  }
+
+  // Check if filters are active
+  hasActiveFilters = () => {
+    return (
+      (this.props.activeAttributeFilters && this.props.activeAttributeFilters.length > 0) ||
+      (this.props.activeManufacturerFilters && this.props.activeManufacturerFilters.length > 0) ||
+      (this.props.activeAvailabilityFilters && this.props.activeAvailabilityFilters.length > 0)
+    );
+  }
+
+  // Render message when no products found but filters are active
+  renderNoProductsMessage = () => {
+    const hasFiltersActive = this.hasActiveFilters();
+    const hasUnfilteredProducts = this.props.totalProductCount > 0;
+    
+    if (this.props.products.length === 0 && hasUnfilteredProducts && hasFiltersActive) {
+      return (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          py: 4,
+          px: 2
+        }}>
+          <Typography variant="h6" color="text.secondary" sx={{ textAlign: 'center' }}>
+            Entferne Filter um Produkte zu sehen
+          </Typography>
+        </Box>
+      );
+    }
+    return null;
+  }
+
+  // Helper function for correct pluralization
+  getProductCountText = () => {
+    const filteredCount = this.props.products.length;
+    const totalCount = this.props.totalProductCount;
+    const isFiltered = totalCount !== filteredCount;
+    
+    if (!isFiltered) {
+      // No filters applied
+      if (filteredCount === 0) return "0 Produkte";
+      if (filteredCount === 1) return "1 Produkt";
+      return `${filteredCount} Produkte`;
+    } else {
+      // Filters applied
+      if (totalCount === 0) return "0 Produkte";
+      if (totalCount === 1) return `${filteredCount} von 1 Produkt`;
+      return `${filteredCount} von ${totalCount} Produkten`;
+    }
   }
 
   render() {
@@ -352,13 +408,8 @@ class ProductList extends Component {
                 display: { xs: 'block', sm: 'none' },
                 ml: 1
               }}>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                  {
-                    this.props.totalProductCount==this.props.products.length && this.props.totalProductCount>0 ?
-                    `${this.props.totalProductCount} Produkte`
-                    :
-                    `${this.props.products.length} von ${this.props.totalProductCount} Produkte`
-                  }
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                  {this.getProductCountText()}
                 </Typography>
               </Box>
             </Box>
@@ -381,18 +432,14 @@ class ProductList extends Component {
                 {/*this.props.dataType == 'category' && (<>Kategorie: {this.props.dataParam}</>)}*/}
                 {this.props.dataType == 'search' && (<>Suchergebnisse für: "{this.props.dataParam}"</>)}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-                {
-                  this.props.totalProductCount==this.props.products.length && this.props.totalProductCount>0 ?
-                `${this.props.totalProductCount} Produkte`
-                :
-                `${this.props.products.length} von ${this.props.totalProductCount} Produkte`
-                }
+          <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                {this.getProductCountText()}
           </Typography>
         </Stack>
         </Box>
 
         <Grid container spacing={{ xs: 0, sm: 2 }}>
+          {this.renderNoProductsMessage()}
           {products.map((product, index) => (
             <Grid 
               key={product.id}
