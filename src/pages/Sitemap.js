@@ -33,8 +33,38 @@ const collectAllCategories = (categoryNode, categories = [], level = 0) => {
   return categories;
 };
 
+// Check for cached data - handle both browser and prerender environments
+const getProductCache = () => {
+  if (typeof window !== "undefined" && window.productCache) {
+    return window.productCache;
+  }
+  if (
+    typeof global !== "undefined" &&
+    global.window &&
+    global.window.productCache
+  ) {
+    return global.window.productCache;
+  }
+  return null;
+};
+
+// Initialize categories from cache if available (for prerendering)
+const initializeCategories = () => {
+  const productCache = getProductCache();
+
+  if (productCache && productCache["categoryTree_209"]) {
+    const cached = productCache["categoryTree_209"];
+    const cacheAge = Date.now() - cached.timestamp;
+    const tenMinutes = 10 * 60 * 1000;
+    if (cacheAge < tenMinutes && cached.categoryTree) {
+      return collectAllCategories(cached.categoryTree);
+    }
+  }
+  return [];
+};
+
 const Sitemap = () => {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(() => initializeCategories());
   const [loading, setLoading] = useState(true);
   const context = useContext(SocketContext);
 
@@ -53,8 +83,14 @@ const Sitemap = () => {
 
   useEffect(() => {
     const fetchCategories = () => {
-      // Try cache first
-      if (window.productCache && window.productCache['categoryTree_209']) {
+      // If we already have categories from prerendering, we're done
+      if (categories.length > 0) {
+        setLoading(false);
+        return;
+      }
+
+      // Try cache first (for browser environment)
+      if (typeof window !== "undefined" && window.productCache && window.productCache['categoryTree_209']) {
         const cached = window.productCache['categoryTree_209'];
         const cacheAge = Date.now() - cached.timestamp;
         const tenMinutes = 10 * 60 * 1000;
@@ -66,7 +102,7 @@ const Sitemap = () => {
         }
       }
 
-      // Otherwise, fetch from socket if available
+      // Otherwise, fetch from socket if available (only in browser)
       if (context && context.socket && context.socket.connected && typeof window !== "undefined") {
         context.socket.emit('categoryList', { categoryId: 209 }, (response) => {
           if (response && response.categoryTree) {
@@ -95,7 +131,7 @@ const Sitemap = () => {
     };
 
     fetchCategories();
-  }, [context]);
+  }, [context, categories.length]);
 
   const content = (
     <>
