@@ -192,6 +192,34 @@ class ProductList extends Component {
               order: { xs: 2, sm: 1 },
               px: { xs: 1, sm: 0 }
             }}>
+              {this.props.activeAvailabilityFilters && this.props.activeAvailabilityFilters.map((filter,index) => (
+                <Chip 
+                  size="medium"
+                  key={`availability-${index}`} 
+                  label={filter.name} 
+                  onClick={() => {
+                    if (filter.id === '1') {
+                      // Add "auf Lager" filter by setting the sessionStorage item to '1'
+                      sessionStorage.setItem('filter_availability', '1');
+                    } else {
+                      // Remove "Neu" or "Bald verfügbar" filters
+                      removeSessionSetting(`filter_availability_${filter.id}`);
+                    }
+                    this.props.onFilterChange();
+                  }}
+                  onDelete={() => {
+                    if (filter.id === '1') {
+                      // Add "auf Lager" filter by setting the sessionStorage item to '1'
+                      sessionStorage.setItem('filter_availability', '1');
+                    } else {
+                      // Remove "Neu" or "Bald verfügbar" filters
+                      removeSessionSetting(`filter_availability_${filter.id}`);
+                    }
+                    this.props.onFilterChange();
+                  }} 
+                  clickable
+                />
+              ))}
               {this.props.activeAttributeFilters.map((filter,index) => (
                 <Chip 
                   size="medium"                
@@ -224,6 +252,7 @@ class ProductList extends Component {
                   clickable
                 />
               ))}
+
             </Box>
 
             <Box sx={{ 

@@ -138,7 +138,31 @@ function getFilteredProducts(unfilteredProducts, attributes) {
     const manufacturer = uniqueManufacturersWithName.find(manufacturer => manufacturer.id === filter);
     return {name: manufacturer.value, value: manufacturer.id};
   });
-  return {filteredProducts,activeAttributeFilters:activeAttributeFiltersWithNames,activeManufacturerFilters:activeManufacturerFiltersWithNames};
+
+  // Extract active availability filters
+  const availabilityFilter = sessionStorage.getItem('filter_availability');
+  const activeAvailabilityFilters = [];
+  
+  // Check if there are actually products with these characteristics
+  const hasNewProducts = (unfilteredProducts || []).some(product => isNew(product.neu));
+  const hasComingSoonProducts = (unfilteredProducts || []).some(product => !product.available && product.incoming);
+  
+  // Check for "auf Lager" filter (in stock) - it's active when filter_availability is NOT set to '1'
+  if (availabilityFilter !== '1') {
+    activeAvailabilityFilters.push({id: '1', name: 'auf Lager'});
+  }
+  
+  // Check for "Neu" filter (new) - only show if there are actually new products and filter is active
+  if (availabilityFilters.includes('2') && hasNewProducts) {
+    activeAvailabilityFilters.push({id: '2', name: 'Neu'});
+  }
+  
+  // Check for "Bald verfügbar" filter (coming soon) - only show if there are actually coming soon products and filter is active
+  if (availabilityFilters.includes('3') && hasComingSoonProducts) {
+    activeAvailabilityFilters.push({id: '3', name: 'Bald verfügbar'});
+  }
+
+  return {filteredProducts,activeAttributeFilters:activeAttributeFiltersWithNames,activeManufacturerFilters:activeManufacturerFiltersWithNames,activeAvailabilityFilters};
 }
 function setCachedCategoryData(categoryId, data) {
   if (!window.productCache) {
@@ -685,6 +709,7 @@ class Content extends Component {
                 products={this.state.filteredProducts || []}
                 activeAttributeFilters={this.state.activeAttributeFilters || []}
                 activeManufacturerFilters={this.state.activeManufacturerFilters || []}
+                activeAvailabilityFilters={this.state.activeAvailabilityFilters || []}
                 onFilterChange={()=>{this.filterProducts()}}
                 dataType={this.state.dataType}
                 dataParam={this.state.dataParam}
