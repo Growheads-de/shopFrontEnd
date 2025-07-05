@@ -64,8 +64,10 @@ const initializeCategories = () => {
 };
 
 const Sitemap = () => {
-  const [categories, setCategories] = useState(() => initializeCategories());
-  const [loading, setLoading] = useState(true);
+  // Initialize categories and loading state together
+  const initialCategories = initializeCategories();
+  const [categories, setCategories] = useState(initialCategories);
+  const [loading, setLoading] = useState(initialCategories.length === 0);
   const context = useContext(SocketContext);
 
 

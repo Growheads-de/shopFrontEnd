@@ -71,6 +71,7 @@ const Batteriegesetzhinweise =
   require("./src/pages/Batteriegesetzhinweise.js").default;
 const Widerrufsrecht = require("./src/pages/Widerrufsrecht.js").default;
 const Sitemap = require("./src/pages/Sitemap.js").default;
+const PrerenderSitemap = require("./src/PrerenderSitemap.js").default;
 const AGB = require("./src/pages/AGB.js").default;
 const NotFound404 = require("./src/pages/NotFound404.js").default;
 
@@ -361,10 +362,11 @@ const renderApp = async (categoryData, socket) => {
       description: "Widerrufsrecht page",
     },
     {
-      component: Sitemap,
+      component: PrerenderSitemap,
       path: "/sitemap",
       filename: "sitemap",
       description: "Sitemap page",
+      needsCategoryData: true,
     },
     { component: AGB, path: "/agb", filename: "agb", description: "AGB page" },
     { component: NotFound404, path: "/404", filename: "404", description: "404 Not Found page" },
@@ -384,7 +386,9 @@ const renderApp = async (categoryData, socket) => {
 
   let staticPagesRendered = 0;
   for (const page of staticPages) {
-    const pageComponent = React.createElement(page.component, null);
+    // Pass category data as props if needed
+    const pageProps = page.needsCategoryData ? { categoryData } : null;
+    const pageComponent = React.createElement(page.component, pageProps);
     let metaTags = "";
 
     // Special handling for Sitemap page to include category data
