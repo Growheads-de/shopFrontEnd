@@ -36,7 +36,7 @@ const collectAllCategories = (categoryNode, categories = [], level = 0) => {
 const Sitemap = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const {socket} = useContext(SocketContext);
+  const context = useContext(SocketContext);
 
 
   const sitemapLinks = [
@@ -67,8 +67,8 @@ const Sitemap = () => {
       }
 
       // Otherwise, fetch from socket if available
-      if (socket) {
-        socket.emit('categoryList', { categoryId: 209 }, (response) => {
+      if (context && context.socket && context.socket.connected && typeof window !== "undefined") {
+        context.socket.emit('categoryList', { categoryId: 209 }, (response) => {
           if (response && response.categoryTree) {
             // Store in cache
             try {
@@ -95,7 +95,7 @@ const Sitemap = () => {
     };
 
     fetchCategories();
-  }, [socket]);
+  }, [context]);
 
   const content = (
     <>
