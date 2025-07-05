@@ -50,6 +50,7 @@ const {
   generateProductsXml,
   generateLlmsTxt,
   generateCategoryLlmsTxt,
+  generateAllCategoryLlmsPages,
 } = require("./prerender/seo.cjs");
 const {
   fetchCategoryProducts,
@@ -661,26 +662,38 @@ const renderApp = async (categoryData, socket) => {
       productsByCategory[categoryId].push(product);
     });
     
-    // Generate category-specific LLM files
+    // Generate category-specific LLM files with pagination
     let categoryFilesGenerated = 0;
     let totalCategoryProducts = 0;
+    let totalPaginatedFiles = 0;
     
     for (const category of allCategories) {
       if (category.seoName) {
         const categoryProducts = productsByCategory[category.id] || [];
         const categorySlug = category.seoName.toLowerCase().replace(/[^a-z0-9]/g, '-');
         
-        const categoryLlmsTxt = generateCategoryLlmsTxt(category, categoryProducts, shopConfig.baseUrl, shopConfig);
-        const categoryLlmsTxtPath = path.resolve(__dirname, config.outputDir, `llms-${categorySlug}.txt`);
+        // Generate all paginated files for this category
+        const categoryPages = generateAllCategoryLlmsPages(category, categoryProducts, shopConfig.baseUrl, shopConfig);
         
-        fs.writeFileSync(categoryLlmsTxtPath, categoryLlmsTxt, { encoding: 'utf8' });
+        // Write each paginated file
+        for (const page of categoryPages) {
+          const pagePath = path.resolve(__dirname, config.outputDir, page.fileName);
+          fs.writeFileSync(pagePath, page.content, { encoding: 'utf8' });
+          totalPaginatedFiles++;
+        }
         
-        console.log(`   ✅ llms-${categorySlug}.txt - ${categoryProducts.length} products (${Math.round(categoryLlmsTxt.length / 1024)}KB)`);
+        const pageCount = categoryPages.length;
+        const totalSize = categoryPages.reduce((sum, page) => sum + page.content.length, 0);
+        
+        console.log(`   ✅ llms-${categorySlug}-page-*.txt - ${categoryProducts.length} products across ${pageCount} pages (${Math.round(totalSize / 1024)}KB total)`);
         
         categoryFilesGenerated++;
         totalCategoryProducts += categoryProducts.length;
       }
     }
+    
+    console.log(`   📄 Total paginated files generated: ${totalPaginatedFiles}`);
+    console.log(`   📦 Total products across all categories: ${totalCategoryProducts}`);
     
     try {
       const verification = fs.readFileSync(llmsTxtPath, 'utf8');
