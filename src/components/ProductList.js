@@ -122,10 +122,8 @@ class ProductList extends Component {
   }
 
   renderPagination = (pages, page) => {
-    // Don't show pagination when there are zero products
-    if (this.props.products.length === 0) {
-      return null;
-    }
+    // Make pagination invisible when there are zero products to avoid layout shifts
+    const hasProducts = this.props.products.length > 0;
     
     return (
       <Box sx={{ 
@@ -133,7 +131,8 @@ class ProductList extends Component {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'left',
-        width: '100%'
+        width: '100%',
+        visibility: hasProducts ? 'visible' : 'hidden'
       }}>
         {(this.state.itemsPerPage==='all')?null:
           <Pagination 
