@@ -959,9 +959,42 @@ GrowHeads.de is a German online shop and local store in Dresden specializing in 
     if (category.seoName) {
       const productCount = productsByCategory[category.id]?.length || 0;
       const categorySlug = category.seoName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const productsPerPage = 50;
+      const totalPages = Math.ceil(productCount / productsPerPage);
       
-      llmsTxt += `#### ${category.name} (${productCount} products)
-- **Product Catalog**: ${baseUrl}/llms-${categorySlug}.txt
+      llmsTxt += `#### ${category.name} (${productCount} products)`;
+      
+      if (totalPages > 1) {
+        llmsTxt += `
+- **Product Catalog**: ${totalPages} pages available
+- **Page 1**: ${baseUrl}/llms-${categorySlug}-page-1.txt (Products 1-${Math.min(productsPerPage, productCount)})`;
+        
+        if (totalPages > 2) {
+          llmsTxt += `
+- **Page 2**: ${baseUrl}/llms-${categorySlug}-page-2.txt (Products ${productsPerPage + 1}-${Math.min(productsPerPage * 2, productCount)})`;
+        }
+        
+        if (totalPages > 3) {
+          llmsTxt += `
+- **...**: Additional pages available`;
+        }
+        
+        if (totalPages > 2) {
+          llmsTxt += `
+- **Page ${totalPages}**: ${baseUrl}/llms-${categorySlug}-page-${totalPages}.txt (Products ${((totalPages - 1) * productsPerPage) + 1}-${productCount})`;
+        }
+        
+        llmsTxt += `
+- **Access Pattern**: Replace "page-X" with desired page number (1-${totalPages})`;
+      } else if (productCount > 0) {
+        llmsTxt += `
+- **Product Catalog**: ${baseUrl}/llms-${categorySlug}-page-1.txt`;
+      } else {
+        llmsTxt += `
+- **Product Catalog**: No products available`;
+      }
+      
+      llmsTxt += `
 
 `;
     }
@@ -976,10 +1009,18 @@ GrowHeads.de is a German online shop and local store in Dresden specializing in 
   return llmsTxt;
 };
 
-const generateCategoryLlmsTxt = (category, categoryProducts = [], baseUrl, config) => {
+const generateCategoryLlmsTxt = (category, categoryProducts = [], baseUrl, config, pageNumber = 1, productsPerPage = 50) => {
   const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+  const categorySlug = category.seoName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+  
+  // Calculate pagination
+  const totalProducts = categoryProducts.length;
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
+  const startIndex = (pageNumber - 1) * productsPerPage;
+  const endIndex = Math.min(startIndex + productsPerPage, totalProducts);
+  const pageProducts = categoryProducts.slice(startIndex, endIndex);
 
-  let categoryLlmsTxt = `# ${category.name} - Product Catalog
+  let categoryLlmsTxt = `# ${category.name} - Product Catalog (Page ${pageNumber} of ${totalPages})
 
 Generated: ${currentDate}
 Base URL: ${baseUrl}
@@ -987,18 +1028,53 @@ Category: ${category.name} (ID: ${category.id})
 Category URL: ${baseUrl}/Kategorie/${category.seoName}
 
 ## Category Overview
-This file contains all products in the "${category.name}" category from ${config.siteName}. 
+This file contains products ${startIndex + 1}-${endIndex} of ${totalProducts} in the "${category.name}" category from ${config.siteName}. 
 
 **Statistics:**
-- **Total Products**: ${categoryProducts.length}
+- **Total Products in Category**: ${totalProducts}
+- **Products on This Page**: ${pageProducts.length}
+- **Current Page**: ${pageNumber} of ${totalPages}
 - **Category ID**: ${category.id}
 - **Category URL**: ${baseUrl}/Kategorie/${category.seoName}
 - **Back to Main Sitemap**: ${baseUrl}/llms.txt
 
 `;
 
-  if (categoryProducts.length > 0) {
-    categoryProducts.forEach((product, index) => {
+  // Add navigation hints for LLMs
+  if (totalPages > 1) {
+    categoryLlmsTxt += `## Navigation for LLMs
+
+**How to access other pages in this category:**
+`;
+    
+    if (pageNumber > 1) {
+      categoryLlmsTxt += `- **Previous Page**: ${baseUrl}/llms-${categorySlug}-page-${pageNumber - 1}.txt
+`;
+    }
+    
+    if (pageNumber < totalPages) {
+      categoryLlmsTxt += `- **Next Page**: ${baseUrl}/llms-${categorySlug}-page-${pageNumber + 1}.txt
+`;
+    }
+    
+    categoryLlmsTxt += `- **First Page**: ${baseUrl}/llms-${categorySlug}-page-1.txt
+- **Last Page**: ${baseUrl}/llms-${categorySlug}-page-${totalPages}.txt
+
+**All pages in this category:**
+`;
+    
+    for (let i = 1; i <= totalPages; i++) {
+      categoryLlmsTxt += `- **Page ${i}**: ${baseUrl}/llms-${categorySlug}-page-${i}.txt (Products ${((i-1) * productsPerPage) + 1}-${Math.min(i * productsPerPage, totalProducts)})
+`;
+    }
+    
+    categoryLlmsTxt += `
+
+`;
+  }
+
+  if (pageProducts.length > 0) {
+    pageProducts.forEach((product, index) => {
       if (product.seoName) {
         // Clean description for markdown (remove HTML tags and limit length)
         const cleanDescription = product.description
@@ -1009,7 +1085,8 @@ This file contains all products in the "${category.name}" category from ${config
               .substring(0, 300)
           : "";
 
-        categoryLlmsTxt += `## ${index + 1}. ${product.name}
+        const globalIndex = startIndex + index + 1;
+        categoryLlmsTxt += `## ${globalIndex}. ${product.name}
 
 - **Product URL**: ${baseUrl}/Artikel/${product.seoName}
 - **Article Number**: ${product.articleNumber || 'N/A'}
@@ -1049,12 +1126,54 @@ This category currently contains no products.
 `;
   }
 
+  // Add footer navigation for convenience
+  if (totalPages > 1) {
+    categoryLlmsTxt += `## Page Navigation
+
+`;
+    if (pageNumber > 1) {
+      categoryLlmsTxt += `← [Previous Page](${baseUrl}/llms-${categorySlug}-page-${pageNumber - 1}.txt) | `;
+    }
+    
+    categoryLlmsTxt += `[Category Overview](${baseUrl}/llms-${categorySlug}-page-1.txt)`;
+    
+    if (pageNumber < totalPages) {
+      categoryLlmsTxt += ` | [Next Page](${baseUrl}/llms-${categorySlug}-page-${pageNumber + 1}.txt) →`;
+    }
+    
+    categoryLlmsTxt += `
+
+`;
+  }
+
   categoryLlmsTxt += `---
 
 *This category product list is automatically generated during the site build process. Product availability and pricing are updated in real-time on the main website.*
 `;
 
   return categoryLlmsTxt;
+};
+
+// Helper function to generate all pages for a category
+const generateAllCategoryLlmsPages = (category, categoryProducts = [], baseUrl, config, productsPerPage = 50) => {
+  const totalProducts = categoryProducts.length;
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
+  const pages = [];
+  
+  for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+    const pageContent = generateCategoryLlmsTxt(category, categoryProducts, baseUrl, config, pageNumber, productsPerPage);
+    const categorySlug = category.seoName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const fileName = `llms-${categorySlug}-page-${pageNumber}.txt`;
+    
+    pages.push({
+      fileName,
+      content: pageContent,
+      pageNumber,
+      totalPages
+    });
+  }
+  
+  return pages;
 };
 
 module.exports = {
@@ -1070,4 +1189,5 @@ module.exports = {
   generateProductsXml,
   generateLlmsTxt,
   generateCategoryLlmsTxt,
+  generateAllCategoryLlmsPages,
 };
