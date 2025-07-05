@@ -97,7 +97,12 @@ function getFilteredProducts(unfilteredProducts, attributes) {
   let filteredProducts = (unfilteredProducts || []).filter(product => {
     const availabilityFilter = sessionStorage.getItem('filter_availability');
     let inStockMatch = availabilityFilter == 1 ? true : (product.available>0);
-    const isNewMatch = availabilityFilters.includes('2') ?  isNew(product.neu) : true;
+    
+    // Check if there are any new products in the entire set
+    const hasNewProducts = (unfilteredProducts || []).some(product => isNew(product.neu));
+    
+    // Only apply the new filter if there are actually new products and the filter is active
+    const isNewMatch = availabilityFilters.includes('2') && hasNewProducts ? isNew(product.neu) : true;
     let soonMatch = availabilityFilters.includes('3') ? !product.available && product.incoming : true;
 
     const soon2Match = (availabilityFilter != 1)&&availabilityFilters.includes('3') ? (product.available) || (!product.available && product.incoming) : true;

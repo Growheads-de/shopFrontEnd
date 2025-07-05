@@ -3,12 +3,19 @@
   // This will install dependencies before starting the dev server
   "version": "0.2.0",
   "configurations": [
+
     {
       "type": "node-terminal",
       "name": "Start with API propxy to seedheads.de (Install Deps)",
       "request": "launch",
       "command": "npm run start:seedheads",
       "preLaunchTask": "npm: install",
+      "cwd": "${workspaceFolder}"
+    },  {
+      "type": "node-terminal",
+      "name": "Start",
+      "request": "launch",
+      "command": "npm run start",
       "cwd": "${workspaceFolder}"
     }
   ]
