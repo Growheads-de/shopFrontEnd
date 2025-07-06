@@ -309,6 +309,36 @@ export default {
         next();
       });
 
+      // Add middleware to handle /404 route BEFORE webpack-dev-server processing
+      middlewares.unshift({
+        name: 'handle-404-route',
+        middleware: (req, res, next) => {
+          if (req.url === '/404') {
+            // Mark this request as a 404 and intercept the response
+            res.locals.is404 = true;
+            
+            // Override writeHead to force 404 status
+            const originalWriteHead = res.writeHead;
+            res.writeHead = function(statusCode, statusMessage, headers) {
+              // Force 404 status and no-cache headers
+              const newHeaders = {
+                ...headers,
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+              };
+              return originalWriteHead.call(this, 404, statusMessage, newHeaders);
+            };
+            
+            // Rewrite the URL to / so historyApiFallback can handle it
+            req.url = '/';
+            next();
+          } else {
+            next();
+          }
+        }
+      });
+
       return middlewares;
     },
     hot: true,
@@ -317,7 +347,18 @@ export default {
     historyApiFallback: {
       index: '/index.html',
       disableDotRule: true,
-      htmlAcceptHeaders: ['text/html', 'application/xhtml+xml']
+      htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
+      rewrites: [
+        // Exclude prerendered routes from SPA fallback
+        { from: /^\/Kategorie\//, to: function(context) {
+          return context.parsedUrl.pathname;
+        }},
+        { from: /^\/Artikel\//, to: function(context) {
+          return context.parsedUrl.pathname;
+        }},
+        // All other routes should fallback to React SPA
+        { from: /^\/(?!api|socket\.io|assets|js|css|favicon\.ico).*$/, to: '/index.html' }
+      ]
     },
     client: {
       logging: 'verbose',
