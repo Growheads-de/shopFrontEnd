@@ -7,7 +7,7 @@ const {
 } = require('@mui/material');
 const Footer = require('./components/Footer.js').default;
 const { Logo, CategoryList } = require('./components/header/index.js');
-const Home = require('./pages/Home.js').default;
+const MainPageLayout = require('./components/MainPageLayout.js').default;
 
 class PrerenderHome extends React.Component {
   render() {
@@ -62,7 +62,7 @@ class PrerenderHome extends React.Component {
       React.createElement(
         Box,
         { sx: { flexGrow: 1 } },
-        React.createElement(Home)
+        React.createElement(MainPageLayout)
       ),
       React.createElement(Footer)
     );

@@ -3,7 +3,7 @@ import { Box, AppBar, Toolbar, Container} from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
 import Footer from './components/Footer.js';
 import { Logo, CategoryList } from './components/header/index.js';
-import Home from './pages/Home.js';
+import MainPageLayout from './components/MainPageLayout.js';
 
 const PrerenderAppContent = (socket) => (
     <Box
@@ -45,7 +45,7 @@ const PrerenderAppContent = (socket) => (
  
       <Box sx={{ flexGrow: 1 }}>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<MainPageLayout />} />
           </Routes>
       </Box>
 
