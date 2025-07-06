@@ -8,6 +8,7 @@ const {
 const Footer = require('./components/Footer.js').default;
 const { Logo, CategoryList } = require('./components/header/index.js');
 const MainPageLayout = require('./components/MainPageLayout.js').default;
+const { CarouselProvider } = require('./contexts/CarouselContext.js');
 
 class PrerenderHome extends React.Component {
   render() {
@@ -62,7 +63,7 @@ class PrerenderHome extends React.Component {
       React.createElement(
         Box,
         { sx: { flexGrow: 1 } },
-        React.createElement(MainPageLayout)
+        React.createElement(CarouselProvider, null, React.createElement(MainPageLayout))
       ),
       React.createElement(Footer)
     );

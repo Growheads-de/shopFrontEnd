@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import Footer from './components/Footer.js';
 import { Logo, CategoryList } from './components/header/index.js';
 import MainPageLayout from './components/MainPageLayout.js';
+import { CarouselProvider } from './contexts/CarouselContext.js';
 
 const PrerenderAppContent = (socket) => (
     <Box
@@ -44,9 +45,11 @@ const PrerenderAppContent = (socket) => (
       </AppBar>
  
       <Box sx={{ flexGrow: 1 }}>
-          <Routes>
-            <Route path="/" element={<MainPageLayout />} />
-          </Routes>
+          <CarouselProvider>
+            <Routes>
+              <Route path="/" element={<MainPageLayout />} />
+            </Routes>
+          </CarouselProvider>
       </Box>
 
       <Footer/>
