@@ -18,13 +18,14 @@ import BugReportIcon from "@mui/icons-material/BugReport";
 
 import SocketProvider from "./providers/SocketProvider.js";
 import SocketContext from "./contexts/SocketContext.js";
+import { CarouselProvider } from "./contexts/CarouselContext.js";
 import config from "./config.js";
 import ScrollToTop from "./components/ScrollToTop.js";
 //import TelemetryService from './services/telemetryService.js';
 
 import Header from "./components/Header.js";
 import Footer from "./components/Footer.js";
-import Home from "./pages/Home.js";
+import MainPageLayout from "./components/MainPageLayout.js";
 
 // Lazy load all route components to reduce initial bundle size
 const Content = lazy(() => import(/* webpackChunkName: "content" */ "./components/Content.js"));
@@ -49,6 +50,10 @@ const Widerrufsrecht = lazy(() => import(/* webpackChunkName: "legal" */ "./page
 // Lazy load special features
 const GrowTentKonfigurator = lazy(() => import(/* webpackChunkName: "konfigurator" */ "./pages/GrowTentKonfigurator.js"));
 const ChatAssistant = lazy(() => import(/* webpackChunkName: "chat" */ "./components/ChatAssistant.js"));
+
+// Lazy load separate pages that are truly different
+const PresseverleihPage = lazy(() => import(/* webpackChunkName: "presseverleih" */ "./pages/PresseverleihPage.js"));
+const ThcTestPage = lazy(() => import(/* webpackChunkName: "thc-test" */ "./pages/ThcTestPage.js"));
 
 // Import theme from separate file to reduce main bundle size
 import defaultTheme from "./theme.js";
@@ -195,60 +200,68 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
             <CircularProgress color="primary" />
           </Box>
         }>
-          <Routes>
-            {/* Home page with text only */}
-            <Route path="/" element={<Home />} />
+          <CarouselProvider>
+            <Routes>
+              {/* Main pages using unified component */}
+              <Route path="/" element={<MainPageLayout />} />
+              <Route path="/aktionen" element={<MainPageLayout />} />
+              <Route path="/filiale" element={<MainPageLayout />} />
 
-            {/* Category page - Render Content in parallel */}
-            <Route
-              path="/Kategorie/:categoryId"
-              element={<Content socket={socket} socketB={socketB} />}
-            />
-            {/* Single product page */}
-            <Route
-              path="/Artikel/:seoName"
-              element={<ProductDetailWithSocket />}
-            />
+              {/* Category page - Render Content in parallel */}
+              <Route
+                path="/Kategorie/:categoryId"
+                element={<Content socket={socket} socketB={socketB} />}
+              />
+              {/* Single product page */}
+              <Route
+                path="/Artikel/:seoName"
+                element={<ProductDetailWithSocket />}
+              />
 
-            {/* Search page - Render Content in parallel */}
-            <Route path="/search" element={<Content socket={socket} socketB={socketB} />} />
+              {/* Search page - Render Content in parallel */}
+              <Route path="/search" element={<Content socket={socket} socketB={socketB} />} />
 
-            {/* Profile page */}
-            <Route path="/profile" element={<ProfilePageWithSocket />} />
+              {/* Profile page */}
+              <Route path="/profile" element={<ProfilePageWithSocket />} />
 
-            {/* Reset password page */}
-            <Route
-              path="/resetPassword"
-              element={<ResetPassword socket={socket} socketB={socketB} />}
-            />
+              {/* Reset password page */}
+              <Route
+                path="/resetPassword"
+                element={<ResetPassword socket={socket} socketB={socketB} />}
+              />
 
-            {/* Admin page */}
-            <Route path="/admin" element={<AdminPage socket={socket} socketB={socketB} />} />
-            
-            {/* Admin Users page */}
-            <Route path="/admin/users" element={<UsersPage socket={socket} socketB={socketB} />} />
-            
-            {/* Admin Server Logs page */}
-            <Route path="/admin/logs" element={<ServerLogsPage socket={socket} socketB={socketB} />} />
+              {/* Admin page */}
+              <Route path="/admin" element={<AdminPage socket={socket} socketB={socketB} />} />
+              
+              {/* Admin Users page */}
+              <Route path="/admin/users" element={<UsersPage socket={socket} socketB={socketB} />} />
+              
+              {/* Admin Server Logs page */}
+              <Route path="/admin/logs" element={<ServerLogsPage socket={socket} socketB={socketB} />} />
 
-            {/* Legal pages */}
-            <Route path="/datenschutz" element={<Datenschutz />} />
-            <Route path="/agb" element={<AGB />} />
-            <Route path="/404" element={<NotFound404 />} />
-            <Route path="/sitemap" element={<Sitemap />} />
-            <Route path="/impressum" element={<Impressum />} />
-            <Route
-              path="/batteriegesetzhinweise"
-              element={<Batteriegesetzhinweise />}
-            />
-            <Route path="/widerrufsrecht" element={<Widerrufsrecht />} />
+              {/* Legal pages */}
+              <Route path="/datenschutz" element={<Datenschutz />} />
+              <Route path="/agb" element={<AGB />} />
+              <Route path="/404" element={<NotFound404 />} />
+              <Route path="/sitemap" element={<Sitemap />} />
+              <Route path="/impressum" element={<Impressum />} />
+              <Route
+                path="/batteriegesetzhinweise"
+                element={<Batteriegesetzhinweise />}
+              />
+              <Route path="/widerrufsrecht" element={<Widerrufsrecht />} />
 
-            {/* Grow Tent Configurator */}
-            <Route path="/Konfigurator" element={<GrowTentKonfigurator />} />
+              {/* Grow Tent Configurator */}
+              <Route path="/Konfigurator" element={<GrowTentKonfigurator />} />
 
-            {/* Fallback for undefined routes */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* Separate pages that are truly different */}
+              <Route path="/presseverleih" element={<PresseverleihPage />} />
+              <Route path="/thc-test" element={<ThcTestPage />} />
+
+              {/* Fallback for undefined routes */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </CarouselProvider>
         </Suspense>
       </Box>
       {/* Conditionally render the Chat Assistant */}

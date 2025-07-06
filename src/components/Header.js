@@ -38,7 +38,7 @@ class Header extends Component {
   render() {
     // Get socket directly from context in render method
     const {socket,socketB} = this.context;
-    const { isHomePage, isProfilePage } = this.props;
+    const { isHomePage, isProfilePage, isAktionenPage, isFilialePage } = this.props;
 
     return (
       <AppBar position="sticky" color="primary" elevation={0} sx={{ zIndex: 1100 }}>
@@ -94,7 +94,7 @@ class Header extends Component {
             </Box>
           </Container>
         </Toolbar>
-        {(isHomePage || this.props.categoryId || isProfilePage) && <CategoryList categoryId={209} activeCategoryId={this.props.categoryId} socket={socket} socketB={socketB} />}
+        {(isHomePage || this.props.categoryId || isProfilePage || isAktionenPage || isFilialePage) && <CategoryList categoryId={209} activeCategoryId={this.props.categoryId} socket={socket} socketB={socketB} />}
       </AppBar>
     );
   }
@@ -105,10 +105,12 @@ const HeaderWithContext = (props) => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   const isProfilePage = location.pathname === '/profile';
+  const isAktionenPage = location.pathname === '/aktionen';
+  const isFilialePage = location.pathname === '/filiale';
   
   return (
     <SocketContext.Consumer>
-      {({socket,socketB}) => <Header {...props} socket={socket} socketB={socketB} isHomePage={isHomePage} isProfilePage={isProfilePage} />}
+      {({socket,socketB}) => <Header {...props} socket={socket} socketB={socketB} isHomePage={isHomePage} isProfilePage={isProfilePage} isAktionenPage={isAktionenPage} isFilialePage={isFilialePage} />}
     </SocketContext.Consumer>
   );
 };
