@@ -37,7 +37,7 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
       710: "Home & Garden > Kitchen & Dining > Kitchen Tools & Utensils", // Grinder
       
       // Measuring & Packaging
-      186: "Business & Industrial", // Wiegen & Verpacken
+      186: "Business & Industrial > Science & Laboratory", // Wiegen & Verpacken
       187: "Business & Industrial > Science & Laboratory > Lab Equipment", // Waagen
       346: "Home & Garden > Kitchen & Dining > Food Storage", // Vakuumbeutel
       355: "Home & Garden > Kitchen & Dining > Food Storage", // Boveda & Integra Boost
@@ -109,14 +109,14 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
       302: "Home & Garden > Tools", // Erntemaschinen
       
       // Hardware & Plumbing
-      222: "Hardware > Plumbing", // PE-Teile
-      374: "Hardware > Plumbing > Plumbing Fittings", // Verbindungsteile
+      222: "Hardware > Plumbing Fixtures", // PE-Teile
+      374: "Hardware > Plumbing Fixtures", // Verbindungsteile
       
       // Electronics & Control
       314: "Electronics > Electronics Accessories", // Steuergeräte
       408: "Electronics > Electronics Accessories", // GrowControl
       344: "Business & Industrial > Science & Laboratory > Lab Equipment", // Messgeräte
-      555: "Business & Industrial > Science & Laboratory > Lab Equipment > Microscopes", // Mikroskope
+      555: "Business & Industrial > Science & Laboratory > Lab Equipment", // Mikroskope
       
       // Camping & Outdoor
       226: "Sporting Goods > Outdoor Recreation > Camping & Hiking", // Zeltzubehör
@@ -126,7 +126,7 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
       240: "Home & Garden > Plants", // Anbauzubehör
       
       // Office & Media
-      424: "Office Supplies > Labels", // Etiketten & Schilder
+      424: "Business & Industrial > Office Supplies", // Etiketten & Schilder
       387: "Media > Books", // Literatur
       
       // General categories
@@ -140,7 +140,14 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
       450: "Home & Garden", // Restposten
     };
     
-    return categoryMappings[categoryId] || "Home & Garden > Plants";
+    const category = categoryMappings[categoryId] || "Home & Garden > Plants";
+    
+    // Validate that the category is not empty or too generic
+    if (!category || category.trim() === "") {
+      return "Home & Garden > Plants";
+    }
+    
+    return category;
   };
 
   let productsXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -150,7 +157,7 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
     <link>${baseUrl}</link>
     <description>${config.descriptions.short}</description>
     <lastBuildDate>${currentDate}</lastBuildDate>
-    <language>${config.language}</language>`;
+    <language>de-DE</language>`;
 
   // Helper function to clean text content of problematic characters
   const cleanTextContent = (text) => {
