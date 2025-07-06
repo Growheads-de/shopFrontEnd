@@ -11,6 +11,22 @@ Crawl-delay: 0
   return robotsTxt;
 };
 
+// Helper function to determine unit pricing measure based on product data
+const determineUnitPricingMeasure = (product) => {
+  // Use the actual unit data from the product structure
+  if (product.fEinheitMenge && product.cEinheit) {
+    const amount = parseFloat(product.fEinheitMenge);
+    const unit = product.cEinheit.trim();
+    
+    if (amount > 0 && unit) {
+      return `${amount} ${unit}`;
+    }
+  }
+  
+  // Return null if no unit data available - don't corrupt data with fallbacks
+  return null;
+};
+
 const generateProductsXml = (allProductsData = [], baseUrl, config) => {
   const currentDate = new Date().toISOString();
 
@@ -323,6 +339,13 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
       if (product.weight && !isNaN(product.weight)) {
         productsXml += `
       <g:shipping_weight>${parseFloat(product.weight).toFixed(2)} g</g:shipping_weight>`;
+      }
+
+      // Add unit pricing measure (required by German law for many products)
+      const unitPricingMeasure = determineUnitPricingMeasure(product);
+      if (unitPricingMeasure) {
+        productsXml += `
+      <g:unit_pricing_measure>${unitPricingMeasure}</g:unit_pricing_measure>`;
       }
 
       productsXml += `

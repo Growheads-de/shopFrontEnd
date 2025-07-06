@@ -462,8 +462,8 @@ class ProductList extends Component {
                 available={product.available}
                 manufacturer={product.manufacturer}
                 vat={product.vat}
-                massMenge={product.massMenge}
-                massEinheit={product.massEinheit}
+                cGrundEinheit={product.cGrundEinheit}
+                fGrundPreis={product.fGrundPreis}
                 incoming={product.incomingDate}
                 neu={product.neu}
                 thc={product.thc}

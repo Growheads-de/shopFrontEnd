@@ -51,6 +51,8 @@ class AddToCartButton extends Component {
         seoName: this.props.seoName,
         pictureList: this.props.pictureList,
         price: this.props.price,
+        fGrundPreis: this.props.fGrundPreis,
+        cGrundEinheit: this.props.cGrundEinheit,
         quantity: 1,
         weight: this.props.weight,
         vat: this.props.vat,

@@ -68,7 +68,7 @@ class Product extends Component {
   render() {
     const { 
       id, name, price, available, manufacturer, seoName,
-      currency, vat, massMenge, massEinheit, thc,
+      currency, vat, cGrundEinheit, fGrundPreis, thc,
       floweringWeeks,incoming, neu, weight, versandklasse, availableSupplier
     } = this.props;
 
@@ -341,8 +341,8 @@ class Product extends Component {
 
            
               </Typography>
-              {massMenge != 1 && massEinheit && (<Typography variant="body2" color="text.secondary" sx={{ m: 0,p: 0 }}>
-                  ({new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(price/massMenge)}/{massEinheit})
+              {cGrundEinheit && fGrundPreis && fGrundPreis != price && (<Typography variant="body2" color="text.secondary" sx={{ m: 0,p: 0 }}>
+                  ({new Intl.NumberFormat('de-DE', {style: 'currency', currency: currency || 'EUR'}).format(fGrundPreis)}/{cGrundEinheit})
               </Typography>   )}
               </div>
                  {/*incoming*/}
@@ -358,7 +358,7 @@ class Product extends Component {
             >
               <ZoomInIcon />
             </IconButton>
-            <AddToCartButton cartButton={true} availableSupplier={availableSupplier} available={available} incoming={incoming} seoName={seoName} pictureList={this.props.pictureList} id={id} price={price} vat={vat} weight={weight} name={name} versandklasse={versandklasse}/>
+            <AddToCartButton cartButton={true} availableSupplier={availableSupplier} cGrundEinheit={cGrundEinheit} fGrundPreis={fGrundPreis} available={available} incoming={incoming} seoName={seoName} pictureList={this.props.pictureList} id={id} price={price} vat={vat} weight={weight} name={name} versandklasse={versandklasse}/>
           </Box>
         </Card>
       </Box>

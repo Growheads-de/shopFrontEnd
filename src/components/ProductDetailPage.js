@@ -452,7 +452,11 @@ class ProductDetailPage extends Component {
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     inkl. {product.vat}% MwSt.
+                    {product.cGrundEinheit && product.fGrundPreis && (
+                      <>; {new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'EUR'}).format(product.fGrundPreis)}/{product.cGrundEinheit}</>
+                    )}
                   </Typography>
+
                   {product.versandklasse &&
                     product.versandklasse != "standard" &&
                     product.versandklasse != "kostenlos" && (
@@ -516,12 +520,15 @@ class ProductDetailPage extends Component {
                       available={product.available}
                       id={product.id}
                       availableSupplier={product.availableSupplier}
+                      cGrundEinheit={product.cGrundEinheit}
+                      fGrundPreis={product.fGrundPreis}
                       price={product.price}
                       vat={product.vat}
                       weight={product.weight}
                       name={cleanProductName(product.name)}
                       versandklasse={product.versandklasse}
                     />
+
                     <Typography 
                       variant="caption" 
                       sx={{ 

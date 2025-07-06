@@ -8,7 +8,9 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import { useNavigate, useLocation } from "react-router-dom";
 import SocketContext from "../../contexts/SocketContext.js";
 
@@ -184,6 +186,15 @@ const SearchBar = () => {
     }, 200);
   };
 
+  // Handle enter icon click
+  const handleEnterClick = () => {
+    delete window.currentSearchQuery;
+    setShowSuggestions(false);
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   // Clean up timers on unmount
   React.useEffect(() => {
     return () => {
@@ -244,9 +255,23 @@ const SearchBar = () => {
               <SearchIcon />
             </InputAdornment>
           ),
-          endAdornment: loadingSuggestions && (
+          endAdornment: (
             <InputAdornment position="end">
-              <CircularProgress size={16} />
+              {loadingSuggestions && <CircularProgress size={16} />}
+              <IconButton
+                size="small"
+                onClick={handleEnterClick}
+                sx={{
+                  ml: loadingSuggestions ? 0.5 : 0,
+                  p: 0.5,
+                  color: "text.secondary",
+                  "&:hover": {
+                    color: "primary.main",
+                  },
+                }}
+              >
+                <KeyboardReturnIcon fontSize="small" />
+              </IconButton>
             </InputAdornment>
           ),
           sx: { borderRadius: 2, bgcolor: "background.paper" },
