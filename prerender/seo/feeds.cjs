@@ -11,20 +11,29 @@ Crawl-delay: 0
   return robotsTxt;
 };
 
-// Helper function to determine unit pricing measure based on product data
-const determineUnitPricingMeasure = (product) => {
-  // Use the actual unit data from the product structure
+// Helper function to determine unit pricing data based on product data
+const determineUnitPricingData = (product) => {
+  const result = {
+    unit_pricing_measure: null,
+    unit_pricing_base_measure: null
+  };
+  
+  // unit_pricing_measure: The quantity unit of the product as it's sold
   if (product.fEinheitMenge && product.cEinheit) {
     const amount = parseFloat(product.fEinheitMenge);
     const unit = product.cEinheit.trim();
     
     if (amount > 0 && unit) {
-      return `${amount} ${unit}`;
+      result.unit_pricing_measure = `${amount}${unit}`;
     }
   }
   
-  // Return null if no unit data available - don't corrupt data with fallbacks
-  return null;
+  // unit_pricing_base_measure: The base quantity unit for unit pricing
+  if (product.cGrundEinheit && product.cGrundEinheit.trim()) {
+    result.unit_pricing_base_measure = product.cGrundEinheit.trim();
+  }
+  
+  return result;
 };
 
 const generateProductsXml = (allProductsData = [], baseUrl, config) => {
@@ -341,11 +350,15 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
       <g:shipping_weight>${parseFloat(product.weight).toFixed(2)} g</g:shipping_weight>`;
       }
 
-      // Add unit pricing measure (required by German law for many products)
-      const unitPricingMeasure = determineUnitPricingMeasure(product);
-      if (unitPricingMeasure) {
+      // Add unit pricing data (required by German law for many products)
+      const unitPricingData = determineUnitPricingData(product);
+      if (unitPricingData.unit_pricing_measure) {
         productsXml += `
-      <g:unit_pricing_measure>${unitPricingMeasure}</g:unit_pricing_measure>`;
+      <g:unit_pricing_measure>${unitPricingData.unit_pricing_measure}</g:unit_pricing_measure>`;
+      }
+      if (unitPricingData.unit_pricing_base_measure) {
+        productsXml += `
+      <g:unit_pricing_base_measure>${unitPricingData.unit_pricing_base_measure}</g:unit_pricing_base_measure>`;
       }
 
       productsXml += `
