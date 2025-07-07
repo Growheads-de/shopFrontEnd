@@ -141,12 +141,12 @@ class ProductList extends Component {
             onChange={this.handlePageChange} 
             color="primary"
             size={"large"}
-            siblingCount={window.innerWidth < 600 ? 0 : 1}
-            boundaryCount={window.innerWidth < 600 ? 1 : 1}
-            hideNextButton={false}
-            hidePrevButton={false}
-            showFirstButton={window.innerWidth >= 600}
-            showLastButton={window.innerWidth >= 600}
+            siblingCount={1}
+            boundaryCount={1}
+            hideNextButton={true}
+            hidePrevButton={true}
+            showFirstButton={false}
+            showLastButton={false}
             sx={{
               '& .MuiPagination-ul': {
                 flexWrap: 'nowrap',
@@ -474,6 +474,7 @@ class ProductList extends Component {
                 socketB={this.props.socketB}
                 pictureList={product.pictureList}
                 availableSupplier={product.availableSupplier}
+                komponenten={product.komponenten}
               />
             </Grid>
           ))}

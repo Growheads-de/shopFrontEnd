@@ -29,6 +29,12 @@ class ProductDetailPage extends Component {
         attributes: [],
         isSteckling: false,
         imageDialogOpen: false,
+        komponenten: [],
+        komponentenLoaded: false,
+        komponentenData: {}, // Store individual komponent data with loading states
+        komponentenImages: {}, // Store tiny pictures for komponenten
+        totalKomponentenPrice: 0,
+        totalSavings: 0
       };
     } else {
       this.state = {
@@ -39,6 +45,12 @@ class ProductDetailPage extends Component {
         attributes: [],
         isSteckling: false,
         imageDialogOpen: false,
+        komponenten: [],
+        komponentenLoaded: false,
+        komponentenData: {}, // Store individual komponent data with loading states
+        komponentenImages: {}, // Store tiny pictures for komponenten
+        totalKomponentenPrice: 0,
+        totalSavings: 0
       };
     }
   }
@@ -64,6 +76,248 @@ class ProductDetailPage extends Component {
     }
   }
 
+  loadKomponentImage = (komponentId, pictureList) => {
+    // Initialize cache if it doesn't exist
+    if (!window.smallPicCache) {
+      window.smallPicCache = {};
+    }
+
+    // Skip if no pictureList
+    if (!pictureList || pictureList.length === 0) {
+      return;
+    }
+
+    // Get the first image ID from pictureList
+    const bildId = pictureList.split(',')[0];
+    
+    // Check if already cached
+    if (window.smallPicCache[bildId]) {
+      this.setState(prevState => ({
+        komponentenImages: {
+          ...prevState.komponentenImages,
+          [komponentId]: window.smallPicCache[bildId]
+        }
+      }));
+      return;
+    }
+
+    // Check if socketB is available
+    if (!this.props.socketB || !this.props.socketB.connected) {
+      console.log("SocketB not connected yet, skipping image load for komponent:", komponentId);
+      return;
+    }
+
+    // Fetch image from server
+    this.props.socketB.emit('getPic', { bildId, size: 'small' }, (res) => {
+      if (res.success) {
+        // Cache the image
+        window.smallPicCache[bildId] = URL.createObjectURL(new Blob([res.imageBuffer], { type: 'image/jpeg' }));
+        
+        // Update state
+        this.setState(prevState => ({
+          komponentenImages: {
+            ...prevState.komponentenImages,
+            [komponentId]: window.smallPicCache[bildId]
+          }
+        }));
+      } else {
+        console.log('Error loading komponent image:', res);
+      }
+    });
+  }
+
+  loadKomponent = (id, count) => {
+    // Initialize cache if it doesn't exist
+    if (!window.productDetailCache) {
+      window.productDetailCache = {};
+    }
+
+    // Check if this komponent is already cached
+    if (window.productDetailCache[id]) {
+      const cachedProduct = window.productDetailCache[id];
+      
+      // Load komponent image if available
+      if (cachedProduct.pictureList) {
+        this.loadKomponentImage(id, cachedProduct.pictureList);
+      }
+      
+      // Update state with cached data
+      this.setState(prevState => {
+        const newKomponentenData = {
+          ...prevState.komponentenData,
+          [id]: {
+            ...cachedProduct,
+            count: parseInt(count),
+            loaded: true
+          }
+        };
+        
+        // Check if all remaining komponenten are loaded
+        const allLoaded = prevState.komponenten.every(k => 
+          newKomponentenData[k.id] && newKomponentenData[k.id].loaded
+        );
+        
+        // Calculate totals if all loaded
+        let totalKomponentenPrice = 0;
+        let totalSavings = 0;
+        
+        if (allLoaded) {
+          totalKomponentenPrice = prevState.komponenten.reduce((sum, k) => {
+            const komponentData = newKomponentenData[k.id];
+            if (komponentData && komponentData.loaded) {
+              return sum + (komponentData.price * parseInt(k.count));
+            }
+            return sum;
+          }, 0);
+          
+          // Calculate savings (difference between buying individually vs as set)
+          const setPrice = prevState.product ? prevState.product.price : 0;
+          totalSavings = Math.max(0, totalKomponentenPrice - setPrice);
+        }
+        
+        console.log("Cached komponent loaded:", id, "data:", newKomponentenData[id]);
+        console.log("All loaded (cached):", allLoaded);
+        
+        return {
+          komponentenData: newKomponentenData,
+          komponentenLoaded: allLoaded,
+          totalKomponentenPrice,
+          totalSavings
+        };
+      });
+      
+      return;
+    }
+
+    // If not cached, fetch from server (similar to loadProductData)
+    if (!this.props.socket || !this.props.socket.connected) {
+      console.log("Socket not connected yet, waiting for connection to load komponent data");
+      return;
+    }
+
+    // Mark this komponent as loading
+    this.setState(prevState => ({
+      komponentenData: {
+        ...prevState.komponentenData,
+        [id]: {
+          ...prevState.komponentenData[id],
+          loading: true,
+          loaded: false,
+          count: parseInt(count)
+        }
+      }
+    }));
+
+    this.props.socket.emit(
+      "getProductView",
+      { articleId: id },
+      (res) => {
+        if (res.success) {
+          // Cache the successful response
+          window.productDetailCache[id] = res.product;
+          
+          // Load komponent image if available
+          if (res.product.pictureList) {
+            this.loadKomponentImage(id, res.product.pictureList);
+          }
+          
+          // Update state with loaded data
+          this.setState(prevState => {
+            const newKomponentenData = {
+              ...prevState.komponentenData,
+              [id]: {
+                ...res.product,
+                count: parseInt(count),
+                loading: false,
+                loaded: true
+              }
+            };
+            
+                    // Check if all remaining komponenten are loaded
+        const allLoaded = prevState.komponenten.every(k => 
+          newKomponentenData[k.id] && newKomponentenData[k.id].loaded
+        );
+            
+            // Calculate totals if all loaded
+            let totalKomponentenPrice = 0;
+            let totalSavings = 0;
+            
+            if (allLoaded) {
+              totalKomponentenPrice = prevState.komponenten.reduce((sum, k) => {
+                const komponentData = newKomponentenData[k.id];
+                if (komponentData && komponentData.loaded) {
+                  return sum + (komponentData.price * parseInt(k.count));
+                }
+                return sum;
+              }, 0);
+              
+              // Calculate savings (difference between buying individually vs as set)
+              const setPrice = prevState.product ? prevState.product.price : 0;
+              totalSavings = Math.max(0, totalKomponentenPrice - setPrice);
+            }
+            
+            console.log("Updated komponentenData for", id, ":", newKomponentenData[id]);
+            console.log("All loaded:", allLoaded);
+            
+            return {
+              komponentenData: newKomponentenData,
+              komponentenLoaded: allLoaded,
+              totalKomponentenPrice,
+              totalSavings
+            };
+          });
+          
+          console.log("getProductView (komponent)", res);
+        } else {
+          console.error("Error loading komponent:", res.error || "Unknown error", res);
+          
+          // Remove failed komponent from the list and check if all remaining are loaded
+          this.setState(prevState => {
+            const newKomponenten = prevState.komponenten.filter(k => k.id !== id);
+            const newKomponentenData = { ...prevState.komponentenData };
+            
+            // Remove failed komponent from data
+            delete newKomponentenData[id];
+            
+            // Check if all remaining komponenten are loaded
+            const allLoaded = newKomponenten.length === 0 || newKomponenten.every(k => 
+              newKomponentenData[k.id] && newKomponentenData[k.id].loaded
+            );
+            
+            // Calculate totals if all loaded
+            let totalKomponentenPrice = 0;
+            let totalSavings = 0;
+            
+            if (allLoaded && newKomponenten.length > 0) {
+              totalKomponentenPrice = newKomponenten.reduce((sum, k) => {
+                const komponentData = newKomponentenData[k.id];
+                if (komponentData && komponentData.loaded) {
+                  return sum + (komponentData.price * parseInt(k.count));
+                }
+                return sum;
+              }, 0);
+              
+              // Calculate savings (difference between buying individually vs as set)
+              const setPrice = this.state.product ? this.state.product.price : 0;
+              totalSavings = Math.max(0, totalKomponentenPrice - setPrice);
+            }
+            
+            console.log("Removed failed komponent:", id, "remaining:", newKomponenten.length);
+            console.log("All loaded after removal:", allLoaded);
+            
+            return {
+              komponenten: newKomponenten,
+              komponentenData: newKomponentenData,
+              komponentenLoaded: allLoaded,
+              totalKomponentenPrice,
+              totalSavings
+            };
+          });
+        }
+      }
+    );
+  }
+
   loadProductData = () => {
     if (!this.props.socket || !this.props.socket.connected) {
       // Socket not connected yet, but don't show error immediately on first load
@@ -78,12 +332,37 @@ class ProductDetailPage extends Component {
       (res) => {
         if (res.success) {
           res.product.seoName = this.props.seoName;
+          
+          // Initialize cache if it doesn't exist
+          if (!window.productDetailCache) {
+            window.productDetailCache = {};
+          }
+          
+          // Cache the product data
+          window.productDetailCache[this.props.seoName] = res.product;
+          
+          const komponenten = [];
+          if(res.product.komponenten) {
+            for(const komponent of res.product.komponenten.split(",")) {
+              // Handle both "x" and "×" as separators
+              const [id, count] = komponent.split(/[x×]/);
+              komponenten.push({id: id.trim(), count: count.trim()});
+            }
+          }
           this.setState({
             product: res.product,
             loading: false,
             error: null,
             imageDialogOpen: false,
-            attributes: res.attributes
+            attributes: res.attributes,
+            komponenten: komponenten,
+            komponentenLoaded: komponenten.length === 0 // If no komponenten, mark as loaded
+          }, () => {
+              if(komponenten.length > 0) {
+                for(const komponent of komponenten) {
+                  this.loadKomponent(komponent.id, komponent.count);
+                }
+              }
           });
           console.log("getProductView", res);
 
@@ -180,7 +459,7 @@ class ProductDetailPage extends Component {
   };
 
   render() {
-    const { product, loading, error, attributeImages, isSteckling, attributes } =
+    const { product, loading, error, attributeImages, isSteckling, attributes, komponentenLoaded, komponentenData, komponentenImages, totalKomponentenPrice, totalSavings } =
       this.state;
 
     if (loading) {
@@ -465,6 +744,37 @@ class ProductDetailPage extends Component {
                       </Typography>
                     )}
                 </Box>
+
+                {/* Savings comparison - positioned between price and cart button */}
+                {product.komponenten && komponentenLoaded && totalKomponentenPrice > product.price && 
+                 (totalKomponentenPrice - product.price >= 2 && 
+                  (totalKomponentenPrice - product.price) / product.price >= 0.02) && (
+                  <Box sx={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    justifyContent: "center",
+                    minWidth: { xs: "100%", sm: "200px" }
+                  }}>
+                    <Box sx={{ p: 2, borderRadius: 1, backgroundColor: "#e8f5e8", textAlign: "center" }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: "bold",
+                          color: "success.main"
+                        }}
+                      >
+                        Sie sparen: {new Intl.NumberFormat("de-DE", {
+                          style: "currency",
+                          currency: "EUR",
+                        }).format(totalKomponentenPrice - product.price)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Günstiger als Einzelkauf
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+
                 <Box
                   sx={{
                     display: "flex",
@@ -491,6 +801,7 @@ class ProductDetailPage extends Component {
                         vat={product.vat}
                         weight={product.weight}
                         availableSupplier={product.availableSupplier}
+                        komponenten={product.komponenten}
                         name={cleanProductName(product.name) + " Stecklingsvorbestellung 1 Stück"}
                         versandklasse={"nur Abholung"}
                       />
@@ -520,6 +831,7 @@ class ProductDetailPage extends Component {
                       available={product.available}
                       id={product.id}
                       availableSupplier={product.availableSupplier}
+                      komponenten={product.komponenten}
                       cGrundEinheit={product.cGrundEinheit}
                       fGrundPreis={product.fGrundPreis}
                       price={product.price}
@@ -569,6 +881,206 @@ class ProductDetailPage extends Component {
               }}
             >
               {parse(product.description)}
+            </Box>
+          </Box>
+        )}
+
+        {product.komponenten && product.komponenten.split(",").length > 0 && (
+          <Box sx={{ mt: 4, p: 4, background: "#fff", borderRadius: 2, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+            <Typography variant="h4" gutterBottom>Bestehend aus:</Typography>
+            <Box sx={{ maxWidth: 800, mx: "auto" }}>
+            
+                        {(console.log("komponentenLoaded:", komponentenLoaded), komponentenLoaded) ? (
+              <>
+                {console.log("Rendering loaded komponenten:", this.state.komponenten.length, "komponentenData:", Object.keys(komponentenData).length)}
+                {this.state.komponenten.map((komponent, index) => {
+                  const komponentData = komponentenData[komponent.id];
+                  console.log(`Rendering komponent ${komponent.id}:`, komponentData);
+                  
+                  // Don't show border on last item (pricing section has its own top border)
+                  const isLastItem = index === this.state.komponenten.length - 1;
+                  const showBorder = !isLastItem;
+                  
+                  if (!komponentData || !komponentData.loaded) {
+                    return (
+                      <Box key={komponent.id} sx={{ 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        alignItems: "center", 
+                        py: 1, 
+                        borderBottom: showBorder ? "1px solid #eee" : "none",
+                        minHeight: "70px" // Consistent height to prevent layout shifts
+                      }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Box sx={{ width: 50, height: 50, flexShrink: 0, backgroundColor: "#f5f5f5", borderRadius: 1, border: "1px solid #e0e0e0" }}>
+                            {/* Empty placeholder for image */}
+                          </Box>
+                          <Box>
+                            <Typography variant="body1">
+                              {index + 1}. Lädt...
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {komponent.count}x
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          -
+                        </Typography>
+                      </Box>
+                    );
+                  }
+                  
+                  const itemPrice = komponentData.price * parseInt(komponent.count);
+                  const formattedPrice = new Intl.NumberFormat("de-DE", {
+                    style: "currency",
+                    currency: "EUR",
+                  }).format(itemPrice);
+                  
+                  return (
+                    <Box 
+                      key={komponent.id} 
+                      component={Link}
+                      to={`/Artikel/${komponentData.seoName}`}
+                      sx={{ 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        alignItems: "center", 
+                        py: 1, 
+                        borderBottom: showBorder ? "1px solid #eee" : "none",
+                        textDecoration: "none",
+                        color: "inherit",
+                        minHeight: "70px", // Consistent height to prevent layout shifts
+                        "&:hover": {
+                          backgroundColor: "#f5f5f5"
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Box sx={{ width: 50, height: 50, flexShrink: 0 }}>
+                          {komponentenImages[komponent.id] ? (
+                            <CardMedia
+                              component="img"
+                              height="50"
+                              image={komponentenImages[komponent.id]}
+                              alt={komponentData.name}
+                              sx={{ 
+                                objectFit: "contain",
+                                borderRadius: 1,
+                                border: "1px solid #e0e0e0"
+                              }}
+                            />
+                          ) : (
+                            <CardMedia
+                              component="img"
+                              height="50"
+                              image="/assets/images/nopicture.jpg"
+                              alt={komponentData.name}
+                              sx={{ 
+                                objectFit: "contain",
+                                borderRadius: 1,
+                                border: "1px solid #e0e0e0"
+                              }}
+                            />
+                          )}
+                        </Box>
+                        <Box>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {index + 1}. {cleanProductName(komponentData.name)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {komponent.count}x à {new Intl.NumberFormat("de-DE", {
+                              style: "currency",
+                              currency: "EUR",
+                            }).format(komponentData.price)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formattedPrice}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+                
+                {/* Total price and savings display - only show when prices differ meaningfully */}
+                {totalKomponentenPrice > product.price && 
+                 (totalKomponentenPrice - product.price >= 2 && 
+                  (totalKomponentenPrice - product.price) / product.price >= 0.02) && (
+                  <Box sx={{ mt: 3, pt: 2, borderTop: "2px solid #eee" }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                      <Typography variant="h6">
+                        Einzelpreis gesamt:
+                      </Typography>
+                      <Typography variant="h6" sx={{ textDecoration: "line-through", color: "text.secondary" }}>
+                        {new Intl.NumberFormat("de-DE", {
+                          style: "currency",
+                          currency: "EUR",
+                        }).format(totalKomponentenPrice)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+                      <Typography variant="h6">
+                        Set-Preis:
+                      </Typography>
+                      <Typography variant="h6" color="primary" sx={{ fontWeight: "bold" }}>
+                        {new Intl.NumberFormat("de-DE", {
+                          style: "currency",
+                          currency: "EUR",
+                        }).format(product.price)}
+                      </Typography>
+                    </Box>
+                    {totalSavings > 0 && (
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2, p: 2, backgroundColor: "#e8f5e8", borderRadius: 1 }}>
+                        <Typography variant="h6" color="success.main" sx={{ fontWeight: "bold" }}>
+                          Ihre Ersparnis:
+                        </Typography>
+                        <Typography variant="h6" color="success.main" sx={{ fontWeight: "bold" }}>
+                          {new Intl.NumberFormat("de-DE", {
+                            style: "currency",
+                            currency: "EUR",
+                          }).format(totalSavings)}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+              </>
+            ) : (
+              // Loading state
+              <Box>
+                {this.state.komponenten.map((komponent, index) => {
+                  // For loading state, we don't know if pricing will be shown, so show all borders
+                  return (
+                    <Box key={komponent.id} sx={{ 
+                      display: "flex", 
+                      justifyContent: "space-between", 
+                      alignItems: "center", 
+                      py: 1, 
+                      borderBottom: "1px solid #eee",
+                      minHeight: "70px" // Consistent height to prevent layout shifts
+                    }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box sx={{ width: 50, height: 50, flexShrink: 0, backgroundColor: "#f5f5f5", borderRadius: 1, border: "1px solid #e0e0e0" }}>
+                        {/* Empty placeholder for image */}
+                      </Box>
+                      <Box>
+                        <Typography variant="body1">
+                          {index + 1}. Lädt Komponent-Details...
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {komponent.count}x
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      -
+                    </Typography>
+                                      </Box>
+                  );
+                })}
+              </Box>
+            )}
             </Box>
           </Box>
         )}

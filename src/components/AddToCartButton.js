@@ -58,6 +58,7 @@ class AddToCartButton extends Component {
         vat: this.props.vat,
         versandklasse: this.props.versandklasse,
         availableSupplier: this.props.availableSupplier,
+        komponenten: this.props.komponenten,
         available: this.props.available
       });
     } else {

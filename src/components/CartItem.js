@@ -150,7 +150,7 @@ class CartItem extends Component {
                  item.available == 1 ? "Lieferzeit: 2-3 Tage" : 
                  item.availableSupplier == 1 ? "Lieferzeit: 7-9 Tage" : ""}
               </Typography>
-              <AddToCartButton available={1} id={this.props.id} availableSupplier={item.availableSupplier} price={item.price} seoName={item.seoName} name={item.name} weight={item.weight} vat={item.vat} versandklasse={item.versandklasse}/>
+              <AddToCartButton available={1} id={this.props.id} komponenten={item.komponenten} availableSupplier={item.availableSupplier} price={item.price} seoName={item.seoName} name={item.name} weight={item.weight} vat={item.vat} versandklasse={item.versandklasse}/>
             </Box>          
           </Box>         
         </ListItem>
