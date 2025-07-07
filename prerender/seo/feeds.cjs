@@ -18,19 +18,87 @@ const determineUnitPricingData = (product) => {
     unit_pricing_base_measure: null
   };
   
+  // Unit mapping from German to Google Shopping accepted units
+  const unitMapping = {
+    // Volume (German -> Google)
+    'Milliliter': 'ml',
+    'milliliter': 'ml',
+    'ml': 'ml',
+    'Liter': 'l',
+    'liter': 'l',
+    'l': 'l',
+    'Zentiliter': 'cl',
+    'zentiliter': 'cl',
+    'cl': 'cl',
+    
+    // Weight (German -> Google)
+    'Gramm': 'g',
+    'gramm': 'g',
+    'g': 'g',
+    'Kilogramm': 'kg',
+    'kilogramm': 'kg',
+    'kg': 'kg',
+    'Milligramm': 'mg',
+    'milligramm': 'mg',
+    'mg': 'mg',
+    
+    // Length (German -> Google)
+    'Meter': 'm',
+    'meter': 'm',
+    'm': 'm',
+    'Zentimeter': 'cm',
+    'zentimeter': 'cm',
+    'cm': 'cm',
+    
+    // Count (German -> Google)
+    'Stück': 'ct',
+    'stück': 'ct',
+    'Stk': 'ct',
+    'stk': 'ct',
+    'ct': 'ct',
+    'Blatt': 'sheet',
+    'blatt': 'sheet',
+    'sheet': 'sheet'
+  };
+  
+  // Helper function to convert German unit to Google Shopping unit
+  const convertUnit = (unit) => {
+    if (!unit) return null;
+    const trimmedUnit = unit.trim();
+    return unitMapping[trimmedUnit] || trimmedUnit.toLowerCase();
+  };
+  
   // unit_pricing_measure: The quantity unit of the product as it's sold
   if (product.fEinheitMenge && product.cEinheit) {
     const amount = parseFloat(product.fEinheitMenge);
-    const unit = product.cEinheit.trim();
+    const unit = convertUnit(product.cEinheit);
     
     if (amount > 0 && unit) {
-      result.unit_pricing_measure = `${amount}${unit}`;
+      result.unit_pricing_measure = `${amount} ${unit}`;
     }
   }
   
   // unit_pricing_base_measure: The base quantity unit for unit pricing
   if (product.cGrundEinheit && product.cGrundEinheit.trim()) {
-    result.unit_pricing_base_measure = product.cGrundEinheit.trim();
+    const baseUnit = convertUnit(product.cGrundEinheit);
+    if (baseUnit) {
+      // Base measure usually needs a quantity (like 100g, 1l, etc.)
+      // If it's just a unit, we'll add a default quantity
+      if (baseUnit.match(/^[a-z]+$/)) {
+        // For weight/volume units, use standard base quantities
+        if (['g', 'kg', 'mg'].includes(baseUnit)) {
+          result.unit_pricing_base_measure = baseUnit === 'kg' ? '1 kg' : '100 g';
+        } else if (['ml', 'l', 'cl'].includes(baseUnit)) {
+          result.unit_pricing_base_measure = baseUnit === 'l' ? '1 l' : '100 ml';
+        } else if (['m', 'cm'].includes(baseUnit)) {
+          result.unit_pricing_base_measure = baseUnit === 'm' ? '1 m' : '100 cm';
+        } else {
+          result.unit_pricing_base_measure = `1 ${baseUnit}`;
+        }
+      } else {
+        result.unit_pricing_base_measure = baseUnit;
+      }
+    }
   }
   
   return result;
