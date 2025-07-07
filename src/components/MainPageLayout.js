@@ -55,7 +55,7 @@ const MainPageLayout = () => {
         title: "Samen",
         image: "/assets/images/seeds.jpg",
         bgcolor: "#e1f0d3",
-        link: "/Kategorie/Samen"
+        link: "/Kategorie/Seeds"
       },
       {
         title: "Stecklinge",
