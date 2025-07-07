@@ -48,131 +48,131 @@ const generateProductsXml = (allProductsData = [], baseUrl, config) => {
   const getGoogleProductCategory = (categoryId) => {
     const categoryMappings = {
       // Seeds & Plants
-      689: "Home & Garden > Plants > Seeds",
-      706: "Home & Garden > Plants", // Stecklinge (cuttings)
-      376: "Home & Garden > Plants > Plant & Herb Growing Kits", // Grow-Sets
+      689: "543561", // Seeds (Saatgut)
+      706: "543561", // Stecklinge (cuttings) – ebenfalls Pflanzen/Saatgut
+      376: "2802",   // Grow-Sets – Pflanzen- & Kräuteranbausets
       
       // Headshop & Accessories
-      709: "Arts & Entertainment > Hobbies & Creative Arts", // Headshop
-      711: "Arts & Entertainment > Hobbies & Creative Arts", // Bongs
-      714: "Arts & Entertainment > Hobbies & Creative Arts", // Zubehör
-      748: "Arts & Entertainment > Hobbies & Creative Arts", // Köpfe
-      749: "Arts & Entertainment > Hobbies & Creative Arts", // Chillums / Diffusoren / Kupplungen
-      896: "Electronics > Electronics Accessories", // Vaporizer
-      710: "Home & Garden > Kitchen & Dining > Kitchen Tools & Utensils", // Grinder
+      709: "4082",   // Headshop – Rauchzubehör
+      711: "4082",   // Headshop > Bongs – Rauchzubehör
+      714: "4082",   // Headshop > Bongs > Zubehör – Rauchzubehör
+      748: "4082",   // Headshop > Bongs > Köpfe – Rauchzubehör
+      749: "4082",   // Headshop > Bongs > Chillums/Diffusoren/Kupplungen – Rauchzubehör
+      896: "3151",   // Headshop > Vaporizer – Vaporizer
+      710: "5109",   // Headshop > Grinder – Gewürzmühlen (Küchenhelfer)
       
       // Measuring & Packaging
-      186: "Business & Industrial > Science & Laboratory", // Wiegen & Verpacken
-      187: "Business & Industrial > Science & Laboratory > Lab Equipment", // Waagen
-      346: "Home & Garden > Kitchen & Dining > Food Storage", // Vakuumbeutel
-      355: "Home & Garden > Kitchen & Dining > Food Storage", // Boveda & Integra Boost
-      407: "Home & Garden > Kitchen & Dining > Food Storage", // Grove Bags
-      449: "Home & Garden > Kitchen & Dining > Food Storage", // Cliptütchen
-      539: "Home & Garden > Kitchen & Dining > Food Storage", // Gläser & Dosen
+      186: "5631",   // Headshop > Wiegen & Verpacken – Aufbewahrung/Zubehör
+      187: "4767",   // Headshop > Waagen – Personenwaagen (Medizinisch)
+      346: "7118",   // Headshop > Vakuumbeutel – Vakuumierer-Beutel
+      355: "606",    // Headshop > Boveda & Integra Boost – Luftentfeuchter (nächstmögliche)
+      407: "3561",   // Headshop > Grove Bags – Aufbewahrungsbehälter
+      449: "1496",   // Headshop > Cliptütchen – Lebensmittelverpackungsmaterial
+      539: "3110",   // Headshop > Gläser & Dosen – Lebensmittelbehälter
       
       // Lighting & Equipment
-      694: "Home & Garden > Lighting", // Lampen
-      261: "Home & Garden > Lighting", // Lampenzubehör
+      694: "3006",   // Lampen – Lampen (Beleuchtung)
+      261: "3006",   // Zubehör > Lampenzubehör – Lampen
       
       // Plants & Growing
-      691: "Home & Garden > Lawn & Garden > Fertilizers", // Dünger
-      692: "Home & Garden > Lawn & Garden > Fertilizers", // Dünger - Zubehör
-      693: "Sporting Goods > Outdoor Recreation > Camping & Hiking > Tents", // Zelte
+      691: "500033", // Dünger – Dünger
+      692: "5633",   // Zubehör > Dünger-Zubehör – Zubehör für Gartenarbeit
+      693: "5655",   // Zelte – Zelte
       
       // Pots & Containers
-      219: "Home & Garden > Decor > Planters & Pots", // Töpfe
-      220: "Home & Garden > Decor > Planters & Pots", // Untersetzer
-      301: "Home & Garden > Decor > Planters & Pots", // Stofftöpfe
-      317: "Home & Garden > Decor > Planters & Pots", // Air-Pot
-      364: "Home & Garden > Decor > Planters & Pots", // Kunststofftöpfe
-      292: "Home & Garden > Decor > Planters & Pots", // Trays & Fluttische
+      219: "113",    // Töpfe – Blumentöpfe & Pflanzgefäße
+      220: "3173",   // Töpfe > Untersetzer – Gartentopfuntersetzer und Trays
+      301: "113",    // Töpfe > Stofftöpfe – (Blumentöpfe/Pflanzgefäße)
+      317: "113",    // Töpfe > Air-Pot – (Blumentöpfe/Pflanzgefäße)
+      364: "113",    // Töpfe > Kunststofftöpfe – (Blumentöpfe/Pflanzgefäße)
+      292: "3568",   // Bewässerung > Trays & Fluttische – Bewässerungssysteme
       
       // Ventilation & Climate
-      703: "Home & Garden > Outdoor Power Tools", // Abluft-Sets
-      247: "Home & Garden > Outdoor Power Tools", // Belüftung
-      214: "Home & Garden > Outdoor Power Tools", // Umluft-Ventilatoren
-      308: "Home & Garden > Outdoor Power Tools", // Ab- und Zuluft
-      609: "Home & Garden > Outdoor Power Tools", // Schalldämpfer
-      248: "Home & Garden > Pool & Spa > Pool & Spa Filters", // Aktivkohlefilter
-      392: "Home & Garden > Pool & Spa > Pool & Spa Filters", // Zuluftfilter
-      658: "Home & Garden > Climate Control > Dehumidifiers", // Luftbe- und entfeuchter
-      310: "Home & Garden > Climate Control > Heating", // Heizmatten
-      379: "Home & Garden > Household Supplies > Air Fresheners", // Geruchsneutralisation
+      703: "2802",   // Grow-Sets > Abluft-Sets – (verwendet Pflanzen-Kräuter-Anbausets)
+      247: "1700",   // Belüftung – Ventilatoren (Klimatisierung)
+      214: "1700",   // Belüftung > Umluft-Ventilatoren – Ventilatoren
+      308: "1700",   // Belüftung > Ab- und Zuluft – Ventilatoren
+      609: "1700",   // Belüftung > Ab- und Zuluft > Schalldämpfer – Ventilatoren
+      248: "1700",   // Belüftung > Aktivkohlefilter – Ventilatoren (nächstmögliche)
+      392: "1700",   // Belüftung > Ab- und Zuluft > Zuluftfilter – Ventilatoren
+      658: "606",    // Belüftung > Luftbe- und -entfeuchter – Luftentfeuchter
+      310: "2802",   // Anzucht > Heizmatten – Pflanzen- & Kräuteranbausets
+      379: "5631",   // Belüftung > Geruchsneutralisation – Haushaltsbedarf: Aufbewahrung
       
       // Irrigation & Watering
-      221: "Home & Garden > Lawn & Garden > Watering Equipment", // Bewässerung
-      250: "Home & Garden > Lawn & Garden > Watering Equipment", // Schläuche
-      297: "Home & Garden > Lawn & Garden > Watering Equipment", // Pumpen
-      354: "Home & Garden > Lawn & Garden > Watering Equipment", // Sprüher
-      372: "Home & Garden > Lawn & Garden > Watering Equipment", // AutoPot
-      389: "Home & Garden > Lawn & Garden > Watering Equipment", // Blumat
-      405: "Home & Garden > Lawn & Garden > Watering Equipment", // Schläuche
-      425: "Home & Garden > Lawn & Garden > Watering Equipment", // Wassertanks
-      480: "Home & Garden > Lawn & Garden > Watering Equipment", // Tropfer
-      519: "Home & Garden > Lawn & Garden > Watering Equipment", // Pumpsprüher
+      221: "3568",   // Bewässerung – Bewässerungssysteme (Gesamt)
+      250: "6318",   // Bewässerung > Schläuche – Gartenschläuche
+      297: "500100", // Bewässerung > Pumpen – Bewässerung-/Sprinklerpumpen
+      354: "3780",   // Bewässerung > Sprüher – Sprinkler & Sprühköpfe
+      372: "3568",   // Bewässerung > AutoPot – Bewässerungssysteme
+      389: "3568",   // Bewässerung > Blumat – Bewässerungssysteme
+      405: "6318",   // Bewässerung > Schläuche – Gartenschläuche
+      425: "3568",   // Bewässerung > Wassertanks – Bewässerungssysteme
+      480: "3568",   // Bewässerung > Tropfer – Bewässerungssysteme
+      519: "3568",   // Bewässerung > Pumpsprüher – Bewässerungssysteme
       
       // Growing Media & Soils
-      242: "Home & Garden > Lawn & Garden > Fertilizers", // Böden
-      243: "Home & Garden > Lawn & Garden > Fertilizers", // Erde
-      269: "Home & Garden > Lawn & Garden > Fertilizers", // Kokos
-      580: "Home & Garden > Lawn & Garden > Fertilizers", // Perlite & Blähton
+      242: "543677", // Böden – Gartenerde
+      243: "543677", // Böden > Erde – Gartenerde
+      269: "543677", // Böden > Kokos – Gartenerde
+      580: "543677", // Böden > Perlite & Blähton – Gartenerde
       
       // Propagation & Starting
-      286: "Home & Garden > Plants", // Anzucht
-      298: "Home & Garden > Plants", // Steinwolltrays
-      421: "Home & Garden > Plants", // Vermehrungszubehör
-      489: "Home & Garden > Plants", // EazyPlug & Jiffy
-      359: "Home & Garden > Outdoor Structures > Greenhouses", // Gewächshäuser
+      286: "2802",   // Anzucht – Pflanzen- & Kräuteranbausets
+      298: "2802",   // Anzucht > Steinwolltrays – Pflanzen- & Kräuteranbausets
+      421: "2802",   // Anzucht > Vermehrungszubehör – Pflanzen- & Kräuteranbausets
+      489: "2802",   // Anzucht > EazyPlug & Jiffy – Pflanzen- & Kräuteranbausets
+      359: "3103",   // Anzucht > Gewächshäuser – Gewächshäuser
       
       // Tools & Equipment
-      373: "Home & Garden > Tools > Hand Tools", // GrowTool
-      403: "Home & Garden > Kitchen & Dining > Kitchen Tools & Utensils", // Messbecher & mehr
-      259: "Home & Garden > Tools > Hand Tools", // Pressen
-      280: "Home & Garden > Tools > Hand Tools", // Erntescheeren
-      258: "Home & Garden > Tools", // Ernte & Verarbeitung
-      278: "Home & Garden > Tools", // Extraktion
-      302: "Home & Garden > Tools", // Erntemaschinen
+      373: "3568",   // Bewässerung > GrowTool – Bewässerungssysteme
+      403: "3999",   // Bewässerung > Messbecher & mehr – Messbecher & Dosierlöffel
+      259: "756",    // Zubehör > Ernte & Verarbeitung > Pressen – Nudelmaschinen
+      280: "2948",   // Zubehör > Ernte & Verarbeitung > Erntescheeren – Küchenmesser
+      258: "684",    // Zubehör > Ernte & Verarbeitung – Abfallzerkleinerer
+      278: "5057",   // Zubehör > Ernte & Verarbeitung > Extraktion – Slush-Eis-Maschinen
+      302: "7332",   // Zubehör > Ernte & Verarbeitung > Erntemaschinen – Gartenmaschinen
       
       // Hardware & Plumbing
-      222: "Hardware > Plumbing Fixtures", // PE-Teile
-      374: "Hardware > Plumbing Fixtures", // Verbindungsteile
+      222: "3568",   // Bewässerung > PE-Teile – Bewässerungssysteme
+      374: "1700",   // Belüftung > Ab- und Zuluft > Verbindungsteile – Ventilatoren
       
       // Electronics & Control
-      314: "Electronics > Electronics Accessories", // Steuergeräte
-      408: "Electronics > Electronics Accessories", // GrowControl
-      344: "Business & Industrial > Science & Laboratory > Lab Equipment", // Messgeräte
-      555: "Business & Industrial > Science & Laboratory > Lab Equipment", // Mikroskope
+      314: "1700",   // Belüftung > Steuergeräte – Ventilatoren
+      408: "1700",   // Belüftung > Steuergeräte > GrowControl – Ventilatoren
+      344: "1207",   // Zubehör > Messgeräte – Messwerkzeuge & Messwertgeber
+      555: "4555",   // Zubehör > Anbauzubehör > Mikroskope – Mikroskope
       
       // Camping & Outdoor
-      226: "Sporting Goods > Outdoor Recreation > Camping & Hiking", // Zeltzubehör
+      226: "5655",   // Zubehör > Zeltzubehör – Zelte
       
       // Plant Care & Protection
-      239: "Home & Garden > Lawn & Garden > Pest Control", // Pflanzenschutz
-      240: "Home & Garden > Plants", // Anbauzubehör
+      239: "4085",   // Zubehör > Anbauzubehör > Pflanzenschutz – Herbizide
+      240: "5633",   // Zubehör > Anbauzubehör – Zubehör für Gartenarbeit
       
       // Office & Media
-      424: "Business & Industrial > Office Supplies", // Etiketten & Schilder
-      387: "Media > Books", // Literatur
+      424: "4377",   // Zubehör > Anbauzubehör > Etiketten & Schilder – Etiketten & Anhängerschilder
+      387: "543541", // Zubehör > Anbauzubehör > Literatur – Bücher
       
       // General categories
-      705: "Home & Garden", // Set-Konfigurator
-      686: "Home & Garden", // Zubehör
-      741: "Home & Garden", // Zubehör
-      294: "Home & Garden", // Zubehör
-      695: "Home & Garden", // Zubehör
-      293: "Home & Garden", // Trockennetze
-      4: "Home & Garden", // Sonstiges
-      450: "Home & Garden", // Restposten
+      705: "2802",   // Grow-Sets > Set-Konfigurator – (ebenfalls Pflanzen-Anbausets)
+      686: "1700",   // Belüftung > Aktivkohlefilter > Zubehör – Ventilatoren
+      741: "1700",   // Belüftung > Ab- und Zuluft > Zubehör – Ventilatoren
+      294: "3568",   // Bewässerung > Zubehör – Bewässerungssysteme
+      695: "5631",   // Zubehör – Haushaltsbedarf: Aufbewahrung
+      293: "5631",   // Zubehör > Ernte & Verarbeitung > Trockennetze – Haushaltsbedarf: Aufbewahrung
+      4: "5631",     // Zubehör > Anbauzubehör > Sonstiges – Haushaltsbedarf: Aufbewahrung
+      450: "5631",   // Zubehör > Anbauzubehör > Restposten – Haushaltsbedarf: Aufbewahrung
     };
     
-    const category = categoryMappings[categoryId] || "Home & Garden > Plants";
+    const categoryId_str = categoryMappings[categoryId] || "5631"; // Default to Haushaltsbedarf: Aufbewahrung
     
-    // Validate that the category is not empty or too generic
-    if (!category || category.trim() === "") {
-      return "Home & Garden > Plants";
+    // Validate that the category ID is not empty
+    if (!categoryId_str || categoryId_str.trim() === "") {
+      return "5631"; // Haushaltsbedarf: Aufbewahrung
     }
     
-    return category;
+    return categoryId_str;
   };
 
   let productsXml = `<?xml version="1.0" encoding="UTF-8"?>

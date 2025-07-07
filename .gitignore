@@ -56,6 +56,8 @@ yarn-error.log*
 # Local configuration
 src/config.local.js
 
+taxonomy-with-ids.de-DE*
+
 # Local development notes
 dev-notes.md
 dev-notes.local.md 

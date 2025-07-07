@@ -312,27 +312,210 @@ export default {
       // Add middleware to handle /404 route BEFORE webpack-dev-server processing
       middlewares.unshift({
         name: 'handle-404-route',
-        middleware: (req, res, next) => {
+        middleware: async (req, res, next) => {
           if (req.url === '/404') {
-            // Mark this request as a 404 and intercept the response
-            res.locals.is404 = true;
+            // Set up prerender environment
+            const { createRequire } = await import('module');
+            const require = createRequire(import.meta.url);
             
-            // Override writeHead to force 404 status
-            const originalWriteHead = res.writeHead;
-            res.writeHead = function(statusCode, statusMessage, headers) {
-              // Force 404 status and no-cache headers
-              const newHeaders = {
-                ...headers,
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
+            require('@babel/register')({
+              presets: [
+                ['@babel/preset-env', { targets: { node: 'current' } }],
+                '@babel/preset-react'
+              ],
+              extensions: ['.js', '.jsx'],
+              ignore: [/node_modules/]
+            });
+            
+            // Import React first and make it globally available
+            const React = require('react');
+            global.React = React; // Make React available globally for components that don't import it
+            
+            // Set up minimal globals for prerender
+            if (!global.window) {
+              global.window = {};
+            }
+            if (!global.navigator) {
+              global.navigator = { userAgent: 'node.js' };
+            }
+            if (!global.URL) {
+              global.URL = require('url').URL;
+            }
+            if (!global.Blob) {
+              global.Blob = class MockBlob {
+                constructor(data, options) {
+                  this.data = data;
+                  this.type = options?.type || '';
+                }
               };
-              return originalWriteHead.call(this, 404, statusMessage, newHeaders);
+            }
+            
+            // Mock browser storage APIs
+            const mockStorage = {
+              getItem: () => null,
+              setItem: () => {},
+              removeItem: () => {},
+              clear: () => {},
+              key: () => null,
+              length: 0
             };
             
-            // Rewrite the URL to / so historyApiFallback can handle it
-            req.url = '/';
-            next();
+            if (!global.localStorage) {
+              global.localStorage = mockStorage;
+            }
+            if (!global.sessionStorage) {
+              global.sessionStorage = mockStorage;
+            }
+            
+            // Also add to window object for components that access it via window
+            global.window.localStorage = mockStorage;
+            global.window.sessionStorage = mockStorage;
+            
+            // Import the dedicated prerender component
+            const PrerenderNotFound = require('./src/PrerenderNotFound.js').default;
+            
+            // Create the prerender component
+            const component = React.createElement(PrerenderNotFound);
+            
+            // Get only the essential bundles (not lazy-loaded chunks)
+            let jsBundles = [];
+            try {
+              const outputFileSystem = devServer.compiler.outputFileSystem;
+              const outputPath = devServer.compiler.outputPath;
+              const jsPath = path.join(outputPath, 'js');
+              
+              if (outputFileSystem.existsSync && outputFileSystem.existsSync(jsPath)) {
+                const jsFiles = outputFileSystem.readdirSync(jsPath);
+                
+                // Only include essential bundles in correct dependency order
+                const essentialBundles = [];
+                
+                // 1. Runtime bundle (webpack runtime - must be first)
+                const runtimeFile = jsFiles.find(f => f.startsWith('runtime.') && f.endsWith('.bundle.js'));
+                if (runtimeFile) essentialBundles.push('/js/' + runtimeFile);
+                
+                // 2. Vendor bundles (libraries that main depends on)
+                const reactFile = jsFiles.find(f => f.startsWith('react.') && f.endsWith('.bundle.js'));
+                if (reactFile) essentialBundles.push('/js/' + reactFile);
+                
+                const emotionFile = jsFiles.find(f => f.startsWith('emotion.') && f.endsWith('.bundle.js'));
+                if (emotionFile) essentialBundles.push('/js/' + emotionFile);
+                
+                const muiIconsCommonFile = jsFiles.find(f => f.startsWith('mui-icons-common.') && f.endsWith('.bundle.js'));
+                if (muiIconsCommonFile) essentialBundles.push('/js/' + muiIconsCommonFile);
+                
+                const muiCoreFile = jsFiles.find(f => f.startsWith('mui-core.') && f.endsWith('.bundle.js'));
+                if (muiCoreFile) essentialBundles.push('/js/' + muiCoreFile);
+                
+                const vendorFile = jsFiles.find(f => f.startsWith('vendor.') && f.endsWith('.bundle.js'));
+                if (vendorFile) essentialBundles.push('/js/' + vendorFile);
+                
+                // 3. Common shared code
+                const commonFile = jsFiles.find(f => f.startsWith('common.') && f.endsWith('.chunk.js'));
+                if (commonFile) essentialBundles.push('/js/' + commonFile);
+                
+                // 4. Main bundle (your app code - must be last)
+                const mainFile = jsFiles.find(f => f.startsWith('main.') && f.endsWith('.bundle.js'));
+                if (mainFile) essentialBundles.push('/js/' + mainFile);
+                
+                jsBundles = essentialBundles;
+              }
+            } catch (error) {
+              console.warn('Could not read webpack output filesystem:', error.message);
+            }
+            
+            // Fallback if we can't read the filesystem
+            if (jsBundles.length === 0) {
+              jsBundles = ['/js/runtime.bundle.js', '/js/main.bundle.js'];
+            }
+            
+            // Render the page in memory only (no file writing in dev mode)
+            const ReactDOMServer = require('react-dom/server');
+            const { StaticRouter } = require('react-router');
+            const { CacheProvider } = require('@emotion/react');
+            const { ThemeProvider } = require('@mui/material/styles');
+            const createEmotionCache = require('./createEmotionCache.js').default;
+            const theme = require('./src/theme.js').default;
+            const createEmotionServer = require('@emotion/server/create-instance').default;
+            
+            // Create fresh Emotion cache for this page
+            const cache = createEmotionCache();
+            const { extractCriticalToChunks } = createEmotionServer(cache);
+            
+            // Wrap with StaticRouter to provide React Router context for Logo's Link components
+            const routedComponent = React.createElement(
+              StaticRouter,
+              { location: '/404' },
+              component
+            );
+            
+            const pageElement = React.createElement(
+              CacheProvider,
+              { value: cache },
+              React.createElement(ThemeProvider, { theme: theme }, routedComponent)
+            );
+            
+            // Render to string
+            const renderedMarkup = ReactDOMServer.renderToString(pageElement);
+            const emotionChunks = extractCriticalToChunks(renderedMarkup);
+            
+            // Build the full HTML page
+            const templatePath = path.resolve(__dirname, 'public', 'index.html');
+            let template = fs.readFileSync(templatePath, 'utf8');
+            
+            // Add JavaScript bundles
+            let scriptTags = '';
+            jsBundles.forEach(jsFile => {
+              scriptTags += `<script src="${jsFile}"></script>`;
+            });
+            
+            // Add global CSS from src/index.css
+            let globalCss = '';
+            try {
+              globalCss = fs.readFileSync(path.resolve(__dirname, 'src', 'index.css'), 'utf8');
+              // Fix relative font paths for prerendered HTML (remove ../public to make them relative to public root)
+              globalCss = globalCss.replace(/url\('\.\.\/public/g, "url('");
+            } catch (error) {
+              console.warn('Could not read src/index.css:', error.message);
+            }
+            
+            // Add inline CSS from emotion
+            let emotionCss = '';
+            if (emotionChunks.styles.length > 0) {
+              emotionChunks.styles.forEach(style => {
+                if (style.css) {
+                  emotionCss += style.css;
+                }
+              });
+            }
+            
+            // Combine all CSS
+            const inlineCss = globalCss + emotionCss;
+            
+            // Use the rendered markup as-is (no regex replacements)
+            let processedMarkup = renderedMarkup;
+            
+            // Replace placeholders in template
+            const finalHtml = template
+              .replace('<div id="root"></div>', `<div id="root">${processedMarkup}</div>`)
+              .replace('</head>', `<style>${inlineCss}</style></head>`)
+              .replace('</body>', `
+                <script>
+                  window.__PRERENDER_FALLBACK__ = {path: '/404', content: ${JSON.stringify(processedMarkup)}, timestamp: ${Date.now()}};
+                </script>
+                ${scriptTags}
+              </body>`);
+            
+            // Serve the prerendered HTML with 404 status
+            res.status(404);
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+            return res.send(finalHtml);
+            
+            // If we get here, prerender failed - let the error bubble up
+            throw new Error('404 prerender failed completely');
           } else {
             next();
           }

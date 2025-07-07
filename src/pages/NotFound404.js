@@ -16,19 +16,20 @@ const NotFound404 = () => {
           src="/assets/images/404.png"
           alt="404 - Page Not Found"
           style={{
+            width: '300px',
+            height: '300px',
             maxWidth: '100%',
-            height: 'auto',
-            maxHeight: '300px',
+            display: 'block',
           }}
         />
       </Box>
       <Typography variant="body1" paragraph align="center">
-        This page is no longer available.
+        Diese Seite scheint es nicht mehr zu geben.
       </Typography>
     </>
   );
 
-  return <LegalPage title="Page Not Found" content={content} />;
+  return <LegalPage content={content} />;
 };
 
 export default NotFound404; 
