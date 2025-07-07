@@ -17,6 +17,51 @@ import {
 import { TentShapeSelector, ProductSelector, ExtrasSelector } from '../components/configurator/index.js';
 import { tentShapes, tentSizes, lightTypes, ventilationTypes, extras } from '../data/configuratorData.js';
 
+function setCachedCategoryData(categoryId, data) {
+  if (!window.productCache) {
+    window.productCache = {};
+  }
+  if (!window.productDetailCache) {
+    window.productDetailCache = {};
+  }
+
+  try {
+    const cacheKey = `categoryProducts_${categoryId}`;
+    if(data.products) for(const product of data.products) {
+      window.productDetailCache[product.id] = product;
+    }
+    window.productCache[cacheKey] = {
+      ...data,
+      timestamp: Date.now()
+    };
+  } catch (err) {
+    console.error('Error writing to cache:', err);
+  }
+}
+function getCachedCategoryData(categoryId) {
+  if (!window.productCache) {
+    window.productCache = {};
+  }
+
+  try {
+    const cacheKey = `categoryProducts_${categoryId}`;
+    const cachedData = window.productCache[cacheKey];
+    
+    if (cachedData) {
+      const { timestamp } = cachedData;
+      const cacheAge = Date.now() - timestamp;
+      const tenMinutes = 10 * 60 * 1000; 
+      if (cacheAge < tenMinutes) {
+        return cachedData;
+      }
+    }
+  } catch (err) {
+    console.error('Error reading from cache:', err);
+  }
+
+  return null;
+}
+
 class GrowTentKonfigurator extends Component {
   constructor(props) {
     super(props);
@@ -40,6 +85,8 @@ class GrowTentKonfigurator extends Component {
     this.handleExtraToggle = this.handleExtraToggle.bind(this);
     this.calculateTotalPrice = this.calculateTotalPrice.bind(this);
     this.saveStateToWindow = this.saveStateToWindow.bind(this);
+
+
   }
 
   saveStateToWindow() {
@@ -57,7 +104,10 @@ class GrowTentKonfigurator extends Component {
 
   componentDidMount() {
     // @note Calculate initial total price with preselected products
-    this.calculateTotalPrice();
+    //this.calculateTotalPrice();
+    this.fetchCategoryData("Zelte");
+    this.fetchCategoryData("Lampen");
+    this.fetchCategoryData("Abluft-sets");
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -87,6 +137,31 @@ class GrowTentKonfigurator extends Component {
     ) {
       this.saveStateToWindow();
     }
+  }
+
+  fetchCategoryData(categoryId) {
+    const cachedData = getCachedCategoryData(categoryId);
+    if (cachedData) {
+      return;
+    }
+
+    if (!this.props.socket || !this.props.socket.connected) {
+      console.log("Socket not connected yet, waiting for connection to fetch category data");
+      return;
+    }
+    console.log(`productList:${categoryId}`);
+    this.props.socket.off(`productList:${categoryId}`);
+
+    this.props.socket.on(`productList:${categoryId}`,(response) => {
+      console.log("getCategoryProducts full response", response);
+      setCachedCategoryData(categoryId, response);
+    });
+
+    this.props.socket.emit("getCategoryProducts", { categoryId: categoryId },
+      (response) => {
+        console.log("getCategoryProducts stub response", response);
+      }
+    );
   }
 
   handleTentShapeSelect(shapeId) {

@@ -41,18 +41,17 @@ const MainPageLayout = () => {
     return { leftNav: null, rightNav: null };
   };
 
-  // Define all titles for layered rendering
   const allTitles = {
     home: "ine annabis eeds & uttings",
-    aktionen: "Aktionen", 
-    filiale: "Filiale"
+    aktionen: "tuelle ktionen & gebote", 
+    filiale: "nsere iliale in resden"
   };
 
   // Define all content boxes for layered rendering
   const allContentBoxes = {
     home: [
       {
-        title: "Samen",
+        title: "Seeds",
         image: "/assets/images/seeds.jpg",
         bgcolor: "#e1f0d3",
         link: "/Kategorie/Seeds"

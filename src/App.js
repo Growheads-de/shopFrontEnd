@@ -252,7 +252,7 @@ const AppContent = ({ currentTheme, onThemeChange }) => {
               <Route path="/widerrufsrecht" element={<Widerrufsrecht />} />
 
               {/* Grow Tent Configurator */}
-              <Route path="/Konfigurator" element={<GrowTentKonfigurator />} />
+              <Route path="/Konfigurator" element={<GrowTentKonfigurator socket={socket} socketB={socketB} />} />
 
               {/* Separate pages that are truly different */}
               <Route path="/presseverleih" element={<PresseverleihPage />} />
